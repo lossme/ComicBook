@@ -58,19 +58,17 @@ def get_detail_list(url):
     根据详细URL获取章节详细页面并解析
     url类似:http://ac.qq.com/ComicView/index/id/505430/cid/884
     """
+    pic_list = []
     html =requests.get(url).text
     bs64_data = re.search(r"var DATA.+?= '(.+)'",html).group(1)[1:]
-    json_str = base64.b64decode(bs64_data)
+    json_str = base64.b64decode(bs64_data).decode('utf-8')
     datail_list = json.loads(json_str)['picture']
-    pic_list = []
-    for i in datail_list:
-        pic_list.append(i['url'])
+    [pic_list.append(i['url']) for i in datail_list]
     return pic_list
 
 def download_chapter(chapter):
     print('正在抓取图片地址 {0}'.format(chapter['title']))
     chapter['pic_list'] = get_detail_list(chapter['url'])
-
     comic_name = chapter['title'].split('：')[0]
     title = ''.join(chapter['title'].split('：')[1:])
     pic_list = chapter['pic_list']
