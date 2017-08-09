@@ -149,7 +149,7 @@ def main(id, interval, chapter, thread, all):
     根据腾讯漫画id下载图片
     """
     pool = ThreadPool(thread)
-    task_chapter = get_task_chapter(id, chapter, interval)
+    task_chapter = get_task_chapter(id, chapter, interval, all)
     begin_time = datetime.datetime.now()
     print('开始下载咯\n现在时间是:'+str(begin_time))
     pool = ThreadPool(8)
