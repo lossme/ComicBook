@@ -105,8 +105,10 @@ def is_downloaded(file_path):
         return False
 
 
-def get_task_chapter(id, chapter, interval):
+def get_task_chapter(id, chapter, interval, all):
     all_chapter = get_list(id)
+    if all:
+        return all_chapter
     if not interval:
         return [all_chapter[chapter]]
     l = []
@@ -127,20 +129,22 @@ MSG = {
     'id': '请输入你想要下载的漫画的id,默认下载海贼王\n\
            如海贼王http://ac.qq.com/Comic/ComicInfo/id/505430\n\
            python3 onepiece.py -id 50430',
-    'c': '输入要下载的章节chapter，默认下载最新章节\n\
+    'chapter': '输入要下载的章节chapter，默认下载最新章节\n\
           如倒数第二 -c -2\n\
         ',
-    'i': '下载多个章节,输入章节区间,如 -i 1-10,25,30-40',
-    't': '线程池数,默认开启8个线程池,下载多个章节时效果才明显',
+    'interval': '下载多个章节,输入章节区间,如 -i 1-10,25,30-40',
+    'thread': '线程池数,默认开启8个线程池,下载多个章节时效果才明显',
+    'all': '下载全部章节 如 -a true'
 }
 
 
 @click.command()
 @click.option('-id', '--id', default=505430, help=MSG['id'])
-@click.option('-i', '--interval', default='', help=MSG['i'])
-@click.option('-c', '--chapter', default=-1, help=MSG['c'])
-@click.option('-t', '--thread', default=8, help=MSG['t'])
-def main(id, interval, chapter, thread):
+@click.option('-i', '--interval', default='', help=MSG['interval'])
+@click.option('-c', '--chapter', default=-1, help=MSG['chapter'])
+@click.option('-t', '--thread', default=8, help=MSG['thread'])
+@click.option('-a', '--all', default=False, help=MSG['all'])
+def main(id, interval, chapter, thread, all):
     """
     根据腾讯漫画id下载图片
     """
