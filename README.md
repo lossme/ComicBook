@@ -1,7 +1,13 @@
 # TencentComicBook
 ## 腾讯漫画批量抓取
 
-使用帮助
+
+#### 安装依赖
+
+`pip install -r requirements.txt`
+
+
+#### 使用帮助
 ```
 onepiece.py --help
 Usage: onepiece.py [OPTIONS] [MODE]...
