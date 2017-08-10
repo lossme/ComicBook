@@ -9,7 +9,7 @@
 
 #### 使用帮助
 ```
-onepiece.py --help
+python3 onepiece.py --help
 Usage: onepiece.py [OPTIONS] [MODE]...
 
   根据腾讯漫画id下载图片
