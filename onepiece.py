@@ -16,6 +16,9 @@ except:
 TIMEOUT = 15
 socket.setdefaulttimeout(TIMEOUT)
 
+ILLEGAL_STR = r'\/:*?"<>|'
+REPLACE_ILLEGAL_STR = str.maketrans(ILLEGAL_STR, ' '*len(ILLEGAL_STR))
+
 
 def get_list(id):
     """
@@ -88,10 +91,7 @@ def download_chapter(chapter):
 
 def filter_filename(filename):
     '''windows文件名过滤非法字符串'''
-    illegal_str = r'\/:*?"<>|'
-    repalce_str = r' '*len(illegal_str)
-    map_str = filename.maketrans(illegal_str, repalce_str)
-    return filename.translate(map_str)
+    return filename.translate(REPLACE_ILLEGAL_STR)
 
 
 def is_downloaded(file_path):
