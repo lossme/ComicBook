@@ -71,15 +71,12 @@ def download_chapter(chapter):
     dir_path = os.path.join(filter_filename(
         comic_name), filter_filename(title))
     if not os.path.exists(dir_path):
-        try:
-            os.makedirs(dir_path)
-        except:
-            print('目录已存在')
+        os.makedirs(dir_path)
     print('正在下载 {0}'.format(title))
-    for i in range(1, len(pic_list)):
+    for i in range(len(pic_list)):
         try:
             url = pic_list[i]
-            file_path = os.path.join(dir_path, str(i) + '.jpg')
+            file_path = os.path.join(dir_path, str(i+1) + '.jpg')
             if is_downloaded(file_path):
                 continue
             img = requests.get(url).content
@@ -107,7 +104,7 @@ def is_downloaded(file_path):
 
 def get_task_chapter(id, chapter, interval, mode):
     all_chapter = get_list(id)
-    if mode[0] in ['a','all']:
+    if mode and mode[0] in ['a','all']:
         return all_chapter
     if not interval:
         return [all_chapter[chapter]]
