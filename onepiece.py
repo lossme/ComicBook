@@ -105,9 +105,9 @@ def is_downloaded(file_path):
         return False
 
 
-def get_task_chapter(id, chapter, interval, all):
+def get_task_chapter(id, chapter, interval, mode):
     all_chapter = get_list(id)
-    if all:
+    if mode[0] in ['a','all']:
         return all_chapter
     if not interval:
         return [all_chapter[chapter]]
@@ -134,7 +134,6 @@ MSG = {
         ',
     'interval': '下载多个章节,输入章节区间,如 -i 1-10,25,30-40',
     'thread': '线程池数,默认开启8个线程池,下载多个章节时效果才明显',
-    'all': '下载全部章节 如 -a true'
 }
 
 
@@ -143,13 +142,17 @@ MSG = {
 @click.option('-i', '--interval', default='', help=MSG['interval'])
 @click.option('-c', '--chapter', default=-1, help=MSG['chapter'])
 @click.option('-t', '--thread', default=8, help=MSG['thread'])
-@click.option('-a', '--all', default=False, help=MSG['all'])
-def main(id, interval, chapter, thread, all):
+@click.argument('mode', nargs=-1)
+def main(id, interval, chapter, thread, mode):
     """
     根据腾讯漫画id下载图片
+
+    添加 all/a 关键字即可下载所有章节
+
+    例如 python3 onepiece.py -id 50430 all
     """
     pool = ThreadPool(thread)
-    task_chapter = get_task_chapter(id, chapter, interval, all)
+    task_chapter = get_task_chapter(id, chapter, interval, mode)
     begin_time = datetime.datetime.now()
     print('开始下载咯\n现在时间是:'+str(begin_time))
     pool = ThreadPool(8)
