@@ -85,8 +85,12 @@ def download_chapter(chapter):
     """下载整个章节的图片，按漫画名按章节保存在当前目录下
     """
     title, chapter_url = chapter
-    print('正在下载', title)
-    chapter_pic_list = get_detail_list(chapter_url)
+    try:
+        print('正在下载', title)
+        chapter_pic_list = get_detail_list(chapter_url)
+    except Exception as e:
+        print('error', title, str(e))
+        return
     comic_name, chapter_title = title.split('：', 1)
     dir_path = os.path.join(filter_filename(comic_name), filter_filename(chapter_title))
     if not os.path.exists(dir_path):
