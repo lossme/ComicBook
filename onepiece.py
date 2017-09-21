@@ -169,6 +169,9 @@ def main(id, interval, chapter, thread, mode):
     下载海贼王最新一集:
     python3 onepiece.py
 
+    下载漫画 id=505430 最新一集:
+    python3 onepiece.py -id 505430
+
     下载漫画 id=505430 所有章节:
     python3 onepiece.py -id 505430 all
 

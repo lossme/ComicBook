@@ -4,17 +4,18 @@
 
 #### 安装依赖
 
-`pip install -r requirements.txt`
+`python3 -m pip install -r requirements.txt`
 
 
 #### 使用帮助
 ```
-python3 onepiece.py --help
 Usage: onepiece.py [OPTIONS] [MODE]...
 
   根据腾讯漫画id下载图片,默认下载海贼王最新一集。
 
   下载海贼王最新一集: python3 onepiece.py
+
+  下载漫画 id=505430 最新一集: python3 onepiece.py -id 505430
 
   下载漫画 id=505430 所有章节: python3 onepiece.py -id 505430 all
 
