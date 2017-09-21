@@ -32,5 +32,4 @@ Options:
   -c, --chapter INTEGER  要下载的章节chapter，默认下载最新章节。如 -c 666
   -t, --thread INTEGER   线程池数,默认开启8个线程池,下载多个章节时效果才明显
   --help                 Show this message and exit.
-
-'''
+```
