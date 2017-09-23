@@ -134,17 +134,27 @@ def get_task_chapter(id, chapter, interval, mode):
     if not interval:
         return [all_chapter[chapter]]
 
-    l = []
+    task_chapter = []
+    all_chapter_len = len(all_chapter)
     blocks = re.split(r',|，', interval)
     for block in blocks:
         if '-' not in block:
-            l.append(int(block))
+            try:
+                chapter_int = int(block)
+            except ValueError:
+                print('参数写错了,查看帮助: python3 onepiece.py --help')
+                exit()
+            if chapter_int <= all_chapter_len:
+                task_chapter.append(all_chapter[chapter_int-1])
         else:
-            start = int(block.split('-')[0])
-            end = int(block.split('-')[-1])
-            for i in range(start, end+1):
-                l.append(i)
-    task_chapter = [all_chapter[i - 1] for i in l]
+            start, end = block.split('-', 1)
+            try:
+                start, end = int(start), int(end)
+                for chapter in all_chapter[start-1:end]:
+                    task_chapter.append(chapter)
+            except ValueError:
+                print('参数写错了,查看帮助: python3 onepiece.py --help')
+                exit()
     return task_chapter
 
 
