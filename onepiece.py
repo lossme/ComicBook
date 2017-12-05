@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# @Date    : 2017-10-21 15:54:20
+# @Author  : Key
+# @Email   : 1612730560@qq.com
+# @Link    : https://github.com/lossme
+
 import os
 import re
 import base64
@@ -10,7 +16,7 @@ import requests
 from multiprocessing.dummy import Pool as ThreadPool
 try:
     from lxml import etree
-except:
+except ImportError:
     pass
 
 

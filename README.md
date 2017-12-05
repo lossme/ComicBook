@@ -10,11 +10,11 @@
 ### 常规使用
 - 下载海贼王最新一集: python3 onepiece.py
 - 下载漫画 id=505430 最新一集: python3 onepiece.py -id 505430
-- 下载漫画 id=505430 所有章节: python3 onepiece.py -id 505430 all
+- 下载漫画 id=505430 所有章节: python3 onepiece.py -id 505430 -m all
 - 下载漫画 id=505430 第800集: python3 onepiece.py -id 505430 -c 800
 - 下载漫画 id=505430 倒数第二集: python3 onepiece.py -id 505430 -c -2
 - 下载漫画 id=505430 1到5集,7集，9到10集: python3 onepiece.py -id 505430 -i 1-5,7,9-10
-
+- 下载漫画 id=505430 800集至最新一集: python3 onepiece.py -id 505430 -i 800-9999
 
 ### 使用帮助
 
