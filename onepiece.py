@@ -10,10 +10,12 @@ import base64
 import json
 import time
 import socket
-from urllib import parse
 import argparse
-import requests
+
+from urllib import parse
 from multiprocessing.dummy import Pool as ThreadPool
+
+import requests
 try:
     from lxml import etree
 except ImportError:
@@ -27,16 +29,16 @@ REPLACE_ILLEGAL_STR = str.maketrans(ILLEGAL_STR, ' ' * len(ILLEGAL_STR))
 HOST = 'http://ac.qq.com'
 
 
-def get_all_chapter_by_lxml(comic_id):
+def get_all_chapter_by_lxml(comicid):
     """根据漫画id获取所有的章节列表: http://ac.qq.com/Comic/ComicInfo/id/505430
     Args:
-        comic_id: 505430
+        comicid: 505430
 
     Returns:
         [(chater1_url, chater1_title), (chater2_url, chater2_title),]
     """
-    comic_id = str(comic_id)
-    url = 'http://ac.qq.com/Comic/ComicInfo/id/{}'.format(comic_id)
+    comicid = str(comicid)
+    url = 'http://ac.qq.com/Comic/ComicInfo/id/{}'.format(comicid)
     html = requests.get(url).text
     tree = etree.HTML(html)
     a_tags = tree.xpath("//ol[@class='chapter-page-all works-chapter-list']/li/p/span/a")
@@ -44,13 +46,13 @@ def get_all_chapter_by_lxml(comic_id):
     for a in a_tags:
         title = a.get('title')
         url = parse.urljoin(HOST, a.get('href'))
-        if comic_id not in url:
+        if comicid not in url:
             continue
         all_chapter.append((title, url))
     return all_chapter
 
 
-def get_all_chapter(comic_id):
+def get_all_chapter(comicid):
     """根据漫画id获取所有的章节列表: http://ac.qq.com/Comic/ComicInfo/id/505430
     Args:
         id: 505430
@@ -58,7 +60,7 @@ def get_all_chapter(comic_id):
     Returns:
         [(chater1_url, chater1_title), (chater2_url, chater2_title),]
     """
-    url = 'http://ac.qq.com/Comic/ComicInfo/id/{}'.format(comic_id)
+    url = 'http://ac.qq.com/Comic/ComicInfo/id/{}'.format(comicid)
     html = requests.get(url).text
     ol = re.search(r'''(<ol class="chapter-page-all works-chapter-list".+?</ol>)''', html, re.S).group()
     all_atag = re.findall(r'''<a.*?title="(.*?)".*?href="(.*?)">(.*?)</a>''', ol, re.S)
@@ -102,9 +104,9 @@ def download_chapter(chapter):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
-    for idx, img_url in enumerate(chapter_pic_list):
+    for idx, img_url in enumerate(chapter_pic_list, start=1):
         try:
-            img_path = os.path.join(dir_path, str(idx + 1) + '.jpg')
+            img_path = os.path.join(dir_path, '{}.jpg'.format(idx))
             if os.path.exists(img_path) and os.path.getsize(img_path) != 0:
                 print('图片已存在, pass', img_path)
                 continue
@@ -120,10 +122,10 @@ def filter_filename(filename):
     return filename.translate(REPLACE_ILLEGAL_STR)
 
 
-def get_task_chapter(comic_id, chapter, interval, mode):
+def get_task_chapter(comicid, chapter, interval, mode):
     """根据参数来确定下载哪些章节
     Args:
-        comic_id: 漫画id
+        comicid: 漫画id
         chapter:
             下载的哪个章节,如下载最后一个章节 chapter = -1
         interval:
@@ -134,7 +136,7 @@ def get_task_chapter(comic_id, chapter, interval, mode):
     Returns:
         [(chapter_i_title, chapter_i_url), (chapter_j_title, chapter_j_url)]
     """
-    all_chapter = get_all_chapter(comic_id)
+    all_chapter = get_all_chapter(comicid)
     if mode and mode[0] in ['a', 'all']:
         return all_chapter
     if not interval:
@@ -165,9 +167,9 @@ def get_task_chapter(comic_id, chapter, interval, mode):
     return task_chapter
 
 
-def main(comic_id=505430, interval=None, chapter=-1, thread=8, mode=None):
+def main(comicid=505430, interval=None, chapter=-1, thread=8, mode=None):
     pool = ThreadPool(thread)
-    task_chapter = get_task_chapter(comic_id, chapter, interval, mode)
+    task_chapter = get_task_chapter(comicid, chapter, interval, mode)
     ts = time.time()
     begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
     print('开始下载咯\n现在时间是:', begin_time)
@@ -202,20 +204,20 @@ def cli():
     python3 onepiece.py -id 505430 -i 1-5,7,9-10
     """
     MSG = {
-        'comic_id': '漫画id，海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)',
+        'comicid': '漫画id，海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)',
         'chapter': '要下载的章节chapter，默认下载最新章节。如 -c 666',
         'interval': '要下载的章节区间, 如 -i 1-5,7,9-10',
         'thread': '线程池数,默认开启8个线程池,下载多个章节时效果才明显',
         'mode': '下载模式，若为 a/all 则下载该漫画的所有章节, 如 -m all'
     }
     parser = argparse.ArgumentParser()
-    parser.add_argument('-id', '--comic_id', type=int, default=505430, help=MSG['comic_id'])
+    parser.add_argument('-id', '--comicid', type=int, default=505430, help=MSG['comicid'])
     parser.add_argument('-i', '--interval', type=str, help=MSG['interval'])
     parser.add_argument('-c', '--chapter', type=int, default=-1, help=MSG['chapter'])
     parser.add_argument('-t', '--thread', type=int, default=8, help=MSG['thread'])
     parser.add_argument('-m', '--mode', type=str, help=MSG['mode'])
     args = parser.parse_args()
-    main(comic_id=args.comic_id, interval=args.interval, chapter=args.chapter, thread=args.thread, mode=args.mode)
+    main(comicid=args.comicid, interval=args.interval, chapter=args.chapter, thread=args.thread, mode=args.mode)
 
 if __name__ == "__main__":
     cli()

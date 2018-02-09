@@ -22,12 +22,12 @@
 ```
 >>>python3 onepiece.py --help
 
-usage: onepiece.py [-h] [-id COMIC_ID] [-i INTERVAL] [-c CHAPTER] [-t THREAD]
+usage: onepiece.py [-h] [-id comicid] [-i INTERVAL] [-c CHAPTER] [-t THREAD]
                    [-m MODE]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -id COMIC_ID, --comic_id COMIC_ID
+  -id comicid, --comicid comicid
                         漫画id，海贼王: 505430
                         (http://ac.qq.com/Comic/ComicInfo/id/505430)
   -i INTERVAL, --interval INTERVAL
