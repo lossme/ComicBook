@@ -22,12 +22,12 @@
 ```
 >>>python3 onepiece.py --help
 
-usage: onepiece.py [-h] [-id comicid] [-i INTERVAL] [-c CHAPTER] [-t THREAD]
-                   [-m MODE]
+usage: onepiece.py [-h] [-id COMICID] [-i INTERVAL] [-c CHAPTER] [-t THREAD]
+                   [-m MODE] [-o OUTPUT]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -id comicid, --comicid comicid
+  -id COMICID, --comicid COMICID
                         漫画id，海贼王: 505430
                         (http://ac.qq.com/Comic/ComicInfo/id/505430)
   -i INTERVAL, --interval INTERVAL
@@ -37,5 +37,6 @@ optional arguments:
   -t THREAD, --thread THREAD
                         线程池数,默认开启8个线程池,下载多个章节时效果才明显
   -m MODE, --mode MODE  下载模式，若为 a/all 则下载该漫画的所有章节, 如 -m all
-
+  -o OUTPUT, --output OUTPUT
+                        文件保存路径，默认保存在当前路径
 ```

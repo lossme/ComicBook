@@ -11,6 +11,7 @@ import json
 import time
 import socket
 import argparse
+import functools
 
 from urllib import parse
 from multiprocessing.dummy import Pool as ThreadPool
@@ -89,7 +90,7 @@ def get_detail_list(url):
     return pic_list
 
 
-def download_chapter(chapter):
+def download_chapter(chapter, output='./'):
     """下载整个章节的图片，按漫画名按章节保存在当前目录下
     """
     title, chapter_url = chapter
@@ -100,7 +101,7 @@ def download_chapter(chapter):
         print('error', title, str(e))
         return
     comic_name, chapter_title = title.split('：', 1)
-    dir_path = os.path.join(filter_filename(comic_name), filter_filename(chapter_title))
+    dir_path = os.path.join(output, filter_filename(comic_name), filter_filename(chapter_title))
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
@@ -167,14 +168,15 @@ def get_task_chapter(comicid, chapter, interval, mode):
     return task_chapter
 
 
-def main(comicid=505430, interval=None, chapter=-1, thread=8, mode=None):
+def main(comicid=505430, interval=None, chapter=-1, thread=8, mode=None, output='./'):
     pool = ThreadPool(thread)
     task_chapter = get_task_chapter(comicid, chapter, interval, mode)
     ts = time.time()
     begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
     print('开始下载咯\n现在时间是:', begin_time)
     pool = ThreadPool(8)
-    pool.map(download_chapter, task_chapter)
+    download_chapter_to_output = functools.partial(download_chapter, output=output)
+    pool.map(download_chapter_to_output, task_chapter)
     pool.close()
     pool.join()
     cost = int(time.time() - ts)
@@ -208,7 +210,8 @@ def cli():
         'chapter': '要下载的章节chapter，默认下载最新章节。如 -c 666',
         'interval': '要下载的章节区间, 如 -i 1-5,7,9-10',
         'thread': '线程池数,默认开启8个线程池,下载多个章节时效果才明显',
-        'mode': '下载模式，若为 a/all 则下载该漫画的所有章节, 如 -m all'
+        'mode': '下载模式，若为 a/all 则下载该漫画的所有章节, 如 -m all',
+        'output': '文件保存路径，默认保存在当前路径'
     }
     parser = argparse.ArgumentParser()
     parser.add_argument('-id', '--comicid', type=int, default=505430, help=MSG['comicid'])
@@ -216,8 +219,9 @@ def cli():
     parser.add_argument('-c', '--chapter', type=int, default=-1, help=MSG['chapter'])
     parser.add_argument('-t', '--thread', type=int, default=8, help=MSG['thread'])
     parser.add_argument('-m', '--mode', type=str, help=MSG['mode'])
+    parser.add_argument('-o', '--output', type=str, default='./', help=MSG['output'])
     args = parser.parse_args()
-    main(comicid=args.comicid, interval=args.interval, chapter=args.chapter, thread=args.thread, mode=args.mode)
+    main(comicid=args.comicid, interval=args.interval, chapter=args.chapter, thread=args.thread, mode=args.mode, output=args.output)
 
 if __name__ == "__main__":
     cli()
