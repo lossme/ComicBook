@@ -1,5 +1,5 @@
 import os
-from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.pagesizes import A4, portrait
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
@@ -12,9 +12,9 @@ def imgs_to_pdf(output, img_path_list):
     Returns:
         output: 输出pdf文件路径
     """
-    a4_w, a4_h = landscape(A4)
+    a4_w, a4_h = portrait(A4)
 
-    c = canvas.Canvas(output, pagesize=landscape(A4))
+    c = canvas.Canvas(output, pagesize=portrait(A4))
     for img_path in img_path_list:
         img_w, img_h = ImageReader(img_path).getSize()
 
