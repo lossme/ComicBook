@@ -201,7 +201,7 @@ class QQComicBook:
                                              download_all=download_all)
         ts = time.time()
         begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
-        print('开始下载咯\n现在时间是:', begin_time)
+        print('任务开始咯\n现在时间是:', begin_time)
         pool = ThreadPool(8)
 
         download_chapter_to_output = functools.partial(self.download_chapter,
@@ -212,4 +212,4 @@ class QQComicBook:
         pool.close()
         pool.join()
         cost = int(time.time() - ts)
-        print('下载完成啦\n下载用了这么长时间:{0}秒'.format(cost))
+        print('任务完成啦\n总共用了这么长时间:{0}秒'.format(cost))

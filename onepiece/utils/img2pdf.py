@@ -1,8 +1,7 @@
 import os
-
-from PIL import Image as PILImage
-from reportlab.platypus import SimpleDocTemplate, Image, PageBreak
 from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
 
 
 def imgs_to_pdf(output, img_path_list):
@@ -14,25 +13,24 @@ def imgs_to_pdf(output, img_path_list):
         output: 输出pdf文件路径
     """
     a4_w, a4_h = landscape(A4)
-    a4_ratio = a4_h / a4_w
 
-    all_page = []
+    c = canvas.Canvas(output, pagesize=landscape(A4))
     for img_path in img_path_list:
-        img_w, img_h = PILImage.open(img_path).size
+        img_w, img_h = ImageReader(img_path).getSize()
 
-        # 自动拉伸
-        ratio = 1
-        if img_w / img_h > a4_ratio:
+        if img_w / img_h > a4_w / a4_h:
+            # 宽的图片
             ratio = a4_w / img_w
+            left_margin = 0
+            top_margin = (a4_h - img_h * ratio) / 2
         else:
+            # 长的图片
             ratio = a4_h / img_h
-        img = Image(img_path, img_w * ratio, img_h * ratio)
-
-        all_page.append(img)
-        all_page.append(PageBreak())
-    pdf = SimpleDocTemplate(output, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
-    pdf.build(all_page)
-    return output
+            left_margin = (a4_w - img_w * ratio) / 2
+            top_margin = 0
+        c.drawImage(img_path, left_margin, top_margin, img_w * ratio, img_h * ratio)
+        c.showPage()
+    c.save()
 
 
 def image_dir_to_pdf(img_dir, output, sort_by=None):

@@ -38,6 +38,7 @@ def send_email(sender, sender_passwd, receivers, smtp_server,
         if debug:
             s.set_debuglevel(1)
         s.login(sender, sender_passwd)
+        print('正在向 {} 发送 {}'.format(','.join(receivers), subject))
         s.sendmail(sender, receivers, msg.as_string())
         s.quit()
     except smtplib.SMTPException:
