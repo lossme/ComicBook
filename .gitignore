@@ -101,4 +101,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-/航海王
+download/
+onepiece/config.py

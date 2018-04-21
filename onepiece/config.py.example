@@ -1,0 +1,15 @@
+# SMPT主机，发送账户是163邮箱则设置为 smpt.163.com
+SMPT_HOST = 'smpt.qq.com'
+
+# SMPT服务端口（SSL）
+SMPT_PORT = 465
+
+# 发送者账户
+SENDER = 'xx.qq.com'
+
+# 登录失败可能需要使用授权码登录 http://service.mail.qq.com/cgi-bin/help?subtype=1&&id=28&&no=1001256
+# 发送者账户密码或者授权码
+SENDER_PASSWD = 'mima或授权码'
+
+# 邮件接收者列表，如 ['xxx@qq.com', 'yyy@qq.com']
+RECEIVERS = ['11111@qq.com', '22222@qq.com']
