@@ -16,6 +16,9 @@ QQ_COMIC_HOST = 'http://ac.qq.com'
 
 
 class QQComicBook:
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36'
+    }
 
     def __init__(self, args):
         self.args = args
@@ -23,6 +26,8 @@ class QQComicBook:
         self.name = '腾讯漫画'
 
     def wget(self, url, **kwargs):
+        if 'headers' not in kwargs:
+            kwargs['headers'] = self.headers
         return self.session.get(url, **kwargs)
 
     def get_html(self, url):

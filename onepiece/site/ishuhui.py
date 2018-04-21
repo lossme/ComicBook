@@ -12,12 +12,18 @@ from onepiece.utils import safe_filename, parser_interval
 
 class IshuhuiComicBook():
 
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36'
+    }
+
     def __init__(self, args=None):
         self.args = args
         self.session = requests.session()
         self.name = '鼠绘漫画'
 
     def wget(self, url, **kwargs):
+        if 'headers' not in kwargs:
+            kwargs['headers'] = self.headers
         return self.session.get(url, **kwargs)
 
     def get_html(self, url):
@@ -140,8 +146,9 @@ class IshuhuiComicBook():
     def get_task_chapter(self, comicid, chapter=None, chapter_list=None, download_all=None):
         comic_title, all_chapter = self.get_all_chapter(comicid)
         if chapter:
-            number = all_chapter[chapter - 1][0].split('-')[-1]
-            for src in all_chapter[chapter - 1][1]:
+            idx = chapter - 1 if chapter > 0 else chapter
+            number = all_chapter[idx][0].split('-')[-1]
+            for src in all_chapter[idx][1]:
                 chapter_name = '第{}话 {}'.format(number, src['title'])
                 _id = src['id']
                 source = src['source']
