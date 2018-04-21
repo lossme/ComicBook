@@ -3,11 +3,12 @@
 ## 腾讯漫画、鼠绘漫画自动抓取
 
 ### 本项目特点
-[x] 漫画批量下载或全集下载
-[x] 分目录保存
-[x] 支持鼠绘漫画、腾讯漫画
-[x] 支持生成pdf
-[x] 支持发送到邮箱
+
+- [x] 漫画批量下载或全集下载
+- [x] 分目录保存
+- [x] 支持鼠绘漫画、腾讯漫画
+- [x] 支持生成pdf
+- [x] 支持发送到邮箱
 
 ### 安装依赖
 
@@ -30,8 +31,6 @@
 - 下载漫画 id=505430 倒数第二集: python3 -m onepiece -id=505430 -c=-2
 - 下载漫画 id=505430 1到5集,7集，9到10集: python3 -m onepiece -id=505430 -i=1-5,7,9-10
 - 下载漫画 id=505430 800集至最新一集: python3 -m onepiece -id=505430 -i=800-9999
-
-------
 - 从鼠绘漫画下载海贼王最新一集: python3 -m onepiece --site=ishuhui -id=1
 - 下载漫画并生成pdf文件: python3 -m onepiece --site=ishuhui -id=1 --pdf
 - 下载漫画并推送到邮箱: python3 -m onepiece --site=ishuhui -id=1 --pdf --mail
