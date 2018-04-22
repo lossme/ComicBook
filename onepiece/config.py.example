@@ -1,8 +1,8 @@
-# SMPT主机，发送账户是163邮箱则设置为 smpt.163.com
-SMPT_HOST = 'smpt.qq.com'
+# SMTP主机，发送账户是163邮箱则设置为 smtp.163.com
+SMTP_SERVER = 'smtp.qq.com'
 
-# SMPT服务端口（SSL）
-SMPT_PORT = 465
+# SMTP服务端口（SSL）
+SMTP_PORT = 465
 
 # 发送者账户
 SENDER = 'xx.qq.com'
