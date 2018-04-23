@@ -1,7 +1,12 @@
 import argparse
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+from onepiece.utils import parser_interval
+from onepiece.downloader import download_chapter
 
 
-def cli():
+def parse_args():
     """
     根据腾讯漫画id下载图片,默认下载海贼王最新一集。
 
@@ -46,6 +51,36 @@ def cli():
     parser.add_argument('-o', '--output', type=str, default='./download', help=msg['output'])
     parser.add_argument('--site', type=str, default='qq', choices=('qq', 'ishuhui'), help=msg['site'])
     args = parser.parse_args()
+    return args
+
+
+def main():
     from onepiece.site import ComicBook
-    crawler = ComicBook(args)
-    crawler.run()
+    args = parse_args()
+    chapter_number_list = [args.chapter]
+    if args.interval:
+        chapter_number_list = parser_interval(args.interval)
+    comic_book = ComicBook.create(site=args.site)
+    task_queue = comic_book.get_task_chapter(comicid=args.comicid,
+                                             chapter_number_list=chapter_number_list,
+                                             is_download_all=args.all)
+    ts = time.time()
+    begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
+    print('任务开始咯\n现在时间是:', begin_time)
+    pool = ThreadPoolExecutor(args.thread)
+    while not task_queue.empty():
+        data = task_queue.get()
+        pool.submit(download_chapter,
+                    comic_title=data['comic_title'],
+                    chapter_number=data['chapter_number'],
+                    chapter_title=data['chapter_title'],
+                    chapter_pics=data['chapter_pics'],
+                    output=args.output,
+                    is_generate_pdf=args.pdf,
+                    is_send_email=args.mail)
+    cost = int(time.time() - ts)
+    print('任务完成啦\n总共用了这么长时间:{0}秒'.format(cost))
+
+
+if __name__ == '__main__':
+    main()

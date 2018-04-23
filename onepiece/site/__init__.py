@@ -3,8 +3,10 @@ from onepiece.site.ishuhui import IshuhuiComicBook
 
 
 class ComicBook:
-    def __new__(cls, args):
-        if args.site == 'qq':
-            return QQComicBook(args)
-        elif args.site == 'ishuhui':
-            return IshuhuiComicBook(args)
+
+    @classmethod
+    def create(cls, site):
+        if site == 'qq':
+            return QQComicBook()
+        elif site == 'ishuhui':
+            return IshuhuiComicBook()
