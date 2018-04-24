@@ -75,6 +75,7 @@ def main():
                     chapter_number=data['chapter_number'],
                     chapter_title=data['chapter_title'],
                     chapter_pics=data['chapter_pics'],
+                    site_name=data['site_name'],
                     output=args.output,
                     is_generate_pdf=args.pdf,
                     is_send_email=args.mail)

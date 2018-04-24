@@ -39,9 +39,10 @@ class QQComicBook:
         ol = re.search(r'''(<ol class="chapter-page-all works-chapter-list".+?</ol>)''', html, re.S).group()
         all_atag = re.findall(r'''<a.*?title="(.*?)".*?href="(.*?)">(.*?)</a>''', ol, re.S)
         all_chapter = []
-        for chapter_number, item in enumerate(all_atag):
+        for chapter_number, item in enumerate(all_atag, start=1):
             title, url, _title = item
             comic_title, chapter_title = title.split('：', 1)
+            chapter_title = re.sub(r'第\d+话\s+', '', chapter_title)
             chapter_url = parse.urljoin(self.QQ_COMIC_HOST, url)
             all_chapter.append((comic_title, chapter_title, chapter_number, chapter_url))
         return all_chapter
@@ -88,11 +89,13 @@ class QQComicBook:
                 continue
             idx = chapter_number - 1 if chapter_number > 0 else chapter_number
             comic_title, chapter_title, chapter_number, chapter_url = all_chapter[idx]
+            print(chapter_number, chapter_title)
             data = {
                 'chapter_number': chapter_number,
                 'chapter_title': chapter_title,
                 'comic_title': comic_title,
-                'chapter_pics': self.get_chapter_pics(chapter_url)
+                'chapter_pics': self.get_chapter_pics(chapter_url),
+                'site_name': self.name
             }
             self.task_queue.put(data)
         return self.task_queue

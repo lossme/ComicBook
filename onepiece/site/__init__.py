@@ -4,8 +4,8 @@ from onepiece.site.ishuhui import IshuhuiComicBook
 
 class ComicBook:
 
-    @classmethod
-    def create(cls, site):
+    @staticmethod
+    def create(site):
         if site == 'qq':
             return QQComicBook()
         elif site == 'ishuhui':

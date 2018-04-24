@@ -52,7 +52,6 @@ class IshuhuiComicBook():
             pic_url = 'http:{}{}'.format(cdn_url, url.replace('upload/', ''))
             yield pic_url
 
-
     def get_all_chapter(self, comicid):
         """根据漫画id获取所有的章节列表: http://ac.qq.com/Comic/ComicInfo/id/505430
         Args:
@@ -90,7 +89,8 @@ class IshuhuiComicBook():
                         'chapter_number': chapter_number,
                         'chapter_title': chapter_title,
                         'comic_title': comic_title,
-                        'chapter_pics': self.get_chapter_pics(src['id'])
+                        'chapter_pics': self.get_chapter_pics(src['id']),
+                        'site_name': self.name
                     }
                     self.task_queue.put(data)
                     is_invalid = False
