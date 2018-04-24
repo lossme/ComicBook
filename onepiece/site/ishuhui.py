@@ -44,7 +44,6 @@ class IshuhuiComicBook():
         ver = random.choice(list(ver_info.values()))
 
         url = 'http://hhzapi.ishuhui.com/cartoon/post/ver/{ver}/id/{_id}.json'.format(ver=ver, _id=_id)
-
         response = self.wget(url)
         data = response.json()
         img_data = json.loads(data['data']['content_img'])
@@ -86,7 +85,7 @@ class IshuhuiComicBook():
             is_invalid = True
             chapter_title = ''
             for src in value:
-                if src['source'] == 1:
+                if src['source'] in [1, 5]:
                     chapter_title = src['title']
                     data = {
                         'chapter_number': chapter_number,
