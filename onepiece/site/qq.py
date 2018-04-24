@@ -38,13 +38,18 @@ class QQComicBook:
         html = self.get_html(url)
         ol = re.search(r'''(<ol class="chapter-page-all works-chapter-list".+?</ol>)''', html, re.S).group()
         all_atag = re.findall(r'''<a.*?title="(.*?)".*?href="(.*?)">(.*?)</a>''', ol, re.S)
-        all_chapter = []
-        for chapter_number, item in enumerate(all_atag, start=1):
+        all_chapter = {}
+        for item in all_atag:
+            # title = '航海王：第843话 温思默克·山智'
             title, url, _title = item
-            comic_title, chapter_title = title.split('：', 1)
-            chapter_title = re.sub(r'第\d+话\s+', '', chapter_title)
+            r1 = title.split('：', 1)
+            comic_title = r1[0]
+            s = r1[-1]
+            r2 = s.split(' ', 1)
+            chapter_number = int(re.search(r'\d+', r2[0]).group())
+            chapter_title = r2[-1]
             chapter_url = parse.urljoin(self.QQ_COMIC_HOST, url)
-            all_chapter.append((comic_title, chapter_title, chapter_number, chapter_url))
+            all_chapter[chapter_number] = (comic_title, chapter_title, chapter_number, chapter_url)
         return all_chapter
 
     def get_chapter_pics(self, url):
@@ -80,15 +85,17 @@ class QQComicBook:
                     }
         """
         all_chapter = self.get_all_chapter(comicid)
-        max_chapter_number = len(all_chapter)
+        max_chapter_number = max(all_chapter.keys())
         if is_download_all:
-            chapter_number_list = [idx + 1 for idx in all_chapter]
+            return list(all_chapter.values())
 
-        for chapter_number in chapter_number_list:
-            if chapter_number > max_chapter_number:
+        for idx in chapter_number_list:
+            chapter_number = idx if idx >= 0 else max_chapter_number + idx + 1
+            value = all_chapter.get(chapter_number)
+            if value is None:
+                print('找不到第{}集资源'.format(chapter_number))
                 continue
-            idx = chapter_number - 1 if chapter_number > 0 else chapter_number
-            comic_title, chapter_title, chapter_number, chapter_url = all_chapter[idx]
+            comic_title, chapter_title, chapter_number, chapter_url = value
             print(chapter_number, chapter_title)
             data = {
                 'chapter_number': chapter_number,

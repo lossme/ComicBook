@@ -64,25 +64,28 @@ class IshuhuiComicBook():
 
         url = 'http://api.ishuhui.com/cartoon/book_ish/ver/{ver}/id/{comicid}.json'\
             .format(ver=random.choice(list(ver.values())), comicid=comicid)
-        print(url)
         data = requests.get(url).json()
         comic_title = data['data']['book']['name']
-        return comic_title, sorted(data['data']['cartoon']['0']['posts'].items(), key=lambda x: int(x[0][2:]))
+        all_chapter = {}
+        for key, value in data['data']['cartoon']['0']['posts'].items():
+            chapter_number = int(key.replace('n-', ''))
+            all_chapter[chapter_number] = value
+        return comic_title, all_chapter
 
     def get_task_chapter(self, comicid, chapter_number_list=None, is_download_all=None):
         comic_title, all_chapter = self.get_all_chapter(comicid)
-        max_chapter_number = len(all_chapter)
+        max_chapter_number = max(all_chapter.keys())
         if is_download_all:
-            chapter_number_list = [idx + 1 for idx in all_chapter]
-        for chapter_number in chapter_number_list:
-            if chapter_number > max_chapter_number:
+            chapter_number_list = list(max_chapter_number.keys())
+        for idx in chapter_number_list:
+            chapter_number = idx if idx >= 0 else max_chapter_number + idx + 1
+            value = all_chapter.get(chapter_number)
+            if value is None:
+                print('找不到第{}集资源'.format(chapter_number))
                 continue
-            idx = chapter_number - 1 if chapter_number > 0 else chapter_number
-            key, src_list = all_chapter[idx]
-            chapter_number = key[2:]
             is_invalid = True
             chapter_title = ''
-            for src in src_list:
+            for src in value:
                 if src['source'] == 1:
                     chapter_title = src['title']
                     data = {
