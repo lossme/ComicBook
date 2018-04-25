@@ -67,18 +67,19 @@ def main():
     ts = time.time()
     begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
     print('任务开始咯\n现在时间是:', begin_time)
-    pool = ThreadPoolExecutor(args.thread)
-    while not task_queue.empty():
-        data = task_queue.get()
-        pool.submit(download_chapter,
-                    comic_title=data['comic_title'],
-                    chapter_number=data['chapter_number'],
-                    chapter_title=data['chapter_title'],
-                    chapter_pics=data['chapter_pics'],
-                    site_name=data['site_name'],
-                    output=args.output,
-                    is_generate_pdf=args.pdf,
-                    is_send_email=args.mail)
+
+    with ThreadPoolExecutor(max_workers=args.thread) as executor:
+        while not task_queue.empty():
+            data = task_queue.get()
+            executor.submit(download_chapter,
+                        comic_title=data['comic_title'],
+                        chapter_number=data['chapter_number'],
+                        chapter_title=data['chapter_title'],
+                        chapter_pics=data['chapter_pics'],
+                        site_name=data['site_name'],
+                        output=args.output,
+                        is_generate_pdf=args.pdf,
+                        is_send_email=args.mail)
     cost = int(time.time() - ts)
     print('任务完成啦\n总共用了这么长时间:{0}秒'.format(cost))
 
