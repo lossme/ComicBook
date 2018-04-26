@@ -13,27 +13,31 @@
 ### 安装依赖
 
 若只是下载图片，只需安装`requests`即可食用
+
 `python3 -m pip install requests`
 
 若要生成pdf和发送到邮箱，则需要安装完整依赖
+
 `python3 -m pip install -r requirements.txt`
 
-**注意**: 发送到邮箱需预先配置好信息，复制`onepiece/config.py.example`并命名为`onepiece/config.py`，并根据实际情况修改`onepiece/config.py`的参数
+**注意**: 发送到邮箱需预先配置好信息
+
+复制`onepiece/config.py.example`并命名为`onepiece/config.py`，并根据实际情况修改`onepiece/config.py`的参数
 
 ### 常规使用
 
-默认从腾讯漫画下载，注意鼠绘漫画和腾讯漫画的区别
+默认从腾讯漫画下载，注意鼠绘漫画和腾讯漫画的id区别
 
-- 下载海贼王最新一集: python3 -m onepiece
-- 下载漫画 id=505430 最新一集: python3 -m onepiece -id=505430
-- 下载漫画 id=505430 所有章节: python3 -m onepiece -id=505430 --all
-- 下载漫画 id=505430 第800集: python3 -m onepiece -id=505430 -c=800
-- 下载漫画 id=505430 倒数第二集: python3 -m onepiece -id=505430 -c=-2
-- 下载漫画 id=505430 1到5集,7集，9到10集: python3 -m onepiece -id=505430 -i=1-5,7,9-10
-- 下载漫画 id=505430 800集至最新一集: python3 -m onepiece -id=505430 -i=800-9999
-- 从鼠绘漫画下载海贼王最新一集: python3 -m onepiece --site=ishuhui -id=1
-- 下载漫画并生成pdf文件: python3 -m onepiece --site=ishuhui -id=1 --pdf
-- 下载漫画并推送到邮箱: python3 -m onepiece --site=ishuhui -id=1 --pdf --mail
+- 下载海贼王最新一集: `python3 -m onepiece`
+- 下载漫画 id=505430 最新一集: `python3 -m onepiece -id=505430`
+- 下载漫画 id=505430 所有章节: `python3 -m onepiece -id=505430 --all`
+- 下载漫画 id=505430 第800集: `python3 -m onepiece -id=505430 -c=800`
+- 下载漫画 id=505430 倒数第二集: `python3 -m onepiece -id=505430 -c=-2`
+- 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece -id=505430 -i=1-5,7,9-10`
+- 下载漫画 id=505430 800集至最新一集: `python3 -m onepiece -id=505430 -i=800-9999`
+- 从鼠绘漫画下载海贼王最新一集: `python3 -m onepiece --site=ishuhui -id=1`
+- 下载漫画并生成pdf文件: `python3 -m onepiece --site=ishuhui -id=1 --pdf`
+- 下载漫画并推送到邮箱: `python3 -m onepiece --site=ishuhui -id=1 --pdf --mail`
 
 
 
