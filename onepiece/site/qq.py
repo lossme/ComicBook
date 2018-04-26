@@ -1,7 +1,6 @@
 import re
 import base64
 import json
-import queue
 from urllib import parse
 import requests
 
@@ -9,13 +8,13 @@ import requests
 class QQComicBook:
     QQ_COMIC_HOST = 'http://ac.qq.com'
     HEADERS = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36'
+        'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                       'Chrome/65.0.3325.146 Safari/537.36')
     }
 
     def __init__(self):
         self.session = requests.session()
         self.name = '腾讯漫画'
-        self.task_queue = queue.Queue()
 
     def wget(self, url, **kwargs):
         if 'headers' not in kwargs:
@@ -75,14 +74,13 @@ class QQComicBook:
                 需要下载的章节列表，如 chapter_number_list = [1, 2, 3]
             is_download_all:
                 若设置成True，则下载该漫画的所有章节
-        Returns:
-            task_queue:
-                其中每个元素 {
-                        'chapter_number': 第几集,
-                        'chapter_title': 章节标题,
-                        'comic_title': 漫画名,
-                        'chapter_pics': 该章节所有图片
-                    }
+        Yield:
+            data: {
+                    'chapter_number': 第几集,
+                    'chapter_title': 章节标题,
+                    'comic_title': 漫画名,
+                    'chapter_pics': genarator 该章节所有图片
+                }
         """
         all_chapter = self.get_all_chapter(comicid)
         max_chapter_number = max(all_chapter.keys())
@@ -96,7 +94,6 @@ class QQComicBook:
                 print('找不到第{}集资源'.format(chapter_number))
                 continue
             comic_title, chapter_title, chapter_number, chapter_url = value
-            print(chapter_number, chapter_title)
             data = {
                 'chapter_number': chapter_number,
                 'chapter_title': chapter_title,
@@ -104,5 +101,4 @@ class QQComicBook:
                 'chapter_pics': self.get_chapter_pics(chapter_url),
                 'site_name': self.name
             }
-            self.task_queue.put(data)
-        return self.task_queue
+            yield data

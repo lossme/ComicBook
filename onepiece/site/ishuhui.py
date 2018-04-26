@@ -1,20 +1,19 @@
 import re
 import random
 import json
-import queue
 import requests
 
 
 class IshuhuiComicBook():
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36'
+        'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                       'Chrome/65.0.3325.146 Safari/537.36')
     }
 
     def __init__(self):
         self.session = requests.session()
         self.name = '鼠绘漫画'
-        self.task_queue = queue.Queue()
 
     def wget(self, url, **kwargs):
         if 'headers' not in kwargs:
@@ -72,6 +71,21 @@ class IshuhuiComicBook():
         return comic_title, all_chapter
 
     def get_task_chapter(self, comicid, chapter_number_list=None, is_download_all=None):
+        """根据参数来确定下载哪些章节
+        Args:
+            comicid: 漫画id
+            chapter_number_list:
+                需要下载的章节列表，如 chapter_number_list = [1, 2, 3]
+            is_download_all:
+                若设置成True，则下载该漫画的所有章节
+        Yield:
+            data: {
+                    'chapter_number': 第几集,
+                    'chapter_title': 章节标题,
+                    'comic_title': 漫画名,
+                    'chapter_pics': genarator 该章节所有图片
+                }
+        """
         comic_title, all_chapter = self.get_all_chapter(comicid)
         max_chapter_number = max(all_chapter.keys())
         if is_download_all:
@@ -94,9 +108,8 @@ class IshuhuiComicBook():
                         'chapter_pics': self.get_chapter_pics(src['id']),
                         'site_name': self.name
                     }
-                    self.task_queue.put(data)
+                    yield data
                     is_invalid = False
                     break
             if is_invalid:
                 print('暂不支持的资源类型：{} 第{}集 {}'.format(comic_title, chapter_number, chapter_title))
-        return self.task_queue
