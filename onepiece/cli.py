@@ -2,8 +2,9 @@ import argparse
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from onepiece.utils import parser_interval
-from onepiece.downloader import download_chapter
+from .site import ComicBook
+from .utils import parser_interval
+from .downloader import download_chapter
 
 
 def parse_args():
@@ -55,7 +56,6 @@ def parse_args():
 
 
 def main():
-    from onepiece.site import ComicBook
     args = parse_args()
     chapter_number_list = [args.chapter]
     if args.interval:

@@ -1,5 +1,5 @@
-from onepiece.site.qq import QQComicBook
-from onepiece.site.ishuhui import IshuhuiComicBook
+from .qq import QQComicBook
+from .ishuhui import IshuhuiComicBook
 
 
 class ComicBook:

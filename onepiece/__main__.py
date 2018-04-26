@@ -1,4 +1,4 @@
 #!/usr/bin/env python
 
-from onepiece.cli import main
+from .cli import main
 main()

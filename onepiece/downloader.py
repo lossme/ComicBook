@@ -1,6 +1,8 @@
 import os
+
 import requests
-from onepiece.utils import safe_filename
+
+from .utils import safe_filename
 
 
 def download_chapter(comic_title, chapter_number, chapter_title, chapter_pics,
@@ -42,7 +44,7 @@ def download_chapter(comic_title, chapter_number, chapter_title, chapter_pics,
         except Exception as e:
             raise Exception('这张图片下载出错', chapter_title, img_url, str(e))
     if is_generate_pdf or is_send_email:
-        from onepiece.utils.img2pdf import image_dir_to_pdf
+        from .utils.img2pdf import image_dir_to_pdf
         pdf_dir = os.path.join(output, site_name, 'pdf - {}'.format(comic_title))
         pdf_path = os.path.join(pdf_dir, '{}.pdf'.format(chapter_title))
         if not os.path.exists(pdf_dir):
@@ -52,8 +54,8 @@ def download_chapter(comic_title, chapter_number, chapter_title, chapter_pics,
                          output=pdf_path,
                          sort_by=lambda x: int(x.split('.')[0]))
         if is_send_email:
-            from onepiece.utils.mail import send_email
-            from onepiece import config
+            from .utils.mail import send_email
+            from . import config
             send_email(sender=config.SENDER,
                        sender_passwd=config.SENDER_PASSWD,
                        receivers=config.RECEIVERS,
