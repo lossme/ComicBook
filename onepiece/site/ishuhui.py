@@ -67,7 +67,13 @@ class IshuhuiComicBook():
         comic_title = data['data']['book']['name']
         all_chapter = {}
         for key, value in data['data']['cartoon']['0']['posts'].items():
-            chapter_number = int(key.replace('n-', ''))
+            r1 = re.search(r'^c-(\d+)', key)
+            r2 = re.search(r'^n-(\d+)$', key)
+            chapter_number = None
+            if r1:
+                chapter_number = int(r1.group(1))
+            elif r2:
+                chapter_number = int(r2.group(1))
             all_chapter[chapter_number] = value
         return comic_title, all_chapter
 
