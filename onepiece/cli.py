@@ -2,6 +2,8 @@ import argparse
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import requests
+
 from .site import ComicBook
 from .utils import parser_interval
 from .downloader import download_chapter
@@ -55,6 +57,16 @@ def parse_args():
     return args
 
 
+def create_session(pool_connections=10, pool_maxsize=10, max_retries=0):
+    session = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(pool_connections=pool_connections,
+                                            pool_maxsize=pool_maxsize,
+                                            max_retries=max_retries)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
+
+
 def main():
     args = parse_args()
     chapter_number_list = [args.chapter]
@@ -64,6 +76,7 @@ def main():
     task = comic_book.get_task_chapter(comicid=args.comicid,
                                        chapter_number_list=chapter_number_list,
                                        is_download_all=args.all)
+    session = create_session(pool_maxsize=args.thread, pool_connections=args.thread, max_retries=3)
     ts = time.time()
     begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
     print('任务开始咯\n现在时间是:', begin_time)
@@ -78,7 +91,8 @@ def main():
                             site_name=data['site_name'],
                             output=args.output,
                             is_generate_pdf=args.pdf,
-                            is_send_email=args.mail)
+                            is_send_email=args.mail,
+                            session=session)
     cost = int(time.time() - ts)
     print('任务完成啦\n总共用了这么长时间:{0}秒'.format(cost))
 

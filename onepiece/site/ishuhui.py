@@ -57,13 +57,14 @@ class IshuhuiComicBook():
             id: 505430
         """
         url = 'http://www.ishuhui.com/cartoon/book/{}'.format(comicid)
-        html = requests.get(url).text
+        html = self.get_html(url)
         r = re.search(r'<meta name=ver content="(.*?)">', html)
         ver = json.loads(r.group(1).replace('&#34;', '"'))
 
         url = 'http://api.ishuhui.com/cartoon/book_ish/ver/{ver}/id/{comicid}.json'\
             .format(ver=random.choice(list(ver.values())), comicid=comicid)
-        data = requests.get(url).json()
+        response = self.wget(url)
+        data = response.json()
         comic_title = data['data']['book']['name']
         all_chapter = {}
         for key, value in data['data']['cartoon']['0']['posts'].items():

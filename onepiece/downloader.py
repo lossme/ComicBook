@@ -1,12 +1,10 @@
 import os
 
-import requests
-
 from .utils import safe_filename
 
 
 def download_chapter(comic_title, chapter_number, chapter_title, chapter_pics,
-                     site_name, output, is_generate_pdf, is_send_email):
+                     site_name, output, is_generate_pdf, is_send_email, session):
     """下载整个章节的图片，按漫画名按章节保存
     Args:
         str comic_title: 漫画名
@@ -38,7 +36,7 @@ def download_chapter(comic_title, chapter_number, chapter_title, chapter_pics,
             print('图片已存在, pass', img_path)
             continue
         try:
-            response = requests.get(img_url)
+            response = session.get(img_url)
             with open(img_path, 'wb') as f:
                 f.write(response.content)
         except Exception as e:
