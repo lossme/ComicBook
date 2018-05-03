@@ -1,6 +1,6 @@
 # TencentComicBook
 
-## 腾讯漫画、鼠绘漫画自动抓取
+## 腾讯漫画、鼠绘漫画爬虫
 
 ### 本项目特点
 
@@ -40,9 +40,7 @@
 - 下载漫画并推送到邮箱: `python3 -m onepiece --site=ishuhui -id=1 --pdf --mail`
 
 
-
 ### 使用帮助
-
 
 ```
 >>> python -m onepiece --help
@@ -70,3 +68,5 @@ optional arguments:
   --site {qq,ishuhui}   网站：支持qq，ishuhui
 
 ```
+
+**免责声明**：本项目仅供学习交流之用，请勿用于非法用途。
