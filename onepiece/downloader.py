@@ -44,10 +44,10 @@ def download_chapter(comic_title, chapter_number, chapter_title, chapter_pics,
     if is_generate_pdf or is_send_email:
         from .utils.img2pdf import image_dir_to_pdf
         pdf_dir = os.path.join(output, site_name, 'pdf - {}'.format(comic_title))
-        pdf_path = os.path.join(pdf_dir, '{}.pdf'.format(chapter_title))
+        pdf_name = '{} {}.pdf'.format(comic_title, chapter_title)
+        pdf_path = os.path.join(pdf_dir, pdf_name)
         if not os.path.exists(pdf_dir):
             os.makedirs(pdf_dir)
-
         image_dir_to_pdf(img_dir=chapter_dir,
                          output=pdf_path,
                          sort_by=lambda x: int(x.split('.')[0]))
@@ -59,7 +59,7 @@ def download_chapter(comic_title, chapter_number, chapter_title, chapter_pics,
                        receivers=config.RECEIVERS,
                        smtp_server=config.SMTP_SERVER,
                        smtp_port=config.SMTP_PORT,
-                       subject=chapter_title,
+                       subject=pdf_name,
                        content=None,
                        file_list=[pdf_path])
     return chapter_dir
