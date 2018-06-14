@@ -22,7 +22,7 @@
 
 **注意**: 发送到邮箱需预先配置好信息
 
-复制`onepiece/config.py.example`并命名为`onepiece/config.py`，并根据实际情况修改`onepiece/config.py`的参数
+复制`onepiece/config.example.py`并命名为`onepiece/config.py`，并根据实际情况修改`onepiece/config.py`的参数
 
 ### 常规使用
 
@@ -61,8 +61,8 @@ optional arguments:
                         线程池数,默认开启8个线程池,下载多个章节时效果才明显
   --all                 若设置了则下载该漫画的所有章节, 如 --all
   --pdf                 若设置了则生成pdf文件, 如 --pdf
-  --mail                若设置了则发送到邮箱, 如 --mail。需要预先创建配置文件。可以参照onepiece/config.py
-                        .example文件，创建并修改onepiece/config.py文件
+  --mail                若设置了则发送到邮箱, 如 --mail。需要预先创建配置文件。可以参照onepiece/config.example.py
+                        /config.py文件
   -o OUTPUT, --output OUTPUT
                         文件保存路径，默认保存在当前路径下的download文件夹
   --site {qq,ishuhui}   网站：支持qq，ishuhui
