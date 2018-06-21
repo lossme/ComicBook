@@ -98,7 +98,7 @@ class IshuhuiComicBook():
         comic_title, all_chapter = self.get_all_chapter(comicid)
         max_chapter_number = max(all_chapter.keys())
         if is_download_all:
-            chapter_number_list = list(max_chapter_number.keys())
+            chapter_number_list = list(all_chapter.keys())
         for idx in chapter_number_list:
             chapter_number = idx if idx >= 0 else max_chapter_number + idx + 1
             value = all_chapter.get(chapter_number)
