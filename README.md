@@ -35,9 +35,19 @@
 - 下载漫画 id=505430 倒数第二集: `python3 -m onepiece -id=505430 -c=-2`
 - 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece -id=505430 -i=1-5,7,9-10`
 - 下载漫画 id=505430 800集至最新一集: `python3 -m onepiece -id=505430 -i=800-9999`
-- 从鼠绘漫画下载海贼王最新一集: `python3 -m onepiece --site=ishuhui -id=1`
-- 下载漫画并生成pdf文件: `python3 -m onepiece --site=ishuhui -id=1 --pdf`
-- 下载漫画并推送到邮箱: `python3 -m onepiece --site=ishuhui -id=1 --pdf --mail`
+- 下载漫画 id=505430 并生成pdf文件: `python3 -m onepiece -id=505430 --pdf`
+- 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece -id=505430 --pdf --mail`
+
+从鼠绘漫画下载:
+
+- 从鼠绘漫画下载 id=1(海贼王) 最新一集: `python3 -m onepiece --site=ishuhui -id=1`
+- 从鼠绘漫画下载 id=1 所有章节: `python3 -m onepiece --site=ishuhui -id=1 --all`
+- 从鼠绘漫画下载 id=1 第800集: `python3 -m onepiece --site=ishuhui -id=1 -c=800`
+- 从鼠绘漫画下载 id=1 倒数第二集: `python3 -m onepiece --site=ishuhui -id=1 -c=-2`
+- 从鼠绘漫画下载 id=1 1到5集,7集，9到10集: `python3 -m onepiece --site=ishuhui -id=1 -i=1-5,7,9-10`
+- 从鼠绘漫画下载 id=1 800集至最新一集: `python3 -m onepiece --site=ishuhui -id=1 -i=800-9999`
+- 从鼠绘漫画下载 id=1 并生成pdf文件: `python3 -m onepiece --site=ishuhui -id=1 --pdf`
+- 从鼠绘漫画下载 id=1 并推送到邮箱: `python3 -m onepiece --site=ishuhui -id=1 --pdf --mail`
 
 
 ### 使用帮助
@@ -62,7 +72,7 @@ optional arguments:
   --all                 若设置了则下载该漫画的所有章节, 如 --all
   --pdf                 若设置了则生成pdf文件, 如 --pdf
   --mail                若设置了则发送到邮箱, 如 --mail。需要预先创建配置文件。可以参照onepiece/config.example.py
-                        /config.py文件
+                        配置onepiece/config.py文件
   -o OUTPUT, --output OUTPUT
                         文件保存路径，默认保存在当前路径下的download文件夹
   --site {qq,ishuhui}   网站：支持qq，ishuhui
