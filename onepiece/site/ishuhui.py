@@ -7,22 +7,23 @@ import requests
 
 class IshuhuiComicBook():
 
-    headers = {
+    HEADERS = {
         'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                        'Chrome/65.0.3325.146 Safari/537.36')
     }
+    TIMEOUT = 30
 
     def __init__(self):
         self.session = requests.session()
         self.name = '鼠绘漫画'
 
-    def wget(self, url, **kwargs):
-        if 'headers' not in kwargs:
-            kwargs['headers'] = self.headers
+    def send_request(self, url, **kwargs):
+        kwargs.setdefault('headers', self.HEADERS)
+        kwargs.setdefault('timeout', self.TIMEOUT)
         return self.session.get(url, **kwargs)
 
     def get_html(self, url):
-        response = self.wget(url)
+        response = self.send_request(url)
         return response.text
 
     def get_chapter_pics(self, _id):
@@ -44,7 +45,7 @@ class IshuhuiComicBook():
         ver = random.choice(list(ver_info.values()))
 
         url = 'http://hhzapi.ishuhui.com/cartoon/post/ver/{ver}/id/{_id}.json'.format(ver=ver, _id=_id)
-        response = self.wget(url)
+        response = self.send_request(url)
         data = response.json()
         img_data = json.loads(data['data']['content_img'])
         for url in img_data.values():
@@ -63,7 +64,7 @@ class IshuhuiComicBook():
 
         url = 'http://api.ishuhui.com/cartoon/book_ish/ver/{ver}/id/{comicid}.json'\
             .format(ver=random.choice(list(ver.values())), comicid=comicid)
-        response = self.wget(url)
+        response = self.send_request(url)
         data = response.json()
         comic_title = data['data']['book']['name']
         all_chapter = {}

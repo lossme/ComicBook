@@ -7,23 +7,25 @@ import requests
 
 
 class QQComicBook:
+
     QQ_COMIC_HOST = 'http://ac.qq.com'
     HEADERS = {
         'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                        'Chrome/65.0.3325.146 Safari/537.36')
     }
+    TIMEOUT = 30
 
     def __init__(self):
         self.session = requests.session()
         self.name = '腾讯漫画'
 
-    def wget(self, url, **kwargs):
-        if 'headers' not in kwargs:
-            kwargs['headers'] = self.HEADERS
+    def send_request(self, url, **kwargs):
+        kwargs.setdefault('headers', self.HEADERS)
+        kwargs.setdefault('timeout', self.TIMEOUT)
         return self.session.get(url, **kwargs)
 
     def get_html(self, url):
-        response = self.wget(url)
+        response = self.send_request(url)
         return response.text
 
     def get_all_chapter(self, comicid):
