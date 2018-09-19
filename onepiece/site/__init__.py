@@ -2,6 +2,8 @@ import importlib
 import os
 import re
 
+import collections
+
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,3 +26,7 @@ class ComicBook:
 
         module = importlib.import_module(".{}".format(site), __package__)
         return module.ComicBook()
+
+
+Chapter = collections.namedtuple('Chapter',
+                                 ['comic_title', 'chapter_title', 'chapter_number', 'chapter_pics', 'site_name'])

@@ -28,12 +28,13 @@ class Mail():
         parser.read(filepath)
         cls.sender = parser.get(section, 'sender')
         cls.sender_passwd = parser.get(section, 'sender_passwd')
-        cls.receivers = parser.get(section, 'receivers')
+        cls.receivers = parser.get(section, 'receivers').split(',')
         cls.smtp_server = parser.get(section, 'smtp_server')
         cls.smtp_port = parser.get(section, 'smtp_port')
 
     @classmethod
-    def send(cls, subject, content=None, file_list=None, debug=None):
+    def send(cls, subject, content=None, file_list=None, debug=None,
+             sender=None, sender_passwd=None, receivers=None):
         """"
         Args:
             subject: 邮件主题/标题
@@ -42,10 +43,14 @@ class Mail():
         Returns:
             None
         """
+        receivers = receivers or cls.receivers
+        sender = sender or cls.sender
+        sender_passwd = sender_passwd or cls.sender_passwd
+
         msg = MIMEMultipart()
         msg['Subject'] = subject
         msg['From'] = cls.sender
-        msg['To'] = ';'.join(cls.receivers)
+        msg['To'] = ';'.join(receivers)
 
         if content is not None:
             msg.attach(MIMEText(content, 'plain', 'utf-8'))
@@ -58,9 +63,9 @@ class Mail():
             s = SMTP_SSL(cls.smtp_server, cls.smtp_port)
             if debug:
                 s.set_debuglevel(1)
-            s.login(cls.sender, cls.sender_passwd)
-            print('正在向 {} 发送 {}'.format(','.join(cls.receivers), subject))
-            s.sendmail(cls.sender, cls.receivers, msg.as_string())
+            s.login(sender, sender_passwd)
+            print('正在向 {} 发送 {}'.format(','.join(receivers), subject))
+            s.sendmail(sender, receivers, msg.as_string())
             s.quit()
         except smtplib.SMTPException:
             print('发送邮件时出现错误！')

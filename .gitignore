@@ -102,4 +102,4 @@ venv.bak/
 .mypy_cache/
 
 download/
-onepiece/config.py
+config.ini

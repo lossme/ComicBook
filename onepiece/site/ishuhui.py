@@ -1,8 +1,11 @@
 import re
 import random
 import json
+import warnings
 
 import requests
+
+from . import Chapter
 
 
 class ComicBook():
@@ -104,26 +107,25 @@ class ComicBook():
         for idx in chapter_number_list:
             chapter_number = idx if idx >= 0 else max_chapter_number + idx + 1
             value = all_chapter.get(chapter_number)
+
             if value is None:
-                print('找不到第{}集资源'.format(chapter_number))
+                warnings.warn('找不到第{}集资源'.format(chapter_number))
                 continue
-            is_invalid = True
-            chapter_title = ''
+
+            if all([src['source'] not in [1, 5] for src in value]):
+                warnings.warn('暂不支持的资源类型：{} 第{}集'.format(comic_title, chapter_number))
+
             for src in value:
                 if src['source'] in [1, 5]:
                     chapter_title = src['title']
-                    data = {
-                        'chapter_number': chapter_number,
-                        'chapter_title': chapter_title,
-                        'comic_title': comic_title,
-                        'chapter_pics': self.get_chapter_pics(src['id']),
-                        'site_name': self.name
-                    }
-                    yield data
-                    is_invalid = False
+                    chapter = Chapter(chapter_number=chapter_number,
+                                      chapter_title=chapter_title,
+                                      comic_title=comic_title,
+                                      chapter_pics=self.get_chapter_pics(src['id']),
+                                      site_name=self.name
+                                      )
+                    yield chapter
                     break
-            if is_invalid:
-                print('暂不支持的资源类型：{} 第{}集 {}'.format(comic_title, chapter_number, chapter_title))
 
     def search(self, name):
         pass

@@ -6,6 +6,8 @@ from urllib import parse
 
 import requests
 
+from . import Chapter
+
 
 class ComicBook:
 
@@ -100,14 +102,13 @@ class ComicBook:
                 print('找不到第{}集资源'.format(chapter_number))
                 continue
             comic_title, chapter_title, chapter_number, chapter_url = value
-            data = {
-                'chapter_number': chapter_number,
-                'chapter_title': chapter_title,
-                'comic_title': comic_title,
-                'chapter_pics': self.get_chapter_pics(chapter_url),
-                'site_name': self.name
-            }
-            yield data
+            chapter = Chapter(chapter_number=chapter_number,
+                              chapter_title=chapter_title,
+                              comic_title=comic_title,
+                              chapter_pics=self.get_chapter_pics(chapter_url),
+                              site_name=self.name
+                              )
+            yield chapter
 
     def search(self, name):
         url = "http://ac.qq.com/Comic/searchList/search/name"
