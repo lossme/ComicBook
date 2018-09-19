@@ -63,12 +63,10 @@ class Downloader():
 
     def download_chapter(self, chapter, output_dir, is_generate_pdf, is_send_email):
         """下载整个章节的图片，按漫画名按章节保存
-        Args:
-            chapter : Chapter instance
-            output_dir: 图片保存目录
-            is_generate_pdf: 是否生成pdf
-        Returns:
-            (chapter_dir， pdf_path): 当前章节漫画目录，pdf文件路径
+        :param <Chapter instance> chapter : Chapter instance
+        :param str output_dir: 图片保存目录
+        :param boolean is_generate_pdf: 是否生成pdf
+        :return tuple (str chapter_dir, str pdf_path): 当前章节漫画目录，pdf文件路径
         """
 
         site_name = safe_filename(chapter.site_name)

@@ -7,11 +7,9 @@ from reportlab.pdfgen import canvas
 
 def imgs_to_pdf(output, img_path_list):
     """将一组图片合成一个pdf文件
-    Args:
-        output: 输出pdf文件路径
-        img_path_list: 要合成的图片的路径列表
-    Returns:
-        output: 输出pdf文件路径
+    :param str output: 输出pdf文件路径
+    :param list img_path_list: 要合成的图片的路径列表
+    :return str output: 输出pdf文件路径
     """
     a4_w, a4_h = portrait(A4)
 
@@ -37,12 +35,10 @@ def imgs_to_pdf(output, img_path_list):
 
 def image_dir_to_pdf(img_dir, output, sort_by=None):
     """将一个目录下的所有图片（不递归查找）合成一个pdf文件
-    Args:
-        img_dir: 图片目录
-        output: 输出文件路径
-        sort_by: 排序依据，如按文件名数字大小排序 sort_by=lambda x: int(x.split('.')[0])
-    Returns:
-        output: 输出文件路径
+    :param str img_dir: 图片目录
+    :param str output: 输出文件路径
+    :param func sort_by: 排序依据，如按文件名数字大小排序 sort_by=lambda x: int(x.split('.')[0])
+    :return str output: 输出文件路径
     """
     img_path_list = sorted(os.listdir(img_dir), key=sort_by)
     img_path_list = [os.path.join(img_dir, i)for i in img_path_list]

@@ -12,11 +12,8 @@ def safe_filename(filename, replace=' '):
 
 def parser_interval(interval):
     """将字符串描述的区间转化为一个一个数字
-    Args:
-        interval:
-             类似 1-10,20-30,66 这样的字符串
-    Return:
-        number_list: [1, 2, 3, 4, ...]
+    :param str interval: 类似 1-10,20-30,66 这样的字符串
+    :return list number_list: [1, 2, 3, 4, ...]
     """
     appeared = set()
     rv = []

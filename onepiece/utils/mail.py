@@ -33,13 +33,10 @@ class Mail():
     @classmethod
     def send(cls, subject, content=None, file_list=None, debug=None,
              sender=None, sender_passwd=None, receivers=None):
-        """"
-        Args:
-            subject: 邮件主题/标题
-            content: 正文内容
-            file_list: 附件的路径列表
-        Returns:
-            None
+        """"发送邮件
+        :param str subject: 邮件主题/标题
+        :param str content: 正文内容
+        :param list file_list: 附件的路径列表
         """
         receivers = receivers or cls.receivers
         sender = sender or cls.sender
@@ -72,10 +69,8 @@ class Mail():
     @classmethod
     def built_attach(cls, filepath):
         """构建邮件附件
-        Args:
-            filepath: 文件路径
-        Returns:
-            attach: 邮件附件
+        :param str filepath: 文件路径
+        :reutrn attach: 邮件附件
         """
         dirname, filename = os.path.split(filepath)
         attach = MIMEApplication(open(filepath, "rb").read())

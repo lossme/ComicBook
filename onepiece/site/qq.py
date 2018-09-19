@@ -33,11 +33,9 @@ class ComicBook:
 
     def get_all_chapter(self, comicid=None, name=None):
         """根据漫画id获取所有的章节列表: http://ac.qq.com/Comic/ComicInfo/id/505430
-        Args:
-            id: 505430
-
-        Returns:
-            [(comic_title, chapter_title, chapter_number, chapter_url), ]
+        :param str/int comicid: 漫画id，如: 505430
+        :param str name: 漫画名
+        :return all_chapter: all_chapter = [(comic_title, chapter_title, chapter_number, chapter_url), ]
         """
         if not comicid:
             comicid = self.search(name)
@@ -61,11 +59,8 @@ class ComicBook:
 
     def get_chapter_pics(self, url):
         """根据章节的URL获取该章节的图片列表
-        Args:
-            url: 章节的URL如 http://ac.qq.com/ComicView/index/id/505430/cid/884
-
-        Yield:
-            pic_url
+        :param str url:  章节的URL如 http://ac.qq.com/ComicView/index/id/505430/cid/884
+        :yield str pic_url: 漫画大图链接
         """
         html = self.get_html(url)
         bs64_data = re.search(r"var DATA.+?= '(.+)'", html).group(1)[1:]
@@ -76,19 +71,10 @@ class ComicBook:
 
     def get_task_chapter(self, comicid=None, name=None, chapter_number_list=None, is_download_all=None):
         """根据参数来确定下载哪些章节
-        Args:
-            comicid: 漫画id
-            chapter_number_list:
-                需要下载的章节列表，如 chapter_number_list = [1, 2, 3]
-            is_download_all:
-                若设置成True，则下载该漫画的所有章节
-        Yield:
-            data: {
-                    'chapter_number': 第几集,
-                    'chapter_title': 章节标题,
-                    'comic_title': 漫画名,
-                    'chapter_pics': genarator 该章节所有图片
-                }
+        :param str/int comicid: 漫画id
+        :param list chapter_number_list: 需要下载的章节列表，如 chapter_number_list = [1, 2, 3]
+        :param boolean is_download_all: 若设置成True，则下载该漫画的所有章节
+        :yield chapter: Chapter instance
         """
         all_chapter = self.get_all_chapter(comicid, name)
         max_chapter_number = max(all_chapter.keys())
