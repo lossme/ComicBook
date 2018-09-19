@@ -32,6 +32,7 @@ def imgs_to_pdf(output, img_path_list):
         c.drawImage(img_path, left_margin, top_margin, img_w * ratio, img_h * ratio)
         c.showPage()
     c.save()
+    return output
 
 
 def image_dir_to_pdf(img_dir, output, sort_by=None):

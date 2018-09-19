@@ -1,12 +1,13 @@
 import re
 import base64
 import json
+import difflib
 from urllib import parse
 
 import requests
 
 
-class QQComicBook:
+class ComicBook:
 
     QQ_COMIC_HOST = 'http://ac.qq.com'
     HEADERS = {
@@ -28,7 +29,7 @@ class QQComicBook:
         response = self.send_request(url)
         return response.text
 
-    def get_all_chapter(self, comicid):
+    def get_all_chapter(self, comicid=None, name=None):
         """根据漫画id获取所有的章节列表: http://ac.qq.com/Comic/ComicInfo/id/505430
         Args:
             id: 505430
@@ -36,9 +37,11 @@ class QQComicBook:
         Returns:
             [(comic_title, chapter_title, chapter_number, chapter_url), ]
         """
+        if not comicid:
+            comicid = self.search(name)
         url = 'http://ac.qq.com/Comic/ComicInfo/id/{}'.format(comicid)
         html = self.get_html(url)
-        ol = re.search(r'''(<ol class="chapter-page-all works-chapter-list".+?</ol>)''', html, re.S).group()
+        ol = re.search(r'(<ol class="chapter-page-all works-chapter-list".+?</ol>)', html, re.S).group()
         all_atag = re.findall(r'''<a.*?title="(.*?)".*?href="(.*?)">(.*?)</a>''', ol, re.S)
         all_chapter = {}
         for item in all_atag:
@@ -69,7 +72,7 @@ class QQComicBook:
         for i in datail_list:
             yield i['url']
 
-    def get_task_chapter(self, comicid, chapter_number_list=None, is_download_all=None):
+    def get_task_chapter(self, comicid=None, name=None, chapter_number_list=None, is_download_all=None):
         """根据参数来确定下载哪些章节
         Args:
             comicid: 漫画id
@@ -85,7 +88,7 @@ class QQComicBook:
                     'chapter_pics': genarator 该章节所有图片
                 }
         """
-        all_chapter = self.get_all_chapter(comicid)
+        all_chapter = self.get_all_chapter(comicid, name)
         max_chapter_number = max(all_chapter.keys())
         if is_download_all:
             return list(all_chapter.values())
@@ -105,3 +108,17 @@ class QQComicBook:
                 'site_name': self.name
             }
             yield data
+
+    def search(self, name):
+        url = "http://ac.qq.com/Comic/searchList/search/name"
+        html = self.get_html(url)
+        r = re.search(r'<ul class="mod_book_list mod_all_works_list mod_of">(.*?)</ul>', html, re.S)
+        ul = r.group()
+
+        r = re.findall(r'<h4 class="mod_book_name"><a href="(.*?)" title="(.*?)".*?</a></h4>', ul, re.S)
+        for item in r:
+            url, title = item
+            comicid = url.rsplit('/')[-1]
+            s = difflib.SequenceMatcher(None, title, name)
+            if s.ratio() >= 0.5:
+                return comicid

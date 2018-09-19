@@ -5,7 +5,7 @@ import json
 import requests
 
 
-class IshuhuiComicBook():
+class ComicBook():
 
     HEADERS = {
         'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -52,11 +52,13 @@ class IshuhuiComicBook():
             pic_url = 'http:{}{}'.format(cdn_url, url.replace('upload/', ''))
             yield pic_url
 
-    def get_all_chapter(self, comicid):
+    def get_all_chapter(self, comicid=None, name=None):
         """根据漫画id获取所有的章节列表: http://ac.qq.com/Comic/ComicInfo/id/505430
         Args:
             id: 505430
         """
+        if not comicid:
+            comicid = self.search(name)
         url = 'http://www.ishuhui.com/cartoon/book/{}'.format(comicid)
         html = self.get_html(url)
         r = re.search(r'<meta name=ver content="(.*?)">', html)
@@ -79,7 +81,7 @@ class IshuhuiComicBook():
             all_chapter[chapter_number] = value
         return comic_title, all_chapter
 
-    def get_task_chapter(self, comicid, chapter_number_list=None, is_download_all=None):
+    def get_task_chapter(self, comicid=None, name=None, chapter_number_list=None, is_download_all=None):
         """根据参数来确定下载哪些章节
         Args:
             comicid: 漫画id
@@ -95,7 +97,7 @@ class IshuhuiComicBook():
                     'chapter_pics': genarator 该章节所有图片
                 }
         """
-        comic_title, all_chapter = self.get_all_chapter(comicid)
+        comic_title, all_chapter = self.get_all_chapter(comicid, name)
         max_chapter_number = max(all_chapter.keys())
         if is_download_all:
             chapter_number_list = list(all_chapter.keys())
@@ -122,3 +124,6 @@ class IshuhuiComicBook():
                     break
             if is_invalid:
                 print('暂不支持的资源类型：{} 第{}集 {}'.format(comic_title, chapter_number, chapter_title))
+
+    def search(self, name):
+        pass

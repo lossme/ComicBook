@@ -1,11 +1,11 @@
 ILLEGAL_STR = r'\/:*?"<>|'
-REPLACE_ILLEGAL_STR = str.maketrans(ILLEGAL_STR, ' ' * len(ILLEGAL_STR))
 
 
-def safe_filename(filename):
+def safe_filename(filename, replace=' '):
     """文件名过滤非法字符串
     """
-    return filename.translate(REPLACE_ILLEGAL_STR)
+    replace_illegal_str = str.maketrans(ILLEGAL_STR, replace * len(ILLEGAL_STR))
+    return filename.translate(replace_illegal_str)
 
 
 def parser_interval(interval):
@@ -13,28 +13,22 @@ def parser_interval(interval):
     Args:
         interval:
              类似 1-10,20-30,66 这样的字符串
-    Yield:
-        number
+    Return:
+        number_list: [1, 2, 3, 4, ...]
     """
     appeared = set()
+    rv = []
     for block in interval.split(','):
         if '-' in block:
             start, end = block.split('-', 1)
-            try:
-                start, end = int(start), int(end)
-                for number in range(start, end + 1):
-                    if number not in appeared:
-                        appeared.add(number)
-                        yield number
-            except ValueError:
-                print('参数写错了,查看帮助: python3 onepiece.py --help')
-                exit(1)
-        else:
-            try:
-                number = int(block)
+            start, end = int(start), int(end)
+            for number in range(start, end + 1):
                 if number not in appeared:
                     appeared.add(number)
-                    yield number
-            except ValueError:
-                print('参数写错了,查看帮助: python3 onepiece.py --help')
-                exit(1)
+                    rv.append(number)
+        else:
+            number = int(block)
+            if number not in appeared:
+                appeared.add(number)
+                rv.append(number)
+    return rv
