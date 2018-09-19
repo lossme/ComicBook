@@ -1,11 +1,9 @@
 import argparse
-import time
-import os
 from concurrent.futures import ThreadPoolExecutor
 
 
 from .site import ComicBook
-from .utils import parser_interval
+from .utils import parser_interval, get_current_time_str
 from .utils.mail import Mail
 from .downloader import Downloader
 from . import VERSION
@@ -83,6 +81,7 @@ def main():
     if args.interval:
         chapter_number_list = parser_interval(args.interval)
     comic_book = ComicBook.create(site=args.site)
+    print("{} 正在获取最新数据".format(get_current_time_str()))
     task = comic_book.get_task_chapter(comicid=args.comicid,
                                        name=args.name,
                                        chapter_number_list=chapter_number_list,
@@ -90,24 +89,14 @@ def main():
     if args.mail:
         Mail.init(args.config)
 
-    ts = time.time()
-    begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
-    print('任务开始咯\n现在时间是:', begin_time)
-
     with ThreadPoolExecutor(max_workers=args.thread) as executor:
         downloader = Downloader()
         for chapter in task:
-            future = executor.submit(downloader.download_chapter,
-                                     chapter=chapter,
-                                     output_dir=args.output,
-                                     is_generate_pdf=args.pdf or args.mail)
-            if args.mail:
-                future.add_done_callback(
-                    lambda future: Mail.send(subject=os.path.basename(future.result()[1]),
-                                             content=None,
-                                             file_list=[future.result()[1]]))
-    cost = int(time.time() - ts)
-    print('任务完成啦\n总共用了这么长时间:{0}秒'.format(cost))
+            executor.submit(downloader.download_chapter,
+                            chapter=chapter,
+                            output_dir=args.output,
+                            is_generate_pdf=args.pdf,
+                            is_send_email=args.mail)
 
 
 if __name__ == '__main__':

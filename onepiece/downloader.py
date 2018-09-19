@@ -1,9 +1,12 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 import warnings
+
 import requests
 
-from .utils import safe_filename
+
+from .utils import safe_filename, get_current_time_str
+from .utils.mail import Mail
 
 
 def create_session(pool_connections=10, pool_maxsize=10, max_retries=0):
@@ -58,7 +61,7 @@ class Downloader():
             return default
         return ext
 
-    def download_chapter(self, chapter, output_dir, is_generate_pdf):
+    def download_chapter(self, chapter, output_dir, is_generate_pdf, is_send_email):
         """下载整个章节的图片，按漫画名按章节保存
         Args:
             chapter : Chapter instance
@@ -83,10 +86,10 @@ class Downloader():
         if not os.path.exists(chapter_dir):
             os.makedirs(chapter_dir)
 
-        print('正在下载', comic_title)
+        print('{} 正在下载: {}'.format(get_current_time_str(), chapter_title))
         self.download_images(chapter_pics, chapter_dir)
 
-        if is_generate_pdf:
+        if is_generate_pdf or is_send_email:
             from .utils.img2pdf import image_dir_to_pdf
             pdf_dir = os.path.join(output_dir, site_name, 'pdf - {}'.format(comic_title))
             pdf_name = '{} {}.pdf'.format(comic_title, chapter_title)
@@ -96,6 +99,11 @@ class Downloader():
             image_dir_to_pdf(img_dir=chapter_dir,
                              output=pdf_path,
                              sort_by=lambda x: int(x.split('.')[0]))
+            if is_send_email:
+                Mail.send(subject=pdf_name,
+                          content=None,
+                          file_list=[pdf_path, ])
+
         else:
             pdf_path = None
         return chapter_dir, pdf_path

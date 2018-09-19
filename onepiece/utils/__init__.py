@@ -1,3 +1,5 @@
+import time
+
 ILLEGAL_STR = r'\/:*?"<>|'
 
 
@@ -32,3 +34,7 @@ def parser_interval(interval):
                 appeared.add(number)
                 rv.append(number)
     return rv
+
+
+def get_current_time_str():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())

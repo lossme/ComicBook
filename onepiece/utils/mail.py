@@ -1,5 +1,9 @@
 import os
+import warnings
+import configparser
+
 import smtplib
+
 from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
@@ -13,16 +17,10 @@ class Mail():
     smtp_server = None
     smtp_port = None
 
-    def __init__(self, mail_config_ini_file=None):
-        if mail_config_ini_file:
-            self.init(mail_config_ini_file)
-
     @classmethod
     def init(cls, filepath):
         """读取 ini 配置文件
         """
-        import configparser
-
         section = 'mail'
         parser = configparser.ConfigParser()
         parser.read(filepath)
