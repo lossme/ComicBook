@@ -34,7 +34,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-id', '--comicid', type=int,
+    parser.add_argument('-id', '--comicid', type=int, default=505430,
                         help="漫画id，海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
 
     parser.add_argument('--name', type=str, help="漫画名")
