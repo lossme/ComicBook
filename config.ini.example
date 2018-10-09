@@ -1,17 +1,17 @@
 [mail]
 
 # SMTP主机，发送账户是163邮箱则设置为 smtp.163.com
-smtp_server = 'smtp.qq.com'
+smtp_server=smtp.qq.com
 
 # SMTP服务端口（SSL）
-smtp_port = 465
+smtp_port=465
 
 # 发送者账户
-sender = 'xx.qq.com'
+sender=xx.qq.com
 
 # 登录失败可能需要使用授权码登录 http://service.mail.qq.com/cgi-bin/help?subtype=1&&id=28&&no=1001256
 # 发送者账户密码或者授权码
-sender_passwd = 'mima或授权码'
+sender_passwd=密码或授权码
 
 # 邮件接收者列表，多个则以半角逗号隔开。如 xxx@qq.com,yyy@qq.com
-receivers = 11111@qq.com,22222@qq.com
+receivers=11111@qq.com,22222@qq.com

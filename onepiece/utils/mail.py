@@ -62,8 +62,8 @@ class Mail():
             print('正在向 {} 发送 {}'.format(','.join(receivers), subject))
             s.sendmail(sender, receivers, msg.as_string())
             s.quit()
-        except smtplib.SMTPException:
-            print('发送邮件时出现错误！')
+        except smtplib.SMTPException as e:
+            print('发送 {} 邮件时出现错误！error:{}'.format(subject, e))
             raise
 
     @classmethod
