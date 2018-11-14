@@ -1,12 +1,57 @@
 import argparse
-from concurrent.futures import ThreadPoolExecutor
+import importlib
+import os
+import re
 
-
-from .site import ComicBook
-from .utils import parser_interval, get_current_time_str
+from .image_cache import ImageCache
+from .utils import get_current_time_str
 from .utils.mail import Mail
-from .downloader import Downloader
 from . import VERSION
+
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+
+
+SUPPORT_SITE = list(
+    map(
+        lambda x: x.split(".py")[0],
+        filter(
+            lambda x: re.match(r"^[a-zA-Z].*?\.py$", x),
+            os.listdir(os.path.join(HERE, "site"))
+        )
+    )
+)
+
+
+def create_comicbook(site, comicid):
+    if site not in SUPPORT_SITE:
+        raise Exception("site={} 暂不支持")
+
+    module = importlib.import_module(".site.{}".format(site), __package__)
+    return module.ComicBookCrawler.create_comicbook(comicid)
+
+
+def parser_chapter(chapter):
+    """将字符串描述的区间转化为一个一个数字
+    :param str chapter: 类似 1-10,20-30,66 这样的字符串
+    :return list number_list: [1, 2, 3, 4, ...]
+    """
+    appeared = set()
+    rv = []
+    for block in chapter.split(','):
+        if '-' in block:
+            start, end = block.split('-', 1)
+            start, end = int(start), int(end)
+            for number in range(start, end + 1):
+                if number not in appeared:
+                    appeared.add(number)
+                    rv.append(number)
+        else:
+            number = int(block)
+            if number not in appeared:
+                appeared.add(number)
+                rv.append(number)
+    return rv
 
 
 def parse_args():
@@ -34,19 +79,15 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-id', '--comicid', type=int, default=505430,
+    parser.add_argument('-id', '--comicid', type=int,
                         help="漫画id，海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
 
     parser.add_argument('--name', type=str, help="漫画名")
 
-    parser.add_argument('-i', '--interval', type=str,
-                        help="要下载的章节区间, 如 -i 1-5,7,9-10")
+    parser.add_argument('-c', '--chapter', type=str, default="-1",
+                        help="要下载的章节, 默认下载最新章节。如 -c 666 或者 -c 1-5,7,9-10")
 
-    parser.add_argument('-c', '--chapter', type=int, default=-1,
-                        help="要下载的章节chapter，默认下载最新章节。如 -c 666")
-
-    parser.add_argument('-t', '--thread', type=int, default=8,
-                        help="线程池数，默认开启8个线程池，下载多个章节时效果才明显")
+    parser.add_argument('--worker', type=int, default=8, help="线程池数，默认开启8个线程池")
 
     parser.add_argument('--all', action='store_true',
                         help="若设置了则下载该漫画的所有章节, 如 --all")
@@ -66,8 +107,8 @@ def parse_args():
     parser.add_argument('-o', '--output', type=str, default='./download',
                         help="文件保存路径，默认保存在当前路径下的download文件夹")
 
-    parser.add_argument('--site', type=str, default='qq', choices=ComicBook.ALL_SITE,
-                        help="数据源网站：支持{}".format(','.join(ComicBook.ALL_SITE)))
+    parser.add_argument('--site', type=str, default='qq', choices=SUPPORT_SITE,
+                        help="数据源网站：支持{}".format(','.join(SUPPORT_SITE)))
 
     parser.add_argument('-V', '--version', action='version', version=VERSION)
 
@@ -77,26 +118,56 @@ def parse_args():
 
 def main():
     args = parse_args()
-    chapter_number_list = [args.chapter]
-    if args.interval:
-        chapter_number_list = parser_interval(args.interval)
-    comic_book = ComicBook.create(site=args.site)
-    print("{} 正在获取最新数据".format(get_current_time_str()))
-    task = comic_book.get_task_chapter(comicid=args.comicid,
-                                       name=args.name,
-                                       chapter_number_list=chapter_number_list,
-                                       is_download_all=args.all)
+    try:
+        chapter_number_list = [int(args.chapter), ]
+    except ValueError:
+        chapter_number_list = parser_chapter(args.chapter)
+
+    site = args.site
+    comicid = args.comicid
+    output_dir = args.output
+    is_download_all = args.all
+    is_send_mail = args.mail
+    is_gen_pdf = args.pdf
+
     if args.mail:
         Mail.init(args.config)
 
-    with ThreadPoolExecutor(max_workers=args.thread) as executor:
-        downloader = Downloader()
-        for chapter in task:
-            executor.submit(downloader.download_chapter,
-                            chapter=chapter,
-                            output_dir=args.output,
-                            is_generate_pdf=args.pdf,
-                            is_send_email=args.mail)
+    if comicid is None:
+        if site == "ishuhui":
+            comicid = 1
+        elif site == "qq":
+            comicid = 505430
+
+    print("{} 正在获取最新数据".format(get_current_time_str()))
+    comicbook = create_comicbook(site=site, comicid=comicid)
+    print("{} 更新至 {}".format(comicbook.name, comicbook.get_max_chapter_number()))
+
+    if is_download_all:
+        if is_send_mail or is_gen_pdf:
+            pdf_path_list = comicbook.save_as_pdf_all(output_dir=output_dir)
+            if is_send_mail:
+                file_number = 10
+                for i in range(0, len(pdf_path_list), file_number):
+                    start = os.path.basename(pdf_path_list[i])
+                    end = os.path.basename(pdf_path_list[i + file_number])
+                    Mail.send(subject="start: {} end: {}".format(start, end),
+                              content=None,
+                              file_list=pdf_path_list[i:file_number])
+        else:
+            comicbook.save_all(output_dir=output_dir)
+
+    else:
+        for chapter_number in chapter_number_list:
+            if is_gen_pdf or is_send_mail:
+                pdf_path = comicbook.save_as_pdf(chapter_number=chapter_number, output_dir=output_dir)
+                if is_send_mail:
+                    Mail.send(subject=os.path.basename(pdf_path),
+                              content=None,
+                              file_list=[pdf_path, ])
+            else:
+                comicbook.save(chapter_number=chapter_number, output_dir=output_dir)
+    ImageCache.auto_clean()
 
 
 if __name__ == '__main__':
