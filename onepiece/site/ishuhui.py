@@ -1,6 +1,4 @@
 import requests
-import functools
-import warnings
 
 from ..comicbook import ComicBook, Chapter, ImageInfo
 
@@ -16,7 +14,15 @@ class ComicBookCrawler():
     session = requests.session()
 
     def __init__(self, comicid):
-        pass
+        self.comicid = comicid
+        self.api_data = None
+        # {int_chapter_number: chapter_api_data}
+        self.chapter_api_data_db = {}
+
+    @classmethod
+    def create_comicbook(cls, comicid):
+        crawler = cls(comicid=comicid)
+        return ComicBook(comicbook_crawler=crawler)
 
     @classmethod
     def send_request(cls, url, **kwargs):
@@ -34,61 +40,65 @@ class ComicBookCrawler():
         response = cls.send_request(url)
         return response.text
 
-    @classmethod
-    def create_comicbook(cls, comicid):
+    def get_api_data(self):
+        if self.api_data is not None:
+            return self.api_data
         # https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id=1&type=comics&.json
-        url = "https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id={}&type=comics&.json".format(comicid)
-        data = cls.get_json(url)
-        name = data['data']['name']
-        desc = data['data']['desc']
-        tag = data['data']['tag']
+        url = "https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id={}&type=comics&.json"
+        url = url.format(self.comicid)
+        data = self.get_json(url=url)
+        self.api_data = data
+        return self.api_data
 
-        max_chapter_number = data['data']['comicsIndexes']['1']['maxNum']
-        comicbook = ComicBook(name=name, desc=desc, tag=tag, source_name=cls.source_name)
-        comicbook._data = data
+    def get_chapter_api_data(self, chapter_number):
+        if chapter_number in self.chapter_api_data_db:
+            return self.chapter_api_data_db[chapter_number]
 
-        comicbook.get_max_chapter_number = lambda: max_chapter_number
-        comicbook.get_chapter = functools.partial(cls.get_chapter, comicbook=comicbook)
-        comicbook.get_all_chapter = functools.partial(cls.get_all_chapter, comicbook=comicbook)
-        return comicbook
-
-    @classmethod
-    def get_all_chapter(cls, comicbook):
-        for chapter_number in range(1, comicbook.max_chapter_number + 1):
-            try:
-                yield cls.get_chapter(chapter_number=chapter_number, comicbook=comicbook)
-            except Exception as e:
-                warnings.warn(str(e))
-
-    @classmethod
-    def get_chapter(cls, chapter_number, comicbook):
-        max_chapter_number = int(comicbook.get_max_chapter_number())
-        if int(chapter_number) < 0:
-            chapter_number = max_chapter_number + chapter_number + 1
-
-        chapter_number = str(chapter_number)
-        for items in comicbook._data['data']['comicsIndexes']['1']['nums'].values():
-            if chapter_number in items:
-                chapter_data_sources = items[chapter_number]
+        str_chapter_number = str(chapter_number)
+        api_data = self.get_api_data()
+        for items in api_data['data']['comicsIndexes']['1']['nums'].values():
+            if str_chapter_number in items:
+                chapter_data_sources = items[str_chapter_number]
                 for chapter_data in chapter_data_sources:
                     if chapter_data['sourceID'] == 1:
-                        title = chapter_data['title']
+                        # https://prod-api.ishuhui.com/comics/detail?id=11196
                         url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(chapter_data['id'])
-                        chapter = Chapter(title=title, chapter_number=chapter_number)
-                        chapter.get_chapter_images = functools.partial(cls.get_chapter_images,
-                                                                       url=url,
-                                                                       comicbook=comicbook)
-                        return chapter
+                        chapter_api_data = self.get_json(url)
+                        self.chapter_api_data_db[chapter_number] = chapter_api_data
                     if chapter_data['sourceID'] == 2:
                         # http://ac.qq.com/ComicView/index/id/505430/cid/1
                         # qq_source_url = chapter_data['url']
                         pass
+        if chapter_number not in self.chapter_api_data_db:
+            raise Exception("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
+        return self.chapter_api_data_db[chapter_number]
 
-        raise Exception("没找到资源 {} {}".format(comicbook.name, chapter_number))
+    def get_comicbook_name(self):
+        api_data = self.get_api_data()
+        return api_data['data']['name']
 
-    @classmethod
-    def get_chapter_images(cls, url, comicbook):
+    def get_comicbook_desc(self):
+        api_data = self.get_api_data()
+        return api_data['data']['desc']
+
+    def get_comicbook_tag(self):
+        api_data = self.get_api_data()
+        return api_data['data']['tag']
+
+    def get_max_chapter_number(self):
+        api_data = self.get_api_data()
+        return int(api_data['data']['comicsIndexes']['1']['maxNum'])
+
+    def create_chapter(self, url):
         # https://prod-api.ishuhui.com/comics/detail?id=11196
-        data = cls.get_json(url)
+        data = self.get_json(url)
         images = [ImageInfo(item['url']) for item in data['data']['contentImg']]
         return images
+
+    def get_chapter_title(self, chapter_number):
+        chapter_api_data = self.get_chapter_api_data(chapter_number)
+        return chapter_api_data['data']['title']
+
+    def get_chapter_images(self, chapter_number):
+        chapter_api_data = self.get_chapter_api_data(chapter_number)
+        return [ImageInfo(item['url']) for item in chapter_api_data['data']['contentImg']]

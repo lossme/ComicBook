@@ -10,11 +10,24 @@ from .image_cache import ImageCache
 
 class ComicBook():
 
-    def __init__(self, name, source_name, desc=None, tag=None):
-        self.name = name
-        self.desc = desc
-        self.tag = tag
-        self.source_name = source_name
+    def __init__(self, comicbook_crawler):
+        self.crawler = comicbook_crawler
+
+    @property
+    def name(self):
+        return self.crawler.get_comicbook_name()
+
+    @property
+    def desc(self):
+        return self.crawler.get_comicbook_desc()
+
+    @property
+    def source_name(self):
+        return self.crawler.source_name
+
+    @property
+    def tag(self):
+        return self.crawler.get_comicbook_tag()
 
     def __repr__(self):
         return """<ComicBook>
@@ -24,20 +37,17 @@ tag={tag}
 source_name={source_name}
 </ComicBook>""".format(name=self.name, desc=self.desc, tag=self.tag, source_name=self.source_name)
 
-    def get_max_chapter_number(self):
-        """需动态注入该方法的具体实现
-        :return Chapter instance:
-        """
-
     def get_chapter(self, chapter_number):
-        """需动态注入该方法的具体实现
-        :return Chapter instance:
-        """
+        return Chapter(chapter_number=chapter_number, comicbook_crawler=self.crawler)
+
+    def get_max_chapter_number(self):
+        return self.crawler.get_max_chapter_number()
+
+    def get_chapters(self, chapter_number_list):
+        pass
 
     def get_all_chapter(self):
-        """需动态注入该方法的具体实现
-        :yield Chapter instance:
-        """
+        pass
 
     def get_comicbook_dir(self, output_dir):
         comicbook_dir = os.path.join(output_dir, self.source_name, self.name)
@@ -57,29 +67,27 @@ source_name={source_name}
         pdf_path = chapter.save_as_pdf(comicbook_dir)
         return pdf_path
 
-    def save_all(self, output_dir):
-        chapter_dir_list = []
-        comicbook_dir = self.get_comicbook_dir(output_dir)
-        for chapter in self.get_all_chapter():
-            chapter_dir, _ = chapter.save(comicbook_dir)
-            chapter_dir_list.append(chapter_dir)
-        return chapter_dir_list
-
-    def save_as_pdf_all(self, output_dir):
-        comicbook_dir = self.get_comicbook_dir(output_dir)
-        pdf_path_list = []
-        for chapter in self.get_all_chapter():
-            pdf_path = chapter.save_as_pdf(comicbook_dir)
-            pdf_path_list.append(pdf_path)
-        return pdf_path_list
-
 
 class Chapter():
-    image_download_pool = ThreadPoolExecutor(max_workers=8)
+    image_download_pool = None
 
-    def __init__(self, title, chapter_number):
-        self.title = title
+    def __init__(self, chapter_number, comicbook_crawler):
+        self.crawler = comicbook_crawler
         self.chapter_number = chapter_number
+
+    @classmethod
+    def init(cls, worker=1):
+        cls.image_download_pool = ThreadPoolExecutor(max_workers=worker)
+
+    @classmethod
+    def get_pool(cls):
+        if cls.image_download_pool is None:
+            cls.image_download_pool = ThreadPoolExecutor(max_workers=1)
+        return cls.image_download_pool
+
+    @property
+    def title(self):
+        return self.crawler.get_chapter_title(self.chapter_number)
 
     def __repr__(self):
         return """<Chapter>
@@ -88,9 +96,7 @@ chapter_number={chapter_number}
 </Chapter>""".format(title=self.title, chapter_number=self.chapter_number)
 
     def get_chapter_images(self):
-        """需动态注入该方法的具体实现
-        :return ImageInfo instance list:
-        """
+        return self.crawler.get_chapter_images(self.chapter_number)
 
     def save(self, output_dir):
         chapter_dir = os.path.join(output_dir, "{} {}".format(self.chapter_number, self.title))
@@ -101,7 +107,7 @@ chapter_number={chapter_number}
         for idx, image in enumerate(self.get_chapter_images(), start=1):
             ext = image.find_suffix(image.image_url)
             target_path = os.path.join(chapter_dir, "{}.{}".format(idx, ext))
-            future = self.image_download_pool.submit(image.save, target_path=target_path)
+            future = self.get_pool().submit(image.save, target_path=target_path)
             future_list.append(future)
         return chapter_dir, future_list
 

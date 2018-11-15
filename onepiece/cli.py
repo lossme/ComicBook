@@ -26,7 +26,6 @@ SUPPORT_SITE = list(
 def create_comicbook(site, comicid):
     if site not in SUPPORT_SITE:
         raise Exception("site={} 暂不支持")
-
     module = importlib.import_module(".site.{}".format(site), __package__)
     return module.ComicBookCrawler.create_comicbook(comicid)
 
@@ -87,7 +86,7 @@ def parse_args():
     parser.add_argument('-c', '--chapter', type=str, default="-1",
                         help="要下载的章节, 默认下载最新章节。如 -c 666 或者 -c 1-5,7,9-10")
 
-    parser.add_argument('--worker', type=int, default=8, help="线程池数，默认开启8个线程池")
+    parser.add_argument('--worker', type=int, default=4, help="线程池数，默认开启4个线程池")
 
     parser.add_argument('--all', action='store_true',
                         help="若设置了则下载该漫画的所有章节, 如 --all")
@@ -118,10 +117,11 @@ def parse_args():
 
 def main():
     args = parse_args()
+
     try:
-        chapter_number_list = [int(args.chapter), ]
+        _chapter_number_list = [int(args.chapter), ]
     except ValueError:
-        chapter_number_list = parser_chapter(args.chapter)
+        _chapter_number_list = parser_chapter(args.chapter)
 
     site = args.site
     comicid = args.comicid
@@ -139,26 +139,27 @@ def main():
         elif site == "qq":
             comicid = 505430
 
+    from onepiece.comicbook import Chapter
+    Chapter.init(worker=args.worker)
+
     print("{} 正在获取最新数据".format(get_current_time_str()))
     comicbook = create_comicbook(site=site, comicid=comicid)
-    print("{} 更新至 {}".format(comicbook.name, comicbook.get_max_chapter_number()))
+    max_chapter_number = comicbook.get_max_chapter_number()
+    print("{} 更新至 {}".format(comicbook.name, max_chapter_number))
 
     if is_download_all:
-        if is_send_mail or is_gen_pdf:
-            pdf_path_list = comicbook.save_as_pdf_all(output_dir=output_dir)
-            if is_send_mail:
-                file_number = 10
-                for i in range(0, len(pdf_path_list), file_number):
-                    start = os.path.basename(pdf_path_list[i])
-                    end = os.path.basename(pdf_path_list[i + file_number])
-                    Mail.send(subject="start: {} end: {}".format(start, end),
-                              content=None,
-                              file_list=pdf_path_list[i:file_number])
-        else:
-            comicbook.save_all(output_dir=output_dir)
-
+        chapter_number_list = list(range(1, max_chapter_number))
     else:
-        for chapter_number in chapter_number_list:
+        chapter_number_list = []
+        for chapter_number in _chapter_number_list:
+            if chapter_number < 0:
+                chapter_number = max_chapter_number - chapter_number - 1
+            chapter_number_list.append(chapter_number)
+
+    for chapter_number in chapter_number_list:
+        try:
+            chapter = comicbook.get_chapter(chapter_number)
+            print("正在下载 {} {} {}".format(comicbook.name, chapter_number, chapter.title))
             if is_gen_pdf or is_send_mail:
                 pdf_path = comicbook.save_as_pdf(chapter_number=chapter_number, output_dir=output_dir)
                 if is_send_mail:
@@ -167,6 +168,9 @@ def main():
                               file_list=[pdf_path, ])
             else:
                 comicbook.save(chapter_number=chapter_number, output_dir=output_dir)
+        except Exception as e:
+            print(e)
+
     ImageCache.auto_clean()
 
 

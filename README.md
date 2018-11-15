@@ -63,7 +63,7 @@ optional arguments:
   --name NAME           漫画名
   -c CHAPTER, --chapter CHAPTER
                         要下载的章节, 默认下载最新章节。如 -c 666 或者 -c 1-5,7,9-10
-  --worker WORKER       线程池数，默认开启8个线程池
+  --worker WORKER       线程池数，默认开启4个线程池
   --all                 若设置了则下载该漫画的所有章节, 如 --all
   --pdf                 若设置了则生成pdf文件, 如 --pdf
   --mail                若设置了则发送到邮箱, 如 --mail。需要预先配置邮件信息。
