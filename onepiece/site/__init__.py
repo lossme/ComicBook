@@ -1,10 +1,13 @@
 import collections
 import requests
+from ..exceptions import ChapterSourceNotFound
+
+
+ComicBook = collections.namedtuple("ComicBook", ["name", "desc", "tag", "max_chapter_number"])
+Chapter = collections.namedtuple("Chapter", ["title", "image_urls"])
 
 
 class ComicBookCrawlerBase():
-    ComicBook = collections.namedtuple("ComicBook", ["name", "desc", "tag", "max_chapter_number"])
-    Chapter = collections.namedtuple("Chapter", ["chapter_title", "image_urls"])
 
     HEADERS = {
         'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -40,9 +43,12 @@ class ComicBookCrawlerBase():
             self._comicbook = self.get_comicbook()
         return self._comicbook
 
-    def chapter(self, chapter_number):
+    def Chapter(self, chapter_number):
         if chapter_number not in self._chapter_db:
-            self._chapter_db[chapter_number] = self.get_chapter(chapter_number)
+            try:
+                self._chapter_db[chapter_number] = self.get_chapter(chapter_number)
+            except ChapterSourceNotFound:
+                raise ChapterSourceNotFound("没找到资源 {} {}".format(self.comicbook.name, chapter_number))
         return self._chapter_db[chapter_number]
 
     def get_comicbook(self):
@@ -56,24 +62,3 @@ class ComicBookCrawlerBase():
         :return Chapter instance:
         """
         raise NotImplementedError
-
-    def get_comicbook_name(self):
-        """
-        :return str comicbook_name:
-        """
-        return self.get_comicbook().name
-
-    def get_comicbook_desc(self):
-        return self.get_comicbook().name
-
-    def get_comicbook_tag(self):
-        return self.get_comicbook().tag
-
-    def get_max_chapter_number(self):
-        return self.get_comicbook().max_chapter_number
-
-    def get_chapter_title(self, chapter_number):
-        return self.get_chapter(chapter_number).chapter_title
-
-    def get_chapter_image_urls(self, chapter_number):
-        return self.get_chapter(chapter_number).image_urls

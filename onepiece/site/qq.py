@@ -4,7 +4,7 @@ import json
 from urllib import parse
 
 
-from . import ComicBookCrawlerBase
+from . import ComicBookCrawlerBase, Chapter, ComicBook
 from ..exceptions import ChapterSourceNotFound
 
 
@@ -49,14 +49,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         tag = ""
         chapter_page_url_db = self.get_chapter_page_url_db()
         max_chapter_number = max(chapter_page_url_db.keys())
-        comicbook = self.ComicBook(name=name, desc=desc, tag=tag,
-                                   max_chapter_number=max_chapter_number)
+        comicbook = ComicBook(name=name, desc=desc, tag=tag,
+                              max_chapter_number=max_chapter_number)
         return comicbook
 
     def get_chapter(self, chapter_number):
         chapter_page_url_db = self.get_chapter_page_url_db()
         if chapter_number not in chapter_page_url_db:
-            raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
+            raise ChapterSourceNotFound()
         chapter_page_url = chapter_page_url_db[chapter_number]
         chapter_page_html = self.get_html(chapter_page_url)
         chapter = self.parser_chapter_page(chapter_page_html)
@@ -119,4 +119,4 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                 pass
         datail_list = json.loads(json_str)['picture']
         image_urls = [item['url'] for item in datail_list]
-        return cls.Chapter(chapter_title=chapter_title, image_urls=image_urls)
+        return Chapter(title=chapter_title, image_urls=image_urls)

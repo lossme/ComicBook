@@ -120,30 +120,29 @@ def main():
     print("{} 正在获取最新数据".format(get_current_time_str()))
     ComicBook.init(worker=args.worker)
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
-    max_chapter_number = comicbook.get_max_chapter_number()
-    print("{} 更新至 {}".format(comicbook.name, max_chapter_number))
+    print("{} 更新至 {}".format(comicbook.name, comicbook.max_chapter_number))
 
     if is_download_all:
-        chapter_number_list = list(range(1, max_chapter_number))
+        chapter_number_list = list(range(1, comicbook.max_chapter_number))
     else:
         chapter_number_list = []
         for chapter_number in _chapter_number_list:
             if chapter_number < 0:
-                chapter_number = max_chapter_number - chapter_number - 1
+                chapter_number = comicbook.max_chapter_number - chapter_number - 1
             chapter_number_list.append(chapter_number)
 
     for chapter_number in chapter_number_list:
         try:
-            chapter = comicbook.get_chapter(chapter_number)
+            chapter = comicbook.Chapter(chapter_number)
             print("正在下载 {} {} {}".format(comicbook.name, chapter_number, chapter.title))
             if is_gen_pdf or is_send_mail:
-                pdf_path = comicbook.save_as_pdf(chapter_number=chapter_number, output_dir=output_dir)
+                pdf_path = chapter.save_as_pdf(output_dir=output_dir)
                 if is_send_mail:
                     Mail.send(subject=os.path.basename(pdf_path),
                               content=None,
                               file_list=[pdf_path, ])
             else:
-                comicbook.save(chapter_number=chapter_number, output_dir=output_dir)
+                chapter.save(output_dir=output_dir)
         except Exception as e:
             print(e)
 

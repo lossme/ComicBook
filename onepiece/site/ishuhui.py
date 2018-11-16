@@ -1,5 +1,5 @@
 import re
-from . import ComicBookCrawlerBase
+from . import ComicBookCrawlerBase, Chapter, ComicBook
 from ..exceptions import ChapterSourceNotFound
 
 
@@ -58,7 +58,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                     if chapter_data['sourceID'] == 6:
                         # 百度网盘
                         pass
-        raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
+        raise ChapterSourceNotFound()
 
     @classmethod
     def parser_api_data(cls, api_data):
@@ -66,14 +66,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         desc = api_data['data']['desc']
         tag = api_data['data']['tag']
         max_chapter_number = int(api_data['data']['comicsIndexes']['1']['maxNum'])
-        return cls.ComicBook(name=name, desc=desc, tag=tag, max_chapter_number=max_chapter_number)
+        return ComicBook(name=name, desc=desc, tag=tag, max_chapter_number=max_chapter_number)
 
     @classmethod
     def parser_ishuihui_source(cls, chapter_api_data):
         # https://prod-api.ishuhui.com/comics/detail?id=11196
         image_urls = [item['url'] for item in chapter_api_data['data']['contentImg']]
         chapter_title = chapter_api_data['data']['title']
-        return cls.Chapter(chapter_title=chapter_title, image_urls=image_urls)
+        return Chapter(title=chapter_title, image_urls=image_urls)
 
     @classmethod
     def parser_qq_source(self, chapter_page_html):
