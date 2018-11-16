@@ -1,3 +1,4 @@
+import re
 from . import ComicBookCrawlerBase
 from ..exceptions import ChapterSourceNotFound
 
@@ -5,6 +6,7 @@ from ..exceptions import ChapterSourceNotFound
 class ComicBookCrawler(ComicBookCrawlerBase):
 
     source_name = '鼠绘漫画'
+    CHAPTER_INTERVAL_PATTERN = re.compile(r"^(?P<start_chapter_number>\d+)\-(?P<end_chapter_number>\d+)")
 
     def __init__(self, comicid):
         super().__init__()
@@ -26,11 +28,19 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         return comicbook
 
     def get_chapter(self, chapter_number):
-        str_chapter_number = str(chapter_number)
         api_data = self.get_api_data()
-        for items in api_data['data']['comicsIndexes']['1']['nums'].values():
-            if str_chapter_number in items:
-                chapter_data_sources = items[str_chapter_number]
+        for interval, items in api_data['data']['comicsIndexes']['1']['nums'].items():
+            for str_chapter_number, chapter_data_sources in items.items():
+                # str_chapter_number = "1-8"
+                # str_chapter_number = "9-17"
+                r = self.CHAPTER_INTERVAL_PATTERN.search(str_chapter_number)
+                if r:
+                    _chapter_number = int(r.group("start_chapter_number"))
+                else:
+                    _chapter_number = int(str_chapter_number)
+                if chapter_number != _chapter_number:
+                    continue
+
                 for chapter_data in chapter_data_sources:
                     source_id = chapter_data['sourceID']
                     if source_id in [1, 7]:
