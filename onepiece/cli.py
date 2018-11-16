@@ -93,6 +93,10 @@ def parse_args():
     return args
 
 
+def echo(msg):
+    print("{}: {}".format(get_current_time_str(), msg))
+
+
 def main():
     args = parse_args()
 
@@ -117,7 +121,7 @@ def main():
         elif site == "qq":
             comicid = 505430
 
-    print("{} 正在获取最新数据".format(get_current_time_str()))
+    echo("正在获取最新数据")
     ComicBook.init(worker=args.worker)
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
     print("{} 更新至 {}".format(comicbook.name, comicbook.max_chapter_number))
@@ -129,12 +133,13 @@ def main():
         for chapter_number in _chapter_number_list:
             if chapter_number < 0:
                 chapter_number = comicbook.max_chapter_number - chapter_number - 1
-            chapter_number_list.append(chapter_number)
+            if chapter_number <= comicbook.max_chapter_number:
+                chapter_number_list.append(chapter_number)
 
     for chapter_number in chapter_number_list:
         try:
             chapter = comicbook.Chapter(chapter_number)
-            print("正在下载 {} {} {}".format(comicbook.name, chapter_number, chapter.title))
+            echo("正在下载 {} {} {}".format(comicbook.name, chapter_number, chapter.title))
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
                 if is_send_mail:
