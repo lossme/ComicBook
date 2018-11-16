@@ -14,6 +14,9 @@ class ComicBookCrawlerBase():
 
     def __init__(self):
         self.session = requests.session()
+        # {int_chapter_number: Chapter}
+        self._chapter_db = {}
+        self._comicbook = None
 
     def set_session(self, session):
         self.session = session
@@ -30,6 +33,17 @@ class ComicBookCrawlerBase():
     def get_json(self, url):
         response = self.send_request(url)
         return response.json()
+
+    @property
+    def comicbook(self):
+        if self._comicbook is None:
+            self._comicbook = self.get_comicbook()
+        return self._comicbook
+
+    def chapter(self, chapter_number):
+        if chapter_number not in self._chapter_db:
+            self._chapter_db[chapter_number] = self.get_chapter(chapter_number)
+        return self._chapter_db[chapter_number]
 
     def get_comicbook(self):
         """

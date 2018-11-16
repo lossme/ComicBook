@@ -21,17 +21,11 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def __init__(self, comicid):
         super().__init__()
-
         self.comicid = comicid
         self.comicbook_page_html = None
 
         # {int_chapter_number: chapter_page_url}
         self.chapter_page_url_db = {}
-
-        self.comicbook = None
-
-        # {int_chapter_number: Chapter}
-        self.chapter_db = {}
 
     def get_comicbook_page_html(self):
         if self.comicbook_page_html is None:
@@ -49,32 +43,24 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_comicbook(self):
         # http://ac.qq.com/Comic/ComicInfo/id/505430
-        if self.comicbook:
-            return self.comicbook
         html = self.get_comicbook_page_html()
         name = self.COMIC_NAME_PATTERN.search(html).group(1).strip()
         desc = self.COMIC_DESC_PATTERN.search(html).group(1).strip()
         tag = ""
         chapter_page_url_db = self.get_chapter_page_url_db()
-
-        self.comicbook = self.ComicBook(name=name,
-                                        desc=desc,
-                                        tag=tag,
-                                        max_chapter_number=max(chapter_page_url_db.keys())
-                                        )
-        return self.comicbook
+        max_chapter_number = max(chapter_page_url_db.keys())
+        comicbook = self.ComicBook(name=name, desc=desc, tag=tag,
+                                   max_chapter_number=max_chapter_number)
+        return comicbook
 
     def get_chapter(self, chapter_number):
-        if chapter_number in self.chapter_db:
-            return self.chapter_db[chapter_number]
-
         chapter_page_url_db = self.get_chapter_page_url_db()
         if chapter_number not in chapter_page_url_db:
             raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
         chapter_page_url = chapter_page_url_db[chapter_number]
         chapter_page_html = self.get_html(chapter_page_url)
-        self.chapter_db[chapter_number] = self.parser_chapter_page(chapter_page_html)
-        return self.chapter_db[chapter_number]
+        chapter = self.parser_chapter_page(chapter_page_html)
+        return chapter
 
     @classmethod
     def parser_chapter_url_from_comicbook_page(cls, comicbook_page_html):

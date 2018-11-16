@@ -9,12 +9,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def __init__(self, comicid):
         super().__init__()
         self.comicid = comicid
-
         self.api_data = None
-
-        # {int_chapter_number: Chapter}
-        self.chapter_db = {}
-        self.comicbook = None
 
     def get_api_data(self):
         if self.api_data:
@@ -26,18 +21,11 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         return self.api_data
 
     def get_comicbook(self):
-        if self.comicbook is not None:
-            return self.comicbook
         api_data = self.get_api_data()
-        self.comicbook = self.parser_api_data(api_data)
-        return self.comicbook
+        comicbook = self.parser_api_data(api_data)
+        return comicbook
 
     def get_chapter(self, chapter_number):
-        if chapter_number not in self.chapter_db:
-            self.chapter_db[chapter_number] = self._get_chapter(chapter_number)
-        return self.chapter_db[chapter_number]
-
-    def _get_chapter(self, chapter_number):
         str_chapter_number = str(chapter_number)
         api_data = self.get_api_data()
         for items in api_data['data']['comicsIndexes']['1']['nums'].values():
@@ -49,12 +37,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                         # https://prod-api.ishuhui.com/comics/detail?id=11196
                         url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(chapter_data['id'])
                         chapter_api_data = self.get_json(url)
-                        return self.parser_ishuihui_source(chapter_api_data)
+                        chapter = self.parser_ishuihui_source(chapter_api_data)
+                        return chapter
                     elif chapter_data['sourceID'] == 2:
                         # http://ac.qq.com/ComicView/index/id/505430/cid/1
                         qq_source_url = chapter_data['url']
                         html = self.get_html(qq_source_url)
-                        return self.parser_qq_source(html)
+                        chapter = self.parser_qq_source(html)
+                        return chapter
                     if chapter_data['sourceID'] == 6:
                         # 百度网盘
                         pass
