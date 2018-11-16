@@ -1,14 +1,11 @@
 import re
 import base64
 import json
-import difflib
-import functools
-import warnings
 from urllib import parse
 
 import requests
 
-from ..comicbook import ComicBook, Chapter, ImageInfo
+from ..exceptions import ChapterSourceNotFound
 
 
 class ComicBookCrawler:
@@ -20,7 +17,6 @@ class ComicBookCrawler:
     }
     TIMEOUT = 30
     source_name = '腾讯漫画'
-    session = requests.session()
 
     COMIC_NAME_PATTERN = re.compile(r"""<h2 class="works-intro-title ui-left"><strong>(.*?)</strong></h2>""")
     COMIC_DESC_PATTERN = re.compile(r"""<p class="works-intro-short ui-text-gray9">(.*?)</p>""", re.S)
@@ -28,6 +24,7 @@ class ComicBookCrawler:
     CHAPTER_TITLE_PATTERN = re.compile(r"""<span class="title-comicHeading">(.*?)</span>""")
 
     def __init__(self, comicid):
+        self.session = requests.session()
         self.comicid = comicid
 
         self.comicbook_page_html = None
@@ -37,11 +34,6 @@ class ComicBookCrawler:
 
         # {int_chapter_number: chapter_page_url}
         self.chapter_page_url_db = {}
-
-    @classmethod
-    def create_comicbook(cls, comicid):
-        crawler = cls(comicid=comicid)
-        return ComicBook(comicbook_crawler=crawler)
 
     @classmethod
     def send_request(cls, url, **kwargs):
@@ -94,7 +86,7 @@ class ComicBookCrawler:
         if chapter_number not in self.chapter_page_html_db:
             chapter_page_url_db = self.get_chapter_page_url_db()
             if chapter_number not in chapter_page_url_db:
-                raise Exception("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
+                raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
             chapter_page_url = chapter_page_url_db[chapter_number]
             chapter_page_html = self.get_html(chapter_page_url)
             self.chapter_page_html_db[chapter_number] = chapter_page_html
@@ -135,7 +127,7 @@ class ComicBookCrawler:
             chapter_title = title
         return chapter_title
 
-    def get_chapter_images(self, chapter_number):
+    def get_chapter_image_urls(self, chapter_number):
         html = self.get_chapter_page_html(chapter_number)
 
         bs64_data = re.search(r"var DATA\s*=\s*'(.*?)'", html).group(1)
@@ -148,5 +140,4 @@ class ComicBookCrawler:
             except Exception:
                 pass
         datail_list = json.loads(json_str)['picture']
-        images = [ImageInfo(item['url']) for item in datail_list]
-        return images
+        return [item['url'] for item in datail_list]

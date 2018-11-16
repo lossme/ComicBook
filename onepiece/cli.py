@@ -1,33 +1,11 @@
 import argparse
-import importlib
 import os
-import re
 
+from .comicbook import ComicBook
 from .image_cache import ImageCache
 from .utils import get_current_time_str
 from .utils.mail import Mail
 from . import VERSION
-
-
-HERE = os.path.abspath(os.path.dirname(__file__))
-
-
-SUPPORT_SITE = list(
-    map(
-        lambda x: x.split(".py")[0],
-        filter(
-            lambda x: re.match(r"^[a-zA-Z].*?\.py$", x),
-            os.listdir(os.path.join(HERE, "site"))
-        )
-    )
-)
-
-
-def create_comicbook(site, comicid):
-    if site not in SUPPORT_SITE:
-        raise Exception("site={} 暂不支持")
-    module = importlib.import_module(".site.{}".format(site), __package__)
-    return module.ComicBookCrawler.create_comicbook(comicid)
 
 
 def parser_chapter(chapter):
@@ -106,8 +84,8 @@ def parse_args():
     parser.add_argument('-o', '--output', type=str, default='./download',
                         help="文件保存路径，默认保存在当前路径下的download文件夹")
 
-    parser.add_argument('--site', type=str, default='qq', choices=SUPPORT_SITE,
-                        help="数据源网站：支持{}".format(','.join(SUPPORT_SITE)))
+    parser.add_argument('--site', type=str, default='qq', choices=ComicBook.SUPPORT_SITE,
+                        help="数据源网站：支持{}".format(','.join(ComicBook.SUPPORT_SITE)))
 
     parser.add_argument('-V', '--version', action='version', version=VERSION)
 
@@ -139,11 +117,9 @@ def main():
         elif site == "qq":
             comicid = 505430
 
-    from onepiece.comicbook import Chapter
-    Chapter.init(worker=args.worker)
-
     print("{} 正在获取最新数据".format(get_current_time_str()))
-    comicbook = create_comicbook(site=site, comicid=comicid)
+    ComicBook.init(worker=args.worker)
+    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
     max_chapter_number = comicbook.get_max_chapter_number()
     print("{} 更新至 {}".format(comicbook.name, max_chapter_number))
 

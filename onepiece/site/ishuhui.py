@@ -1,6 +1,6 @@
 import requests
 
-from ..comicbook import ComicBook, Chapter, ImageInfo
+from ..exceptions import ChapterSourceNotFound
 
 
 class ComicBookCrawler():
@@ -18,11 +18,6 @@ class ComicBookCrawler():
         self.api_data = None
         # {int_chapter_number: chapter_api_data}
         self.chapter_api_data_db = {}
-
-    @classmethod
-    def create_comicbook(cls, comicid):
-        crawler = cls(comicid=comicid)
-        return ComicBook(comicbook_crawler=crawler)
 
     @classmethod
     def send_request(cls, url, **kwargs):
@@ -70,7 +65,7 @@ class ComicBookCrawler():
                         # qq_source_url = chapter_data['url']
                         pass
         if chapter_number not in self.chapter_api_data_db:
-            raise Exception("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
+            raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
         return self.chapter_api_data_db[chapter_number]
 
     def get_comicbook_name(self):
@@ -99,6 +94,6 @@ class ComicBookCrawler():
         chapter_api_data = self.get_chapter_api_data(chapter_number)
         return chapter_api_data['data']['title']
 
-    def get_chapter_images(self, chapter_number):
+    def get_chapter_image_urls(self, chapter_number):
         chapter_api_data = self.get_chapter_api_data(chapter_number)
-        return [ImageInfo(item['url']) for item in chapter_api_data['data']['contentImg']]
+        return [item['url'] for item in chapter_api_data['data']['contentImg']]

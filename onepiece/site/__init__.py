@@ -1,4 +1,4 @@
-class Crawler():
+class ComicBookCrawlerBase():
 
     def get_comicbook_name(self):
         pass
@@ -9,11 +9,14 @@ class Crawler():
     def get_comicbook_tag(self):
         pass
 
-    def get_chapter(self):
+    def get_max_chapter_number(self):
         pass
 
-    def get_chapter_title(self):
+    def get_chapter(self, chapter_number):
         pass
 
-    def get_chapter_images(self):
+    def get_chapter_title(self, chapter_number):
+        pass
+
+    def get_chapter_image_urls(self, chapter_number):
         pass
