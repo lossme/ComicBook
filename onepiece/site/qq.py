@@ -3,19 +3,15 @@ import base64
 import json
 from urllib import parse
 
-import requests
 
+from . import ComicBookCrawlerBase
 from ..exceptions import ChapterSourceNotFound
 
 
-class ComicBookCrawler:
+class ComicBookCrawler(ComicBookCrawlerBase):
 
     QQ_COMIC_HOST = 'http://ac.qq.com'
-    HEADERS = {
-        'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                       'Chrome/65.0.3325.146 Safari/537.36')
-    }
-    TIMEOUT = 30
+
     source_name = '腾讯漫画'
 
     COMIC_NAME_PATTERN = re.compile(r"""<h2 class="works-intro-title ui-left"><strong>(.*?)</strong></h2>""")
@@ -24,41 +20,66 @@ class ComicBookCrawler:
     CHAPTER_TITLE_PATTERN = re.compile(r"""<span class="title-comicHeading">(.*?)</span>""")
 
     def __init__(self, comicid):
-        self.session = requests.session()
+        super().__init__()
+
         self.comicid = comicid
-
         self.comicbook_page_html = None
-
-        # {int_chapter_number: chapter_page_html}
-        self.chapter_page_html_db = {}
 
         # {int_chapter_number: chapter_page_url}
         self.chapter_page_url_db = {}
 
-    @classmethod
-    def send_request(cls, url, **kwargs):
-        kwargs.setdefault('headers', cls.HEADERS)
-        kwargs.setdefault('timeout', cls.TIMEOUT)
-        return cls.session.get(url, **kwargs)
+        self.comicbook = None
 
-    @classmethod
-    def get_html(cls, url):
-        response = cls.send_request(url)
-        return response.text
+        # {int_chapter_number: Chapter}
+        self.chapter_db = {}
 
     def get_comicbook_page_html(self):
-        # http://ac.qq.com/Comic/ComicInfo/id/505430
-        if not self.comicbook_page_html:
+        if self.comicbook_page_html is None:
             url = 'http://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
-            self.comicbook_page_html = self.get_html(url)
+            comicbook_page_html = self.get_html(url)
+            self.comicbook_page_html = comicbook_page_html
         return self.comicbook_page_html
 
     def get_chapter_page_url_db(self):
         if self.chapter_page_url_db:
             return self.chapter_page_url_db
-
         html = self.get_comicbook_page_html()
-        ol = re.search(r'(<ol class="chapter-page-all works-chapter-list".+?</ol>)', html, re.S).group()
+        self.chapter_page_url_db = self.parser_chapter_url_from_comicbook_page(html)
+        return self.chapter_page_url_db
+
+    def get_comicbook(self):
+        # http://ac.qq.com/Comic/ComicInfo/id/505430
+        if self.comicbook:
+            return self.comicbook
+        html = self.get_comicbook_page_html()
+        name = self.COMIC_NAME_PATTERN.search(html).group(1).strip()
+        desc = self.COMIC_DESC_PATTERN.search(html).group(1).strip()
+        tag = ""
+        chapter_page_url_db = self.get_chapter_page_url_db()
+
+        self.comicbook = self.ComicBook(name=name,
+                                        desc=desc,
+                                        tag=tag,
+                                        max_chapter_number=max(chapter_page_url_db.keys())
+                                        )
+        return self.comicbook
+
+    def get_chapter(self, chapter_number):
+        if chapter_number in self.chapter_db:
+            return self.chapter_db[chapter_number]
+
+        chapter_page_url_db = self.get_chapter_page_url_db()
+        if chapter_number not in chapter_page_url_db:
+            raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
+        chapter_page_url = chapter_page_url_db[chapter_number]
+        chapter_page_html = self.get_html(chapter_page_url)
+        self.chapter_db[chapter_number] = self.parser_chapter_page(chapter_page_html)
+        return self.chapter_db[chapter_number]
+
+    @classmethod
+    def parser_chapter_url_from_comicbook_page(cls, comicbook_page_html):
+        chapter_page_url_db = {}
+        ol = re.search(r'(<ol class="chapter-page-all works-chapter-list".+?</ol>)', comicbook_page_html, re.S).group()
         all_atag = re.findall(r'''<a.*?title="(.*?)".*?href="(.*?)">(.*?)</a>''', ol, re.S)
         for idx, item in enumerate(all_atag, start=1):
             # title = "航海王：第916 和之国大相扑"         # p1
@@ -73,44 +94,18 @@ class ComicBookCrawler:
             elif p2:
                 chapter_number = p2.group('chapter_number')
             else:
-                if chapter_number in self.chapter_page_url_db:
-                    continue
                 chapter_number = idx
-            chapter_url = parse.urljoin(self.QQ_COMIC_HOST, url)
+            if chapter_number in chapter_page_url_db:
+                continue
+
+            chapter_url = parse.urljoin(cls.QQ_COMIC_HOST, url)
             chapter_number = int(chapter_number)
-            self.chapter_page_url_db[chapter_number] = chapter_url
-        return self.chapter_page_url_db
+            chapter_page_url_db[chapter_number] = chapter_url
+        return chapter_page_url_db
 
-    def get_chapter_page_html(self, chapter_number):
-        # http://ac.qq.com/ComicView/index/id/505430/cid/884
-        if chapter_number not in self.chapter_page_html_db:
-            chapter_page_url_db = self.get_chapter_page_url_db()
-            if chapter_number not in chapter_page_url_db:
-                raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
-            chapter_page_url = chapter_page_url_db[chapter_number]
-            chapter_page_html = self.get_html(chapter_page_url)
-            self.chapter_page_html_db[chapter_number] = chapter_page_html
-        return self.chapter_page_html_db[chapter_number]
-
-    def get_comicbook_name(self):
-        html = self.get_comicbook_page_html()
-        name = self.COMIC_NAME_PATTERN.search(html).group(1).strip()
-        return name
-
-    def get_comicbook_desc(self):
-        html = self.get_comicbook_page_html()
-        desc = self.COMIC_DESC_PATTERN.search(html).group(1).strip()
-        return desc
-
-    def get_comicbook_tag(self):
-        return ""
-
-    def get_max_chapter_number(self):
-        return max(self.get_chapter_page_url_db().keys())
-
-    def get_chapter_title(self, chapter_number):
-        chapter_page_html = self.get_chapter_page_html(chapter_number)
-        title = self.CHAPTER_TITLE_PATTERN.search(chapter_page_html).group(1)
+    @classmethod
+    def parser_chapter_page(cls, chapter_page_html):
+        title = cls.CHAPTER_TITLE_PATTERN.search(chapter_page_html).group(1)
         # title = "第843话 温思默克·山智""
         # title = "111.剥皮白王""
         # title = "爱情漫过流星：她在上面"
@@ -125,12 +120,9 @@ class ComicBookCrawler:
             chapter_title = p3.group('chapter_title')
         else:
             chapter_title = title
-        return chapter_title
 
-    def get_chapter_image_urls(self, chapter_number):
-        html = self.get_chapter_page_html(chapter_number)
-
-        bs64_data = re.search(r"var DATA\s*=\s*'(.*?)'", html).group(1)
+        # image_urls
+        bs64_data = re.search(r"var DATA\s*=\s*'(.*?)'", chapter_page_html).group(1)
         json_str = ""
         for i in range(len(bs64_data)):
             try:
@@ -140,4 +132,5 @@ class ComicBookCrawler:
             except Exception:
                 pass
         datail_list = json.loads(json_str)['picture']
-        return [item['url'] for item in datail_list]
+        image_urls = [item['url'] for item in datail_list]
+        return cls.Chapter(chapter_title=chapter_title, image_urls=image_urls)

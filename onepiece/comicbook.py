@@ -112,6 +112,10 @@ class Chapter():
     def title(self):
         return self.crawler.get_chapter_title(self.chapter_number)
 
+    @property
+    def image_urls(self):
+        return self.crawler.get_chapter(self.chapter_number).image_urls
+
     def __repr__(self):
         return """<Chapter>
 title={title}

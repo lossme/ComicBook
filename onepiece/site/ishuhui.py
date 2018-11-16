@@ -1,93 +1,82 @@
-import requests
-
+from . import ComicBookCrawlerBase
 from ..exceptions import ChapterSourceNotFound
 
 
-class ComicBookCrawler():
+class ComicBookCrawler(ComicBookCrawlerBase):
 
-    HEADERS = {
-        'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                       'Chrome/65.0.3325.146 Safari/537.36')
-    }
-    TIMEOUT = 30
     source_name = '鼠绘漫画'
-    session = requests.session()
 
     def __init__(self, comicid):
+        super().__init__()
         self.comicid = comicid
+
         self.api_data = None
-        # {int_chapter_number: chapter_api_data}
-        self.chapter_api_data_db = {}
 
-    @classmethod
-    def send_request(cls, url, **kwargs):
-        kwargs.setdefault('headers', cls.HEADERS)
-        kwargs.setdefault('timeout', cls.TIMEOUT)
-        return cls.session.get(url, **kwargs)
-
-    @classmethod
-    def get_json(cls, url):
-        response = cls.send_request(url)
-        return response.json()
-
-    @classmethod
-    def get_html(cls, url):
-        response = cls.send_request(url)
-        return response.text
+        # {int_chapter_number: Chapter}
+        self.chapter_db = {}
+        self.comicbook = None
 
     def get_api_data(self):
-        if self.api_data is not None:
+        if self.api_data:
             return self.api_data
         # https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id=1&type=comics&.json
         url = "https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id={}&type=comics&.json"
         url = url.format(self.comicid)
-        data = self.get_json(url=url)
-        self.api_data = data
+        self.api_data = self.get_json(url=url)
         return self.api_data
 
-    def get_chapter_api_data(self, chapter_number):
-        if chapter_number in self.chapter_api_data_db:
-            return self.chapter_api_data_db[chapter_number]
+    def get_comicbook(self):
+        if self.comicbook is not None:
+            return self.comicbook
+        api_data = self.get_api_data()
+        self.comicbook = self.parser_api_data(api_data)
+        return self.comicbook
 
+    def get_chapter(self, chapter_number):
+        if chapter_number not in self.chapter_db:
+            self.chapter_db[chapter_number] = self._get_chapter(chapter_number)
+        return self.chapter_db[chapter_number]
+
+    def _get_chapter(self, chapter_number):
         str_chapter_number = str(chapter_number)
         api_data = self.get_api_data()
         for items in api_data['data']['comicsIndexes']['1']['nums'].values():
             if str_chapter_number in items:
                 chapter_data_sources = items[str_chapter_number]
                 for chapter_data in chapter_data_sources:
-                    if chapter_data['sourceID'] in [1, 7]:
+                    source_id = chapter_data['sourceID']
+                    if source_id in [1, 7]:
                         # https://prod-api.ishuhui.com/comics/detail?id=11196
                         url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(chapter_data['id'])
                         chapter_api_data = self.get_json(url)
-                        self.chapter_api_data_db[chapter_number] = chapter_api_data
-                    if chapter_data['sourceID'] == 2:
+                        return self.parser_ishuihui_source(chapter_api_data)
+                    elif chapter_data['sourceID'] == 2:
                         # http://ac.qq.com/ComicView/index/id/505430/cid/1
-                        # qq_source_url = chapter_data['url']
+                        qq_source_url = chapter_data['url']
+                        html = self.get_html(qq_source_url)
+                        return self.parser_qq_source(html)
+                    if chapter_data['sourceID'] == 6:
+                        # 百度网盘
                         pass
-        if chapter_number not in self.chapter_api_data_db:
-            raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
-        return self.chapter_api_data_db[chapter_number]
+        raise ChapterSourceNotFound("没找到资源 {} {}".format(self.get_comicbook_name(), chapter_number))
 
-    def get_comicbook_name(self):
-        api_data = self.get_api_data()
-        return api_data['data']['name']
+    @classmethod
+    def parser_api_data(cls, api_data):
+        name = api_data['data']['name']
+        desc = api_data['data']['desc']
+        tag = api_data['data']['tag']
+        max_chapter_number = int(api_data['data']['comicsIndexes']['1']['maxNum'])
+        return cls.ComicBook(name=name, desc=desc, tag=tag, max_chapter_number=max_chapter_number)
 
-    def get_comicbook_desc(self):
-        api_data = self.get_api_data()
-        return api_data['data']['desc']
+    @classmethod
+    def parser_ishuihui_source(cls, chapter_api_data):
+        # https://prod-api.ishuhui.com/comics/detail?id=11196
+        image_urls = [item['url'] for item in chapter_api_data['data']['contentImg']]
+        chapter_title = chapter_api_data['data']['title']
+        return cls.Chapter(chapter_title=chapter_title, image_urls=image_urls)
 
-    def get_comicbook_tag(self):
-        api_data = self.get_api_data()
-        return api_data['data']['tag']
-
-    def get_max_chapter_number(self):
-        api_data = self.get_api_data()
-        return int(api_data['data']['comicsIndexes']['1']['maxNum'])
-
-    def get_chapter_title(self, chapter_number):
-        chapter_api_data = self.get_chapter_api_data(chapter_number)
-        return chapter_api_data['data']['title']
-
-    def get_chapter_image_urls(self, chapter_number):
-        chapter_api_data = self.get_chapter_api_data(chapter_number)
-        return [item['url'] for item in chapter_api_data['data']['contentImg']]
+    @classmethod
+    def parser_qq_source(self, chapter_page_html):
+        # http://ac.qq.com/ComicView/index/id/505430/cid/1
+        from .qq import ComicBookCrawler as QQComicBookCrawler
+        return QQComicBookCrawler.parser_chapter_page(chapter_page_html)
