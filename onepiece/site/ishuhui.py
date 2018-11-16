@@ -55,7 +55,7 @@ class ComicBookCrawler():
             if str_chapter_number in items:
                 chapter_data_sources = items[str_chapter_number]
                 for chapter_data in chapter_data_sources:
-                    if chapter_data['sourceID'] == 1:
+                    if chapter_data['sourceID'] in [1, 7]:
                         # https://prod-api.ishuhui.com/comics/detail?id=11196
                         url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(chapter_data['id'])
                         chapter_api_data = self.get_json(url)
@@ -83,12 +83,6 @@ class ComicBookCrawler():
     def get_max_chapter_number(self):
         api_data = self.get_api_data()
         return int(api_data['data']['comicsIndexes']['1']['maxNum'])
-
-    def create_chapter(self, url):
-        # https://prod-api.ishuhui.com/comics/detail?id=11196
-        data = self.get_json(url)
-        images = [ImageInfo(item['url']) for item in data['data']['contentImg']]
-        return images
 
     def get_chapter_title(self, chapter_number):
         chapter_api_data = self.get_chapter_api_data(chapter_number)
