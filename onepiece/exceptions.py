@@ -8,3 +8,7 @@ class ComicbookNotFound(Exception):
 
 class ChapterSourceNotFound(ComicbookCrawlerException):
     pass
+
+
+class ImageDownloadError(ComicbookCrawlerException):
+    pass

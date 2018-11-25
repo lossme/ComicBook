@@ -9,11 +9,30 @@ import multiprocessing
 import requests
 from PIL import Image
 
+from .exceptions import ImageDownloadError
+
+
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 def calc_str_md5(s):
     return hashlib.md5(s.encode()).hexdigest()
+
+
+def retry(times=3, delay=0):
+    def _wrapper1(func):
+        def _wrapper2(*args, **kwargs):
+            i = 0
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    i += 1
+                    if i > times:
+                        raise e
+                    time.sleep(delay)
+        return _wrapper2
+    return _wrapper1
 
 
 def walk(rootdir):
@@ -31,8 +50,7 @@ class ImageCache():
 
     @classmethod
     def set_cache_dir(cls, cache_dir):
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
+        os.makedirs(cache_dir, exist_ok=True)
         cls.CACHE_DIR = cache_dir
 
     @classmethod
@@ -43,29 +61,29 @@ class ImageCache():
         return os.path.join(cls.CACHE_DIR, s[0:2], s[2:4], s[4:6], s)
 
     @classmethod
+    @retry(times=3, delay=1)
     def download_image(cls, image_url, target_path):
-        image_dir = os.path.dirname(target_path)
-        if not os.path.exists(image_dir):
-            os.makedirs(image_dir)
         try:
             response = cls.session.get(image_url)
-            if response.status_code == 200:
-                with open(target_path, 'wb') as f:
-                    f.write(response.content)
-                return target_path
-            else:
-                raise Exception('图片下载失败: {} {}'.format(response.status_code, image_url))
+            if response.status_code != 200:
+                raise ImageDownloadError('图片下载失败: status_code={} image_url={}'.format(response.status_code, image_url))
         except Exception as e:
-            raise Exception("图片下载失败: {} error: {}".format(image_url, e))
+            raise ImageDownloadError("图片下载失败: image_url={} error: {}".format(image_url, e))
+
+        with cls.LOCK:
+            image_dir = os.path.dirname(target_path)
+            os.makedirs(image_dir, exist_ok=True)
+            with open(target_path, 'wb') as f:
+                f.write(response.content)
+        return target_path
 
     @classmethod
     def get_cache_path(cls, image_path_or_url):
-        with cls.LOCK:
-            image_path = cls.to_path(image_path_or_url)
-            if not os.path.exists(image_path):
-                if cls.URL_PATTERN.match(image_path_or_url):
-                    cls.download_image(image_url=image_path_or_url, target_path=image_path)
-            return image_path
+        image_path = cls.to_path(image_path_or_url)
+        if not os.path.exists(image_path):
+            if cls.URL_PATTERN.match(image_path_or_url):
+                cls.download_image(image_url=image_path_or_url, target_path=image_path)
+        return image_path
 
     @classmethod
     def get_thumbnail_cached_path(cls, image_path_or_url, size=(250, 250)):

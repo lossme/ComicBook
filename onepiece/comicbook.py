@@ -112,9 +112,6 @@ chapter_number={chapter_number}
                                    self.crawler.source_name,
                                    self.comicbook.name,
                                    "{} {}".format(self.chapter_number, self.title))
-
-        if not os.path.exists(chapter_dir):
-            os.makedirs(chapter_dir)
         return chapter_dir
 
     def save(self, output_dir):
@@ -172,4 +169,5 @@ image_url={image_url}
 
     def save(self, target_path):
         cache_file = ImageCache.get_cache_path(self.image_url)
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
         shutil.copyfile(cache_file, target_path)
