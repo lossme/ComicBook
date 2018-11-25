@@ -42,7 +42,7 @@ def walk(rootdir):
 
 
 class ImageCache():
-    CACHE_DIR = os.path.join(HERE, os.path.pardir, ".cache/image_cache")
+    CACHE_DIR = os.path.abspath(os.path.join(HERE, os.path.pardir, ".cache/image_cache"))
     URL_PATTERN = re.compile(r'^https?://.*')
     EXPIRE = 10 * 24 * 60 * 60   # 缓存有效期 10 天
     session = requests.Session()

@@ -50,23 +50,29 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                 if chapter_number != _chapter_number:
                     continue
 
+                qq_source_url = None
+                ishuhui_source_url = None
                 for chapter_data in chapter_data_sources:
                     source_id = chapter_data['sourceID']
-                    if source_id in [1, 7]:
-                        # https://prod-api.ishuhui.com/comics/detail?id=11196
-                        url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(chapter_data['id'])
-                        chapter_api_data = self.get_json(url)
-                        chapter = self.parser_ishuihui_source(chapter_api_data)
-                        return chapter
-                    elif chapter_data['sourceID'] == 2:
+                    if chapter_data['sourceID'] == 2:
                         # http://ac.qq.com/ComicView/index/id/505430/cid/1
                         qq_source_url = chapter_data['url']
-                        html = self.get_html(qq_source_url)
-                        chapter = self.parser_qq_source(html)
-                        return chapter
+                    if source_id in [1, 7]:
+                        # https://prod-api.ishuhui.com/comics/detail?id=11196
+                        ishuhui_source_url = "https://prod-api.ishuhui.com/comics/detail?id={}"\
+                            .format(chapter_data['id'])
                     if chapter_data['sourceID'] == 6:
                         # 百度网盘
                         pass
+
+                if qq_source_url:
+                    html = self.get_html(qq_source_url)
+                    return self.parser_qq_source(html)
+                if ishuhui_source_url:
+                    chapter_api_data = self.get_json(ishuhui_source_url)
+                    chapter = self.parser_ishuihui_source(chapter_api_data)
+                    return chapter
+
         raise ChapterSourceNotFound()
 
     @classmethod
