@@ -124,7 +124,10 @@ def main():
     echo("正在获取最新数据")
     ComicBook.init(worker=args.worker)
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
-    print("{} 更新至 {}".format(comicbook.name, comicbook.max_chapter_number))
+    echo("{source_name} {name} 更新至 {max_chapter_number}"
+         .format(source_name=comicbook.source_name,
+                 name=comicbook.name,
+                 max_chapter_number=comicbook.max_chapter_number))
 
     if is_download_all:
         chapter_number_list = list(range(1, comicbook.max_chapter_number))
