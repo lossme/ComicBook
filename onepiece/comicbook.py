@@ -107,15 +107,22 @@ title={title}
 chapter_number={chapter_number}
 </Chapter>""".format(name=self.comicbook.name, title=self.title, chapter_number=self.chapter_number)
 
-    def get_chapter_dir(self, output_dir):
+    def get_chapter_image_dir(self, output_dir):
         chapter_dir = os.path.join(output_dir,
                                    self.crawler.source_name,
                                    self.comicbook.name,
                                    "{} {}".format(self.chapter_number, self.title))
         return chapter_dir
 
+    def get_chapter_pdf_path(self, output_dir):
+        pdf_path = os.path.join(output_dir,
+                                self.crawler.source_name,
+                                "{} pdf".format(self.comicbook.name),
+                                "{} {}.pdf".format(self.chapter_number, self.title))
+        return pdf_path
+
     def save(self, output_dir):
-        chapter_dir = self.get_chapter_dir(output_dir)
+        chapter_dir = self.get_chapter_image_dir(output_dir)
         future_list = []
         for idx, image in enumerate(self.images, start=1):
             ext = ImageInfo.find_suffix(image.image_url)
@@ -134,10 +141,9 @@ chapter_number={chapter_number}
             except Exception as e:
                 warnings.warn(str(e))
 
-        pdf_dir = os.path.abspath(os.path.join(chapter_dir, os.path.pardir))
-        pdf_path = os.path.join(pdf_dir, "{} {}.pdf".format(self.chapter_number, self.title))
+        pdf_path = self.get_chapter_pdf_path(output_dir)
         image_dir_to_pdf(img_dir=chapter_dir,
-                         output=pdf_path,
+                         target_path=pdf_path,
                          sort_by=lambda x: int(x.split('.')[0]))
         return pdf_path
 
