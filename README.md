@@ -51,7 +51,7 @@
 ## 使用帮助
 
 ```
-usage: __main__.py [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
+usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
                    [--worker WORKER] [--all] [--pdf] [--mail]
                    [--config CONFIG] [-o OUTPUT] [--site {qq,ishuhui}] [-V]
 

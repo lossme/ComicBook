@@ -54,7 +54,7 @@ def parse_args():
     python3 onepiece.py -id 505430 -i 1-5,7,9-10
     """
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="onepiece")
 
     parser.add_argument('-id', '--comicid', type=int,
                         help="漫画id，海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
