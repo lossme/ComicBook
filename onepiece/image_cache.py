@@ -4,7 +4,6 @@ import hashlib
 import time
 import shutil
 import warnings
-import multiprocessing
 
 import requests
 from PIL import Image
@@ -46,7 +45,6 @@ class ImageCache():
     URL_PATTERN = re.compile(r'^https?://.*')
     EXPIRE = 10 * 24 * 60 * 60   # 缓存有效期 10 天
     session = requests.Session()
-    LOCK = multiprocessing.Lock()
 
     @classmethod
     def set_cache_dir(cls, cache_dir):
@@ -69,12 +67,10 @@ class ImageCache():
                 raise ImageDownloadError('图片下载失败: status_code={} image_url={}'.format(response.status_code, image_url))
         except Exception as e:
             raise ImageDownloadError("图片下载失败: image_url={} error: {}".format(image_url, e))
-
-        with cls.LOCK:
-            image_dir = os.path.dirname(target_path)
-            os.makedirs(image_dir, exist_ok=True)
-            with open(target_path, 'wb') as f:
-                f.write(response.content)
+        image_dir = os.path.dirname(target_path)
+        os.makedirs(image_dir, exist_ok=True)
+        with open(target_path, 'wb') as f:
+            f.write(response.content)
         return target_path
 
     @classmethod
