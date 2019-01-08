@@ -3,9 +3,8 @@ import base64
 import json
 from urllib import parse
 
-
-from . import ComicBookCrawlerBase, Chapter, ComicBook
-from ..exceptions import ChapterSourceNotFound
+from . import ComicBookCrawlerBase, Chapter, ComicBook, get_html
+from ..exceptions import ChapterSourceNotFound, ComicbookNotFound
 
 
 class ComicBookCrawler(ComicBookCrawlerBase):
@@ -18,6 +17,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     COMIC_DESC_PATTERN = re.compile(r"""<p class="works-intro-short ui-text-gray9">(.*?)</p>""", re.S)
 
     CHAPTER_TITLE_PATTERN = re.compile(r"""<span class="title-comicHeading">(.*?)</span>""")
+
+    SEARCH_PAGE_PATTERN = re.compile(
+        r'<a href="/Comic/comicInfo/id/(?P<comicid>\d+)" title="(?P<title>.*?)" class="f14".*?</a>'
+    )
 
     def __init__(self, comicid):
         super().__init__()
@@ -135,3 +138,12 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         datail_list = json.loads(json_str)['picture']
         image_urls = [item['url'] for item in datail_list]
         return Chapter(title=chapter_title, image_urls=image_urls)
+
+    @classmethod
+    def search(cls, name=None):
+        url = "https://ac.qq.com/Comic/searchList/search/{}".format(name)
+        html = get_html(url)
+        result = cls.SEARCH_PAGE_PATTERN.findall(html)
+        if result is None:
+            raise ComicbookNotFound()
+        return [cls(comicid=item[0]) for item in result]
