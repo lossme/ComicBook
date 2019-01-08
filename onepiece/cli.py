@@ -74,12 +74,10 @@ def parse_args():
 
     parser.add_argument('--mail', action='store_true',
                         help="若设置了则发送到邮箱, 如 --mail。需要预先配置邮件信息。\
-                        可以参照config.ini.example文件，创建并修改config.ini文件"
-                        )
+                        可以参照config.ini.example文件，创建并修改config.ini文件")
 
     parser.add_argument('--config', default="config.ini",
-                        help="配置文件路径，默认取当前目录下的config.ini"
-                        )
+                        help="配置文件路径，默认取当前目录下的config.ini")
 
     parser.add_argument('-o', '--output', type=str, default='./download',
                         help="文件保存路径，默认保存在当前路径下的download文件夹")

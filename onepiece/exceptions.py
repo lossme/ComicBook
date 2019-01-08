@@ -2,7 +2,7 @@ class ComicbookCrawlerException(Exception):
     pass
 
 
-class ComicbookNotFound(Exception):
+class ComicbookNotFound(ComicbookCrawlerException):
     pass
 
 
@@ -11,4 +11,8 @@ class ChapterSourceNotFound(ComicbookCrawlerException):
 
 
 class ImageDownloadError(ComicbookCrawlerException):
+    pass
+
+
+class URLException(ComicbookCrawlerException):
     pass

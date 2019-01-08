@@ -1,18 +1,26 @@
 import collections
 import requests
-from ..exceptions import ChapterSourceNotFound
+from ..exceptions import ChapterSourceNotFound, URLException
+
+
+HEADERS = {
+    'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/65.0.3325.146 Safari/537.36')
+}
 
 
 ComicBook = collections.namedtuple("ComicBook", ["name", "desc", "tag", "max_chapter_number"])
 Chapter = collections.namedtuple("Chapter", ["title", "image_urls"])
 
 
+def get_html(url):
+    response = requests.get(url, headers=HEADERS)
+    return response.text
+
+
 class ComicBookCrawlerBase():
 
-    HEADERS = {
-        'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                       'Chrome/65.0.3325.146 Safari/537.36')
-    }
+    HEADERS = HEADERS
     TIMEOUT = 30
 
     def __init__(self):
@@ -27,7 +35,11 @@ class ComicBookCrawlerBase():
     def send_request(self, url, **kwargs):
         kwargs.setdefault('headers', self.HEADERS)
         kwargs.setdefault('timeout', self.TIMEOUT)
-        return self.session.get(url, **kwargs)
+        try:
+            return self.session.get(url, **kwargs)
+        except Exception:
+            msg = "URL链接访问异常: {}".format(url)
+            raise URLException(msg)
 
     def get_html(self, url):
         response = self.send_request(url)
