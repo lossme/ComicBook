@@ -22,6 +22,7 @@ class ComicBookCrawlerBase():
 
     HEADERS = HEADERS
     TIMEOUT = 30
+    source_name = "未知"
 
     def __init__(self):
         self.session = requests.session()
