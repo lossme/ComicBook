@@ -75,3 +75,6 @@ class ComicBookCrawlerBase():
         :return Chapter instance:
         """
         raise NotImplementedError
+
+    def login(self):
+        pass

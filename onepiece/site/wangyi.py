@@ -1,4 +1,5 @@
 import re
+import time
 
 from . import ComicBookCrawlerBase, Chapter, ComicBook
 
@@ -11,6 +12,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="f-toe sr-detail__heading">(.*?)</h1>')
     IMAGE_PATTERN = re.compile(r'url: window.IS_SUPPORT_WEBP \? ".*?" : "(.*?AccessKeyId=\w{32})')
     CHAPTER_TITLE_PATTERN = re.compile('fullTitle: "(.*?)"')
+    CSRF_TOKEN_PATTERN = re.compile(r'csrfToken: "(.*?)"')
 
     def __init__(self, comicid):
         super().__init__()
@@ -52,3 +54,28 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         image_urls = self.IMAGE_PATTERN.findall(html)
         title = self.CHAPTER_TITLE_PATTERN.search(html).group(1)
         return Chapter(title=title, image_urls=image_urls)
+
+    def login(self):
+        import webbrowser
+
+        csrf_token = self.CSRF_TOKEN_PATTERN.search(self.get_index_page()).group(1)
+        timestamp = int(time.time())
+        login_url = 'https://manhua.163.com/login/qrCodeLoginImage.json?csrfToken={csrf_token}&_={timestamp}'\
+            .format(csrf_token=csrf_token, timestamp=timestamp)
+
+        data = self.get_json(login_url)
+        token = data["token"]
+        qrcode_url = "https://manhua.163.com" + data["url"]
+        webbrowser.open(qrcode_url)
+        check_url = ("https://manhua.163.com/login/qrCodeCheck.json"
+                     "?token={token}&status=0&csrfToken={csrf_token}&_={timestamp}")\
+            .format(token=token, csrf_token=csrf_token, timestamp=timestamp)
+        while True:
+            print("请扫描二维码")
+            check_data = self.get_json(check_url)
+            status = check_data['status']
+            if status == 2:
+                print("登录成功")
+                break
+            time.sleep(2)
+        return

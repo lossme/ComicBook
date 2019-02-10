@@ -72,6 +72,9 @@ def parse_args():
     parser.add_argument('--pdf', action='store_true',
                         help="若设置了则生成pdf文件, 如 --pdf")
 
+    parser.add_argument('--login', action='store_true',
+                        help="是否登录账号（目前仅支持登录网易账号），默认不登录")
+
     parser.add_argument('--mail', action='store_true',
                         help="若设置了则发送到邮箱, 如 --mail。需要预先配置邮件信息。\
                         可以参照config.ini.example文件，创建并修改config.ini文件")
@@ -109,6 +112,7 @@ def main():
     is_download_all = args.all
     is_send_mail = args.mail
     is_gen_pdf = args.pdf
+    is_login = args.login
 
     if args.mail:
         Mail.init(args.config)
@@ -122,6 +126,9 @@ def main():
     echo("正在获取最新数据")
     ComicBook.init(worker=args.worker)
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    if is_login:
+        comicbook.crawler.login()
+
     echo("{source_name} {name} 更新至 {max_chapter_number}"
          .format(source_name=comicbook.source_name,
                  name=comicbook.name,
