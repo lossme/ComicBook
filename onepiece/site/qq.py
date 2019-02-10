@@ -3,7 +3,7 @@ import base64
 import json
 from urllib import parse
 
-from . import ComicBookCrawlerBase, Chapter, ComicBook, get_html
+from . import ComicBookCrawlerBase, Chapter, ComicBook
 from ..exceptions import ChapterSourceNotFound, ComicbookNotFound
 
 
@@ -142,7 +142,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     @classmethod
     def search(cls, name=None):
         url = "https://ac.qq.com/Comic/searchList/search/{}".format(name)
-        html = get_html(url)
+        html = cls._get_html(url)
         result = cls.SEARCH_PAGE_PATTERN.findall(html)
         if result is None:
             raise ComicbookNotFound()

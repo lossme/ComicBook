@@ -13,11 +13,6 @@ ComicBook = collections.namedtuple("ComicBook", ["name", "desc", "tag", "max_cha
 Chapter = collections.namedtuple("Chapter", ["title", "image_urls"])
 
 
-def get_html(url):
-    response = requests.get(url, headers=HEADERS)
-    return response.text
-
-
 class ComicBookCrawlerBase():
 
     HEADERS = HEADERS
@@ -44,6 +39,11 @@ class ComicBookCrawlerBase():
 
     def get_html(self, url):
         response = self.send_request(url)
+        return response.text
+
+    @staticmethod
+    def _get_html(url):
+        response = requests.get(url, headers=HEADERS)
         return response.text
 
     def get_json(self, url):
