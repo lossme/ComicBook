@@ -1,6 +1,6 @@
 # TencentComicBook
 
-腾讯漫画、鼠绘漫画爬虫
+腾讯漫画、鼠绘漫画、网易漫画爬虫
 
 ## 本项目特点
 
@@ -36,24 +36,16 @@
 - 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece --comicid=505430 --chapter=1-5,7,9-10`
 - 下载漫画 id=505430 并生成pdf文件: `python3 -m onepiece --comicid=505430 --pdf`
 - 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --comicid=505430 --pdf --mail`
-
-从鼠绘漫画下载:
-
-- 从鼠绘漫画下载海贼王最新一集: `python3 -m onepiece --site=ishuhui`
-- 从鼠绘漫画下载 id=1 所有章节: `python3 -m onepiece --site=ishuhui --comicid=1 --all`
-- 从鼠绘漫画下载 id=1 第800集: `python3 -m onepiece --site=ishuhui --comicid=1 --chapter=800`
-- 从鼠绘漫画下载 id=1 倒数第二集: `python3 -m onepiece --site=ishuhui --comicid=1 --chapter=-2`
-- 从鼠绘漫画下载 id=1 1到5集,7集，9到10集: `python3 -m onepiece --site=ishuhui --comicid=1 --chapter=1-5,7,9-10`
-- 从鼠绘漫画下载 id=1 并生成pdf文件: `python3 -m onepiece --site=ishuhui --comicid=1 --pdf`
-- 从鼠绘漫画下载 id=1 并推送到邮箱: `python3 -m onepiece --site=ishuhui --comicid=1 --pdf --mail`
-
+- 从鼠绘漫画下载: `python3 -m onepiece --site=ishuhui --comicid=1 --chapter=1-5`
+- 从网易漫画下载: `python3 -m onepiece --site=wangyi --comicid=5015165829890111936 --chapter=1-5`
 
 ## 使用帮助
 
 ```
 usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
-                   [--worker WORKER] [--all] [--pdf] [--mail]
-                   [--config CONFIG] [-o OUTPUT] [--site {qq,ishuhui}] [-V]
+                [--worker WORKER] [--all] [--pdf] [--login] [--mail]
+                [--config CONFIG] [-o OUTPUT]
+                [--site {yuyou,wangyi,qq,ishuhui}] [-V]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -64,16 +56,17 @@ optional arguments:
   -c CHAPTER, --chapter CHAPTER
                         要下载的章节, 默认下载最新章节。如 -c 666 或者 -c 1-5,7,9-10
   --worker WORKER       线程池数，默认开启4个线程池
-  --all                 若设置了则下载该漫画的所有章节, 如 --all
-  --pdf                 若设置了则生成pdf文件, 如 --pdf
-  --mail                若设置了则发送到邮箱, 如 --mail。需要预先配置邮件信息。
+  --all                 是否下载该漫画的所有章节, 如 --all
+  --pdf                 是否生成pdf文件, 如 --pdf
+  --login               是否登录账号（目前仅支持登录网易账号），如 --login
+  --mail                是否发送pdf文件到邮箱, 如 --mail。需要预先配置邮件信息。
                         可以参照config.ini.example文件，创建并修改config.ini文件
   --config CONFIG       配置文件路径，默认取当前目录下的config.ini
   -o OUTPUT, --output OUTPUT
                         文件保存路径，默认保存在当前路径下的download文件夹
-  --site {qq,ishuhui}   数据源网站：支持qq,ishuhui
+  --site {yuyou,wangyi,qq,ishuhui}
+                        数据源网站：支持yuyou,wangyi,qq,ishuhui
   -V, --version         show program's version number and exit
-
 ```
 
 **免责声明**：本项目仅供学习交流之用，请勿用于非法用途。

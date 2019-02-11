@@ -67,16 +67,16 @@ def parse_args():
     parser.add_argument('--worker', type=int, default=4, help="线程池数，默认开启4个线程池")
 
     parser.add_argument('--all', action='store_true',
-                        help="若设置了则下载该漫画的所有章节, 如 --all")
+                        help="是否下载该漫画的所有章节, 如 --all")
 
     parser.add_argument('--pdf', action='store_true',
-                        help="若设置了则生成pdf文件, 如 --pdf")
+                        help="是否生成pdf文件, 如 --pdf")
 
     parser.add_argument('--login', action='store_true',
-                        help="是否登录账号（目前仅支持登录网易账号），默认不登录")
+                        help="是否登录账号（目前仅支持登录网易账号），如 --login")
 
     parser.add_argument('--mail', action='store_true',
-                        help="若设置了则发送到邮箱, 如 --mail。需要预先配置邮件信息。\
+                        help="是否发送pdf文件到邮箱, 如 --mail。需要预先配置邮件信息。\
                         可以参照config.ini.example文件，创建并修改config.ini文件")
 
     parser.add_argument('--config', default="config.ini",
@@ -119,9 +119,11 @@ def main():
 
     if comicid is None:
         if site == "ishuhui":
-            comicid = 1
+            comicid = "1"
         elif site == "qq":
-            comicid = 505430
+            comicid = "505430"
+        elif site == "wangyi":
+            comicid = "5015165829890111936"
 
     echo("正在获取最新数据")
     ComicBook.init(worker=args.worker)
