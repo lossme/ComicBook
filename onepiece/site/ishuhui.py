@@ -81,6 +81,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def parser_api_data(cls, api_data):
         name = api_data['data']['name']
         desc = api_data['data']['desc']
+        desc = desc.replace("<p>", "")
+        desc = desc.replace("</p>", "")
         tag = api_data['data']['tag']
         max_chapter_number = int(api_data['data']['comicsIndexes']['1']['maxNum'])
         return ComicBook(name=name, desc=desc, tag=tag, max_chapter_number=max_chapter_number)
