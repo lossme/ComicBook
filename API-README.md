@@ -20,7 +20,6 @@ curl ${host}/api/ishuhui/1
 ```
 
 ```json
-
 {
   "author": "尾田荣一郎",
   "cover_image_url": "http://oss.ishuhui.com/oldImg/cartoon/book/thumb/1/YDdFCpDpUAveOWJvxJRusmHb.jpg",
@@ -30,8 +29,6 @@ curl ${host}/api/ishuhui/1
   "source_name": "鼠绘漫画",
   "source_url": "https://prod-api.ishuhui.com/ver/None/anime/detail?id=1&type=comics&.json"
 }
-
-
 ```
 
 ------
@@ -45,7 +42,6 @@ curl ${host}/api/ishuhui/1/933
 ```
 
 ```json
-
 {
   "author": "尾田荣一郎",
   "chapter": {
