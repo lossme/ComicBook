@@ -12,7 +12,7 @@ app = Blueprint("main", __name__, url_prefix="/api")
 def handle_404(error):
     return jsonify(
         {
-            "message": "资源未找到"
+            "message": str(error)
         }), 404
 
 
@@ -36,7 +36,10 @@ def get_comicbook_info(site, comicid):
             "name": comicbook.name,
             "desc": comicbook.desc,
             "source_name": comicbook.source_name,
-            "max_chapter_number": comicbook.max_chapter_number
+            "source_url": comicbook.source_url,
+            "max_chapter_number": comicbook.max_chapter_number,
+            "cover_image_url": comicbook.cover_image_url,
+            "author": comicbook.author
         }
     )
 
@@ -49,9 +52,15 @@ def get_chapter_info(site, comicid, chapter_number):
             "name": chapter.comicbook.name,
             "desc": chapter.comicbook.desc,
             "source_name": chapter.comicbook.source_name,
+            "source_url": chapter.comicbook.source_url,
             "max_chapter_number": chapter.comicbook.max_chapter_number,
-            "chapter_number": chapter_number,
-            "chapter_title": chapter.title,
-            "image_urls": chapter.image_urls
+            "cover_image_url": chapter.comicbook.cover_image_url,
+            "author": chapter.comicbook.author,
+            "chapter": {
+                "chapter_number": chapter_number,
+                "chapter_title": chapter.title,
+                "image_urls": chapter.image_urls,
+                "source_url": chapter.source_url,
+            }
         }
     )

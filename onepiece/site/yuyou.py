@@ -1,4 +1,4 @@
-from . import ComicBookCrawlerBase, Chapter, ComicBook
+from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem
 from ..exceptions import ChapterSourceNotFound
 
 
@@ -9,10 +9,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         super().__init__()
         self.comicid = comicid
 
-    def get_comicbook(self):
-        return ComicBook(name="狱友提供", desc="", tag="", max_chapter_number=1914)
+    def get_comicbook_item(self):
+        return ComicBookItem(name="狱友提供", desc="", tag="", max_chapter_number=1914)
 
-    def get_chapter(self, chapter_number):
+    def get_chapter_item(self, chapter_number):
         if 97 > chapter_number or chapter_number > 1914:
             raise ChapterSourceNotFound()
         url = "http://182.61.35.52:8087/laidianwebapp/selectDetailsPost?id={}".format(chapter_number)
@@ -27,4 +27,4 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                     title=data["data"]["postText"])
         image_urls = [data["data"]["image{}".format(i)] for i in range(1, 5)]
         image_urls = list(filter(lambda x: bool(x), image_urls))
-        return Chapter(title=title, image_urls=image_urls)
+        return ChapterItem(title=title, image_urls=image_urls)

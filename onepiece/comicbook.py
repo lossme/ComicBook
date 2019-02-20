@@ -42,11 +42,11 @@ class ComicBook():
 
     @property
     def name(self):
-        return self.crawler.comicbook.name
+        return self.crawler.comicbook_item.name
 
     @property
     def desc(self):
-        return self.crawler.comicbook.desc
+        return self.crawler.comicbook_item.desc
 
     @property
     def source_name(self):
@@ -54,11 +54,23 @@ class ComicBook():
 
     @property
     def tag(self):
-        return self.crawler.comicbook.tag
+        return self.crawler.comicbook_item.tag
 
     @property
     def max_chapter_number(self):
-        return self.crawler.comicbook.max_chapter_number
+        return self.crawler.comicbook_item.max_chapter_number
+
+    @property
+    def cover_image_url(self):
+        return self.crawler.comicbook_item.cover_image_url
+
+    @property
+    def author(self):
+        return self.crawler.comicbook_item.author
+
+    @property
+    def source_url(self):
+        return self.crawler.comicbook_item.source_url
 
     def __repr__(self):
         return """<ComicBook>
@@ -92,15 +104,19 @@ class Chapter():
 
     @property
     def title(self):
-        return self.crawler.Chapter(self.chapter_number).title
+        return self.crawler.ChapterItem(self.chapter_number).title
 
     @property
     def image_urls(self):
-        return self.crawler.Chapter(self.chapter_number).image_urls
+        return self.crawler.ChapterItem(self.chapter_number).image_urls
 
     @property
     def images(self):
         return [ImageInfo(image_url) for image_url in self.image_urls]
+
+    @property
+    def source_url(self):
+        return self.crawler.ChapterItem(self.chapter_number).source_url
 
     def __repr__(self):
         return """<Chapter>

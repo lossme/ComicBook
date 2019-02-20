@@ -1,4 +1,3 @@
-import collections
 import requests
 from ..exceptions import ChapterSourceNotFound, URLException
 
@@ -9,8 +8,25 @@ HEADERS = {
 }
 
 
-ComicBook = collections.namedtuple("ComicBook", ["name", "desc", "tag", "max_chapter_number"])
-Chapter = collections.namedtuple("Chapter", ["title", "image_urls"])
+class ComicBookItem():
+
+    def __init__(self, name=None, desc=None, tag=None, max_chapter_number=None,
+                 cover_image_url=None, author=None, source_url=None):
+        self.name = name or ""
+        self.desc = desc or ""
+        self.tag = tag or ""
+        self.max_chapter_number = max_chapter_number or 0
+        self.cover_image_url = cover_image_url or ""
+        self.author = author or ""
+        self.source_url = source_url or ""
+
+
+class ChapterItem():
+
+    def __init__(self, title, image_urls, source_url=None):
+        self.title = title or ""
+        self.image_urls = image_urls or []
+        self.source_url = source_url or ""
 
 
 class ComicBookCrawlerBase():
@@ -22,8 +38,8 @@ class ComicBookCrawlerBase():
     def __init__(self):
         self.session = requests.session()
         # {int_chapter_number: Chapter}
-        self._chapter_db = {}
-        self._comicbook = None
+        self._chapter_item_db = {}
+        self._comicbook_item = None
 
     def set_session(self, session):
         self.session = session
@@ -51,26 +67,27 @@ class ComicBookCrawlerBase():
         return response.json()
 
     @property
-    def comicbook(self):
-        if self._comicbook is None:
-            self._comicbook = self.get_comicbook()
-        return self._comicbook
+    def comicbook_item(self):
+        if self._comicbook_item is None:
+            self._comicbook_item = self.get_comicbook_item()
+        return self._comicbook_item
 
-    def Chapter(self, chapter_number):
-        if chapter_number not in self._chapter_db:
+    def ChapterItem(self, chapter_number):
+        if chapter_number not in self._chapter_item_db:
             try:
-                self._chapter_db[chapter_number] = self.get_chapter(chapter_number)
+                self._chapter_item_db[chapter_number] = self.get_chapter_item(chapter_number)
             except ChapterSourceNotFound:
-                raise ChapterSourceNotFound("没找到资源 {} {}".format(self.comicbook.name, chapter_number))
-        return self._chapter_db[chapter_number]
+                msg = "没找到资源 {} {} {}".format(self.source_name, self.comicbook_item.name, chapter_number)
+                raise ChapterSourceNotFound(msg)
+        return self._chapter_item_db[chapter_number]
 
-    def get_comicbook(self):
+    def get_comicbook_item(self):
         """
         :return ComicBook instance:
         """
         raise NotImplementedError
 
-    def get_chapter(self, chapter_number):
+    def get_chapter_item(self, chapter_number):
         """
         :return Chapter instance:
         """
