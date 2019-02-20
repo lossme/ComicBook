@@ -9,7 +9,7 @@ from ..exceptions import ChapterSourceNotFound, ComicbookNotFound
 
 class ComicBookCrawler(ComicBookCrawlerBase):
 
-    QQ_COMIC_HOST = 'http://ac.qq.com'
+    QQ_COMIC_HOST = 'https://ac.qq.com'
 
     source_name = '腾讯漫画'
 
@@ -35,7 +35,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_comicbook_page_html(self):
         if self.comicbook_page_html is None:
-            url = 'http://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
+            url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
             comicbook_page_html = self.get_html(url)
             self.comicbook_page_html = comicbook_page_html
         return self.comicbook_page_html
@@ -61,7 +61,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         return self.chapter_page_url_db
 
     def get_comicbook(self):
-        # http://ac.qq.com/Comic/ComicInfo/id/505430
+        # https://ac.qq.com/Comic/ComicInfo/id/505430
         html = self.get_comicbook_page_html()
         name = self.COMIC_NAME_PATTERN.search(html).group(1).strip()
         desc = self.COMIC_DESC_PATTERN.search(html).group(1).strip()

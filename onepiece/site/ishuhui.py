@@ -59,6 +59,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                     if chapter_data['sourceID'] == 2:
                         # http://ac.qq.com/ComicView/index/id/505430/cid/1
                         qq_source_url = chapter_data['url']
+                        qq_source_url = qq_source_url.replace("http://", "https://", 1)
                     if source_id in [1, 7]:
                         # https://prod-api.ishuhui.com/comics/detail?id=11196
                         ishuhui_source_url = "https://prod-api.ishuhui.com/comics/detail?id={}"\
@@ -96,6 +97,6 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     @classmethod
     def parser_qq_source(self, chapter_page_html):
-        # http://ac.qq.com/ComicView/index/id/505430/cid/1
+        # https://ac.qq.com/ComicView/index/id/505430/cid/1
         from .qq import ComicBookCrawler as QQComicBookCrawler
         return QQComicBookCrawler.parser_chapter_page(chapter_page_html)
