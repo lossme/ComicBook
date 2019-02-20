@@ -1,6 +1,6 @@
 import re
 from . import ComicBookCrawlerBase, Chapter, ComicBook
-from ..exceptions import ChapterSourceNotFound
+from ..exceptions import ComicbookNotFound, ChapterSourceNotFound
 
 
 class ComicBookCrawler(ComicBookCrawlerBase):
@@ -29,6 +29,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         url = "https://prod-api.ishuhui.com/ver/{ver}/anime/detail?id={comicid}&type=comics&.json"
         url = url.format(ver=self.comics_ver, comicid=self.comicid)
         self.api_data = self.get_json(url=url)
+        if not self.api_data.get("data"):
+            raise ComicbookNotFound()
         return self.api_data
 
     def get_comicbook(self):

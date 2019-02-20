@@ -2,9 +2,18 @@ from flask import Blueprint, jsonify
 import cachetools.func
 
 from onepiece.comicbook import ComicBook
+from onepiece.exceptions import NotFoundError
 
 
 app = Blueprint("main", __name__, url_prefix="/api")
+
+
+@app.errorhandler(NotFoundError)
+def handle_404(error):
+    return jsonify(
+        {
+            "message": "资源未找到"
+        }), 404
 
 
 @cachetools.func.ttl_cache(maxsize=1024, ttl=3600, typed=False)

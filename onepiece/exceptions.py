@@ -2,11 +2,15 @@ class ComicbookCrawlerException(Exception):
     pass
 
 
-class ComicbookNotFound(ComicbookCrawlerException):
+class NotFoundError(ComicbookCrawlerException):
     pass
 
 
-class ChapterSourceNotFound(ComicbookCrawlerException):
+class ComicbookNotFound(NotFoundError):
+    pass
+
+
+class ChapterSourceNotFound(NotFoundError):
     pass
 
 
