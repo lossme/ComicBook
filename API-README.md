@@ -27,7 +27,7 @@ curl ${host}/api/ishuhui/1
   "max_chapter_number": 933,
   "name": "海賊王",
   "source_name": "鼠绘漫画",
-  "source_url": "https://prod-api.ishuhui.com/ver/None/anime/detail?id=1&type=comics&.json"
+  "source_url": "https://prod-api.ishuhui.com/ver/fe058362/anime/detail?id=1&type=comics&.json"
 }
 ```
 
@@ -75,6 +75,6 @@ curl ${host}/api/ishuhui/1/933
   "max_chapter_number": 933,
   "name": "海賊王",
   "source_name": "鼠绘漫画",
-  "source_url": "https://prod-api.ishuhui.com/ver/None/anime/detail?id=1&type=comics&.json"
+  "source_url": "https://prod-api.ishuhui.com/ver/fe058362/anime/detail?id=1&type=comics&.json"
 }
 ```

@@ -12,21 +12,21 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         super().__init__()
         self.comicid = comicid
         self.api_data = None
-        self._comics_ver = None
+        self._comics_api_ver = None
 
     @property
-    def comics_ver(self):
-        if self._comics_ver is None:
+    def comics_api_ver(self):
+        if self._comics_api_ver is None:
             url = "https://prod-u.ishuhui.com/ver"
             data = self.get_json(url)
-            self._comics_ver = data["data"]["comics"]
-        self._comics_ver
+            self._comics_api_ver = data["data"]["comics"]
+        return self._comics_api_ver
 
     def get_api_data(self):
         # https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id=1&type=comics&.json
 
         url = "https://prod-api.ishuhui.com/ver/{ver}/anime/detail?id={comicid}&type=comics&.json"\
-            .format(ver=self.comics_ver, comicid=self.comicid)
+            .format(ver=self.comics_api_ver, comicid=self.comicid)
         if self.api_data is None:
             self.api_data = self.get_json(url=url)
         if not self.api_data.get("data"):
