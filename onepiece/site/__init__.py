@@ -83,13 +83,13 @@ class ComicBookCrawlerBase():
 
     def get_comicbook_item(self):
         """
-        :return ComicBook instance:
+        :return ComicBookItem instance:
         """
         raise NotImplementedError
 
     def get_chapter_item(self, chapter_number):
         """
-        :return Chapter instance:
+        :return ChapterItem instance:
         """
         raise NotImplementedError
 

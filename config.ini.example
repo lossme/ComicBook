@@ -9,7 +9,7 @@ smtp_port=465
 # 发送者账户
 sender=xx.qq.com
 
-# 登录失败可能需要使用授权码登录 http://service.mail.qq.com/cgi-bin/help?subtype=1&&id=28&&no=1001256
+# 登录失败可能需要使用授权码登录 https://service.mail.qq.com/cgi-bin/help?subtype=1&&id=28&&no=1001256
 # 发送者账户密码或者授权码
 sender_passwd=密码或授权码
 

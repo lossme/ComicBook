@@ -1,7 +1,4 @@
 from flask import Flask
-from flask_restplus import Api
-
-api = Api(version='1.0', title='ComicBook Crawler', authorizations={}, ui=True)
 
 
 def create_app():
