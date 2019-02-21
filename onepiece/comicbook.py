@@ -169,6 +169,7 @@ chapter_number={chapter_number}
 class ImageInfo():
     session = requests.Session()
     TIMEOUT = 30
+    IS_USE_CACHE = True
 
     def __init__(self, image_url):
         self.image_url = image_url
@@ -192,6 +193,10 @@ image_url={image_url}
         return ext
 
     def save(self, target_path):
-        cache_file = ImageCache.get_cache_path(self.image_url)
-        os.makedirs(os.path.dirname(target_path), exist_ok=True)
-        shutil.copyfile(cache_file, target_path)
+        if self.IS_USE_CACHE:
+            cache_file = ImageCache.get_cache_path(self.image_url)
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+            shutil.copyfile(cache_file, target_path)
+        else:
+            ImageCache.download_image(image_url=self.image_url, target_path=target_path)
+        return target_path

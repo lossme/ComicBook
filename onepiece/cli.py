@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from .comicbook import ComicBook
+from .comicbook import ComicBook, ImageInfo
 from .image_cache import ImageCache
 from .utils import get_current_time_str
 from .utils.mail import Mail
@@ -88,6 +88,9 @@ def parse_args():
     parser.add_argument('--site', type=str, default='qq', choices=ComicBook.SUPPORT_SITE,
                         help="数据源网站：支持{}".format(','.join(ComicBook.SUPPORT_SITE)))
 
+    parser.add_argument('--nocache', action='store_true',
+                        help="禁用图片缓存")
+
     parser.add_argument('-V', '--version', action='version', version=VERSION)
 
     args = parser.parse_args()
@@ -124,6 +127,8 @@ def main():
             comicid = "505430"
         elif site == "wangyi":
             comicid = "5015165829890111936"
+    if args.nocache:
+        ImageInfo.IS_USE_CACHE = False
 
     echo("正在获取最新数据")
     ComicBook.init(worker=args.worker)

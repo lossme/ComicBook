@@ -46,7 +46,7 @@
 usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
                 [--worker WORKER] [--all] [--pdf] [--login] [--mail]
                 [--config CONFIG] [-o OUTPUT]
-                [--site {yuyou,wangyi,qq,ishuhui}] [-V]
+                [--site {yuyou,wangyi,qq,ishuhui}] [--nocache] [-V]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -67,6 +67,7 @@ optional arguments:
                         文件保存路径，默认保存在当前路径下的download文件夹
   --site {yuyou,wangyi,qq,ishuhui}
                         数据源网站：支持yuyou,wangyi,qq,ishuhui
+  --nocache             禁用图片缓存
   -V, --version         show program's version number and exit
 ```
 
