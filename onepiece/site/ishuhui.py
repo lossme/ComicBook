@@ -95,14 +95,19 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                              max_chapter_number=max_chapter_number,
                              cover_image_url=cover_image_url,
                              author=author,
-                             source_url=source_url)
+                             source_url=source_url,
+                             source_name=cls.source_name)
 
     @classmethod
     def parser_ishuihui_source(cls, chapter_api_data, source_url=None):
         # https://prod-api.ishuhui.com/comics/detail?id=11196
         image_urls = [item['url'] for item in chapter_api_data['data']['contentImg']]
         chapter_title = chapter_api_data['data']['title']
-        return ChapterItem(title=chapter_title, image_urls=image_urls, source_url=source_url)
+        chapter_number = chapter_api_data['data']['numberStart']
+        return ChapterItem(chapter_number=chapter_number,
+                           title=chapter_title,
+                           image_urls=image_urls,
+                           source_url=source_url)
 
     @classmethod
     def parser_qq_source(self, chapter_page_html):

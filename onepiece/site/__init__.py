@@ -9,9 +9,10 @@ HEADERS = {
 
 
 class ComicBookItem():
+    FIELDS = ["name", "desc", "tag", "max_chapter_number", "cover_image_url", "author", "source_url", "source_name"]
 
     def __init__(self, name=None, desc=None, tag=None, max_chapter_number=None,
-                 cover_image_url=None, author=None, source_url=None):
+                 cover_image_url=None, author=None, source_url=None, source_name=None):
         self.name = name or ""
         self.desc = desc or ""
         self.tag = tag or ""
@@ -19,14 +20,23 @@ class ComicBookItem():
         self.cover_image_url = cover_image_url or ""
         self.author = author or ""
         self.source_url = source_url or ""
+        self.source_name = source_name or ""
+
+    def to_dict(self):
+        return {field: getattr(self, field) for field in self.FIELDS}
 
 
 class ChapterItem():
+    FIELDS = ["chapter_number", "title", "image_urls", "source_url"]
 
-    def __init__(self, title, image_urls, source_url=None):
+    def __init__(self, chapter_number, title, image_urls, source_url=None, ):
+        self.chapter_number = chapter_number
         self.title = title or ""
         self.image_urls = image_urls or []
         self.source_url = source_url or ""
+
+    def to_dict(self):
+        return {field: getattr(self, field) for field in self.FIELDS}
 
 
 class ComicBookCrawlerBase():
@@ -75,11 +85,12 @@ class ComicBookCrawlerBase():
     def ChapterItem(self, chapter_number):
         if chapter_number not in self._chapter_item_db:
             try:
-                self._chapter_item_db[chapter_number] = self.get_chapter_item(chapter_number)
+                chapter_item = self.get_chapter_item(chapter_number)
             except ChapterSourceNotFound:
                 msg = "没找到资源 {} {} {}".format(self.source_name, self.comicbook_item.name, chapter_number)
                 raise ChapterSourceNotFound(msg)
-        return self._chapter_item_db[chapter_number]
+        self._chapter_item_db[chapter_number] = chapter_item
+        return chapter_item
 
     def get_comicbook_item(self):
         """

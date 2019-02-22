@@ -57,6 +57,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                              max_chapter_number=max_chapter_number,
                              author=author,
                              source_url=url,
+                             source_name=self.source_name,
                              cover_image_url=cover_image_url)
 
     def get_chapter_item(self, chapter_number):
@@ -68,7 +69,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         image_urls = self.IMAGE_PATTERN.findall(html)
         title = self.CHAPTER_TITLE_PATTERN.search(html).group(1)
 
-        return ChapterItem(title=title, image_urls=image_urls, source_url=url)
+        return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls, source_url=url)
 
     def login(self):
         import webbrowser

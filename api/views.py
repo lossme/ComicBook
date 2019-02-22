@@ -22,45 +22,21 @@ def get_comicbook(site, comicid):
 
 
 @cachetools.func.ttl_cache(maxsize=1024, ttl=3600 * 24, typed=False)
-def get_chapter(site, comicid, chapter_number):
+def get_comicbook_and_chapter(site, comicid, chapter_number):
     comicbook = get_comicbook(site, comicid)
-    return comicbook.Chapter(chapter_number)
+    return comicbook, comicbook.Chapter(chapter_number)
 
 
 @app.route("/<site>/<comicid>")
 def get_comicbook_info(site, comicid):
     comicbook = get_comicbook(site=site, comicid=comicid)
 
-    return jsonify(
-        {
-            "name": comicbook.name,
-            "desc": comicbook.desc,
-            "source_name": comicbook.source_name,
-            "source_url": comicbook.source_url,
-            "max_chapter_number": comicbook.max_chapter_number,
-            "cover_image_url": comicbook.cover_image_url,
-            "author": comicbook.author
-        }
-    )
+    return jsonify(comicbook.to_dict())
 
 
 @app.route("/<site>/<comicid>/<int:chapter_number>")
 def get_chapter_info(site, comicid, chapter_number):
-    chapter = get_chapter(site=site, comicid=comicid, chapter_number=chapter_number)
-    return jsonify(
-        {
-            "name": chapter.comicbook.name,
-            "desc": chapter.comicbook.desc,
-            "source_name": chapter.comicbook.source_name,
-            "source_url": chapter.comicbook.source_url,
-            "max_chapter_number": chapter.comicbook.max_chapter_number,
-            "cover_image_url": chapter.comicbook.cover_image_url,
-            "author": chapter.comicbook.author,
-            "chapter": {
-                "chapter_number": chapter_number,
-                "chapter_title": chapter.title,
-                "image_urls": chapter.image_urls,
-                "source_url": chapter.source_url,
-            }
-        }
-    )
+    comicbook, chapter = get_comicbook_and_chapter(site=site, comicid=comicid, chapter_number=chapter_number)
+    rv = comicbook.to_dict()
+    rv["chapter"] = chapter.to_dict()
+    return jsonify(rv)

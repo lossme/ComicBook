@@ -25,6 +25,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             .format(name=data["data"]["postName"],
                     utelephone=data["data"]["utelephone"],
                     title=data["data"]["postText"])
-        image_urls = [data["data"]["image{}".format(i)] for i in range(1, 5)]
+        image_urls = [data["data"]["image{}".format(i)].replace("vhttp", "http", 1) for i in range(1, 5)]
         image_urls = list(filter(lambda x: bool(x), image_urls))
-        return ChapterItem(title=title, image_urls=image_urls)
+
+        return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls)

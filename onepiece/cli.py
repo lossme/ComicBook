@@ -56,7 +56,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser(prog="onepiece")
 
-    parser.add_argument('-id', '--comicid', type=int,
+    parser.add_argument('-id', '--comicid', type=str,
                         help="漫画id，海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
 
     parser.add_argument('--name', type=str, help="漫画名")
@@ -154,7 +154,7 @@ def main():
     for chapter_number in chapter_number_list:
         try:
             chapter = comicbook.Chapter(chapter_number)
-            echo("正在下载 {} {} {}".format(comicbook.name, chapter_number, chapter.title))
+            echo("正在下载 {} {} {}".format(comicbook.name, chapter.chapter_number, chapter.title))
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
                 if is_send_mail:

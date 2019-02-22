@@ -79,7 +79,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                        max_chapter_number=max_chapter_number,
                                        cover_image_url=cover_image_url,
                                        author=author,
-                                       source_url=source_url)
+                                       source_url=source_url,
+                                       source_name=self.source_name)
         return comicbook_item
 
     def get_chapter_item(self, chapter_number):
@@ -117,37 +118,21 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     @classmethod
     def parser_chapter_page(cls, chapter_page_html, source_url=None):
-        title = cls.CHAPTER_TITLE_PATTERN.search(chapter_page_html).group(1)
-        # title = "第843话 温思默克·山智""
-        # title = "111.剥皮白王""
-        p1 = re.search(r"""^第(?P<chapter_number>\d+)话? (?P<chapter_title>.*?)$""", title)
-        p2 = re.search(r"""^(?P<chapter_number>\d+)\.(?P<chapter_title>.*?)$""", title)
-
-        # title = "爱情漫过流星：她在上面"
-        p3 = re.search(r"""^(?P<comic_title>.*?)：(?P<chapter_title>.*?)$""", title)
-
-        if p1:
-            chapter_title = p1.group('chapter_title')
-        elif p2:
-            chapter_title = p2.group('chapter_title')
-        elif p3:
-            chapter_title = p3.group('chapter_title')
-        else:
-            chapter_title = title
-
-        # image_urls
+        # 该方法只能解出部分数据，会缺失前面的一部分json字符串
         bs64_data = re.search(r"var DATA\s*=\s*'(.*?)'", chapter_page_html).group(1)
         json_str = ""
         for i in range(len(bs64_data)):
             try:
                 s = base64.b64decode(bs64_data[i:]).decode('utf-8')
-                json_str = "{" + re.search(r'("picture":.*)', s).group(1)
+                json_str = "{" + re.search(r'("chapter":{.*)', s).group(1)
                 break
             except Exception:
                 pass
-        datail_list = json.loads(json_str)['picture']
-        image_urls = [item['url'] for item in datail_list]
-        return ChapterItem(title=chapter_title, image_urls=image_urls, source_url=source_url)
+        data = json.loads(json_str)
+        title = data["chapter"]["cTitle"]
+        chapter_number = data["chapter"]["cSeq"]
+        image_urls = [item['url'] for item in data["picture"]]
+        return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls, source_url=source_url)
 
     @classmethod
     def search(cls, name=None):

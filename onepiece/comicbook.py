@@ -27,6 +27,10 @@ class ComicBook():
 
     def __init__(self, comicbook_crawler):
         self.crawler = comicbook_crawler
+        self.comicbook_item = self.crawler.comicbook_item
+
+        for field in self.comicbook_item.FIELDS:
+            setattr(self, field, getattr(self.comicbook_item, field))
 
     @classmethod
     def init(cls, worker=4):
@@ -40,95 +44,48 @@ class ComicBook():
         crawler = module.ComicBookCrawler(comicid)
         return cls(comicbook_crawler=crawler)
 
-    @property
-    def name(self):
-        return self.crawler.comicbook_item.name
-
-    @property
-    def desc(self):
-        return self.crawler.comicbook_item.desc
-
-    @property
-    def source_name(self):
-        return self.crawler.source_name
-
-    @property
-    def tag(self):
-        return self.crawler.comicbook_item.tag
-
-    @property
-    def max_chapter_number(self):
-        return self.crawler.comicbook_item.max_chapter_number
-
-    @property
-    def cover_image_url(self):
-        return self.crawler.comicbook_item.cover_image_url
-
-    @property
-    def author(self):
-        return self.crawler.comicbook_item.author
-
-    @property
-    def source_url(self):
-        return self.crawler.comicbook_item.source_url
+    def to_dict(self):
+        return self.crawler.comicbook_item.to_dict()
 
     def __repr__(self):
-        return """<ComicBook>
-name={name}
-desc={desc}
-tag={tag}
-source_name={source_name}
-</ComicBook>""".format(name=self.name, desc=self.desc, tag=self.tag, source_name=self.source_name)
+        return "<ComicBook>: {}".format(self.crawler.comicbook_item.to_dict())
 
     def Chapter(self, chapter_number):
-        return Chapter(comicbook=self, chapter_number=chapter_number, comicbook_crawler=self.crawler)
+        return Chapter(chapter_number=chapter_number, comicbook_crawler=self.crawler)
 
 
 class Chapter():
-    image_download_pool = None
+    IMAGE_DOWNLOAD_POOL = None
+    DEFAULT_POOL_SIZE = 4
 
-    def __init__(self, comicbook, chapter_number, comicbook_crawler):
-        self.comicbook = comicbook
+    def __init__(self, chapter_number, comicbook_crawler):
         self.crawler = comicbook_crawler
         self.chapter_number = chapter_number
+        self.chapter_item = self.crawler.ChapterItem(chapter_number)
+        for field in self.chapter_item.FIELDS:
+            setattr(self, field, getattr(self.chapter_item, field))
 
     @classmethod
-    def init(cls, worker=4):
-        cls.image_download_pool = ThreadPoolExecutor(max_workers=worker)
+    def init(cls, worker=None):
+        worker = worker or cls.DEFAULT_POOL_SIZE
+        cls.IMAGE_DOWNLOAD_POOL = ThreadPoolExecutor(max_workers=worker)
 
     @classmethod
     def get_pool(cls):
-        if cls.image_download_pool is None:
-            cls.image_download_pool = ThreadPoolExecutor(max_workers=4)
-        return cls.image_download_pool
+        if cls.IMAGE_DOWNLOAD_POOL is None:
+            cls.IMAGE_DOWNLOAD_POOL = ThreadPoolExecutor(max_workers=4)
+        return cls.IMAGE_DOWNLOAD_POOL
 
-    @property
-    def title(self):
-        return self.crawler.ChapterItem(self.chapter_number).title
-
-    @property
-    def image_urls(self):
-        return self.crawler.ChapterItem(self.chapter_number).image_urls
-
-    @property
-    def images(self):
-        return [ImageInfo(image_url) for image_url in self.image_urls]
-
-    @property
-    def source_url(self):
-        return self.crawler.ChapterItem(self.chapter_number).source_url
+    def to_dict(self):
+        return self.chapter_item.to_dict()
 
     def __repr__(self):
-        return """<Chapter>
-name={name}
-title={title}
-chapter_number={chapter_number}
-</Chapter>""".format(name=self.comicbook.name, title=self.title, chapter_number=self.chapter_number)
+        return "<Chapter>: {}".format(self.to_dict())
 
     def get_chapter_image_dir(self, output_dir):
         chapter_dir = os.path.join(output_dir,
                                    safe_filename(self.crawler.source_name),
-                                   safe_filename(self.comicbook.name),
+                                   safe_filename(self.crawler.comicbook_item.name),
                                    safe_filename("{} {}".format(self.chapter_number, self.title)))
         return chapter_dir
 
@@ -148,6 +105,10 @@ chapter_number={chapter_number}
             future = self.get_pool().submit(image.save, target_path=target_path)
             future_list.append(future)
         return chapter_dir, future_list
+
+    @property
+    def images(self):
+        return [ImageInfo(image_url) for image_url in self.image_urls]
 
     def save_as_pdf(self, output_dir):
         from .utils.img2pdf import image_dir_to_pdf
@@ -175,9 +136,7 @@ class ImageInfo():
         self.image_url = image_url
 
     def __repr__(self):
-        return """<ImageInfo>
-image_url={image_url}
-</ImageInfo>""".format(image_url=self.image_url)
+        return "<ImageInfo>: image_url={image_url}".format(image_url=self.image_url)
 
     @staticmethod
     def find_suffix(image_url, default='jpg', allow=frozenset(['jpg', 'png', 'jpeg', 'gif'])):
