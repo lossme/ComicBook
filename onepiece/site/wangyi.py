@@ -16,7 +16,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     DESC_PATTERN = re.compile(r'<dl class="sr-dl multi-lines j-desc-inner">.*?<dd>(.*?)</dd>', re.S)
     COVER_IMAGE_URL_PATTERN = re.compile(r'<img class="sr-bcover" src="(.*?)"/>')
     TAG_HTML_PATTERN = re.compile(r'<dl class="sr-dl">(.*?)</dl>', re.S)
-    TAG_PATTERN = re.compile(r'<a title="(.*?)"</a>', re.S)
+    TAG_PATTERN = re.compile(r'<a title="(.*?)".*?</a>', re.S)
     AUTHOR_PATTERN = re.compile(
         r'<a class="sr-detail__author".*?<img src=".*?" alt="(.*?)" class="sr-detail__avatar f-fl" />', re.S)
 

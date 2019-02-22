@@ -24,7 +24,7 @@ def test_qq_crawler():
 def test_ishuhui_crawler():
     """
     comicid = "1" # 海贼王
-    URL: https://prod-api.ishuhui.com/ver/fe058362/anime/detail?id=1&type=comics&.json"
+    URL: https://prod-api.ishuhui.com/ver/fe058362/anime/detail?id=1&type=comics&.json
     """
     comicid = "1"
     crawler = IshuhuiComicBookCrawler(comicid=comicid)

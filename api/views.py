@@ -30,7 +30,6 @@ def get_comicbook_and_chapter(site, comicid, chapter_number):
 @app.route("/<site>/<comicid>")
 def get_comicbook_info(site, comicid):
     comicbook = get_comicbook(site=site, comicid=comicid)
-
     return jsonify(comicbook.to_dict())
 
 
