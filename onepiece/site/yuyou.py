@@ -9,12 +9,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def __init__(self, comicid=None):
         super().__init__()
         self.comicid = comicid
+        self.max_chapter_number = 1914
+        self.min_chapter_number = 97
 
     def get_comicbook_item(self):
-        return ComicBookItem(name="狱友提供", desc="", tag="", max_chapter_number=1914)
+        return ComicBookItem(name="狱友提供", desc="", tag="", max_chapter_number=self.max_chapter_number)
 
     def get_chapter_item(self, chapter_number):
-        if 97 > chapter_number or chapter_number > 1914:
+        if self.min_chapter_number > chapter_number or chapter_number > self.max_chapter_number:
             raise ChapterSourceNotFound()
         url = "http://182.61.35.52:8087/laidianwebapp/selectDetailsPost?id={}".format(chapter_number)
         response = self.session.post(url=url)
@@ -26,7 +28,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             .format(name=data["data"]["postName"],
                     utelephone=data["data"]["utelephone"],
                     title=data["data"]["postText"])
-        image_urls = [data["data"]["image{}".format(i)].replace("vhttp", "http", 1) for i in range(1, 5)]
-        image_urls = list(filter(lambda x: bool(x), image_urls))
-
+        image_urls = []
+        for i in range(1, 5):
+            image_url = data["data"].get("image{}".format(i))
+            if image_url:
+                image_url = image_url.replace("vhttp", "http", 1)
+                image_urls.append(image_url)
         return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls)
