@@ -1,5 +1,24 @@
 import requests
-from ..exceptions import ChapterSourceNotFound, URLException
+
+
+class ComicbookCrawlerException(Exception):
+    pass
+
+
+class NotFoundError(ComicbookCrawlerException):
+    pass
+
+
+class ComicbookNotFound(NotFoundError):
+    pass
+
+
+class ChapterSourceNotFound(NotFoundError):
+    pass
+
+
+class URLException(ComicbookCrawlerException):
+    pass
 
 
 HEADERS = {
@@ -29,7 +48,7 @@ class ComicBookItem():
 class ChapterItem():
     FIELDS = ["chapter_number", "title", "image_urls", "source_url"]
 
-    def __init__(self, chapter_number, title, image_urls, source_url=None, ):
+    def __init__(self, chapter_number, title, image_urls, source_url=None):
         self.chapter_number = chapter_number
         self.title = title or ""
         self.image_urls = image_urls or []
@@ -43,9 +62,11 @@ class ComicBookCrawlerBase():
 
     HEADERS = HEADERS
     TIMEOUT = 30
-    source_name = "未知"
 
-    def __init__(self):
+    source_name = "未知"
+    site = ""
+
+    def __init__(self, **kwargs):
         self.session = requests.session()
         # {int_chapter_number: Chapter}
         self._chapter_item_db = {}
@@ -59,9 +80,9 @@ class ComicBookCrawlerBase():
         kwargs.setdefault('timeout', self.TIMEOUT)
         try:
             return self.session.get(url, **kwargs)
-        except Exception:
-            msg = "URL链接访问异常: {}".format(url)
-            raise URLException(msg)
+        except Exception as e:
+            msg = "URL链接访问异常！ url={}".format(url)
+            raise URLException(msg) from e
 
     def get_html(self, url):
         response = self.send_request(url)
@@ -84,11 +105,7 @@ class ComicBookCrawlerBase():
 
     def ChapterItem(self, chapter_number):
         if chapter_number not in self._chapter_item_db:
-            try:
-                chapter_item = self.get_chapter_item(chapter_number)
-            except ChapterSourceNotFound:
-                msg = "没找到资源 {} {} {}".format(self.source_name, self.comicbook_item.name, chapter_number)
-                raise ChapterSourceNotFound(msg)
+            chapter_item = self.get_chapter_item(chapter_number)
         self._chapter_item_db[chapter_number] = chapter_item
         return chapter_item
 

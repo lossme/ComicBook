@@ -12,7 +12,7 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
 ## 接口文档
 
-`GET /api/<site>/<id>`
+`GET /api/<site>/<comicid>`
 
 请求示例
 ```sh
@@ -35,7 +35,7 @@ curl ${host}/api/ishuhui/1
 ------
 
 
-`GET /api/<site>/<id>/<chapter>`
+`GET /api/<site>/<comicid>/<chapter_number>`
 
 请求示例
 ```sh

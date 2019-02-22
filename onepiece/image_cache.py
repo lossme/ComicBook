@@ -8,7 +8,9 @@ import warnings
 import requests
 from PIL import Image
 
-from .exceptions import ImageDownloadError
+
+class ImageDownloadError():
+    pass
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))

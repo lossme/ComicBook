@@ -9,6 +9,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     COMIC_HOST = 'https://manhua.163.com/source/4458002705630123103'
 
     source_name = '网易漫画'
+    site = "wangyi"
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="f-toe sr-detail__heading">(.*?)</h1>')
     IMAGE_PATTERN = re.compile(r'url: window.IS_SUPPORT_WEBP \? ".*?" : "(.*?AccessKeyId=\w{32})')
     CHAPTER_TITLE_PATTERN = re.compile('fullTitle: "(.*?)"')
