@@ -33,9 +33,6 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         # {int_chapter_number: chapter_page_url}
         self._chapter_page_url_db = None
 
-        # {int_chapter_number: chapter_page_html}
-        self.chapter_page_html_db = {}
-
         self.source_url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
 
     def get_comicbook_page_html(self):
@@ -49,13 +46,6 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.site, self.comicid, chapter_number)
             raise ChapterSourceNotFound(msg)
         return self.chapter_page_url_db[chapter_number]
-
-    def get_chapter_page_html_and_url(self, chapter_number):
-        chapter_page_url = self.get_chapter_page_url(chapter_number)
-        if chapter_number not in self.chapter_page_html_db:
-            chapter_page_html = self.get_html(chapter_page_url)
-            self.chapter_page_html_db[chapter_number] = chapter_page_html
-        return self.chapter_page_html_db[chapter_number], chapter_page_url
 
     @property
     def chapter_page_url_db(self):
@@ -85,7 +75,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         return comicbook_item
 
     def get_chapter_item(self, chapter_number):
-        chapter_page_html, chapter_page_url = self.get_chapter_page_html_and_url(chapter_number)
+        chapter_page_url = self.get_chapter_page_url(chapter_number)
+        chapter_page_html = self.get_html(chapter_page_url)
         chapter_item = self.parser_chapter_page(chapter_page_html, source_url=chapter_page_url)
         return chapter_item
 

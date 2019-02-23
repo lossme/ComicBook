@@ -1,9 +1,6 @@
 import os
-import warnings
 import configparser
-
 import smtplib
-
 from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication

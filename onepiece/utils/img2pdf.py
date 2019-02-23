@@ -18,12 +18,12 @@ def imgs_to_pdf(img_path_list, target_path):
         img_w, img_h = ImageReader(img_path).getSize()
 
         if img_w / img_h > a4_w / a4_h:
-            # 宽的图片
+            # 横图
             ratio = a4_w / img_w
             left_margin = 0
             top_margin = (a4_h - img_h * ratio) / 2
         else:
-            # 长的图片
+            # 竖图
             ratio = a4_h / img_h
             left_margin = (a4_w - img_w * ratio) / 2
             top_margin = 0
