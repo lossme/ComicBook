@@ -15,6 +15,12 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         self._comics_api_ver = None
 
     @property
+    def source_url(self):
+        # https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id=1&type=comics&.json
+        return "https://prod-api.ishuhui.com/ver/{ver}/anime/detail?id={comicid}&type=comics&.json"\
+            .format(ver=self.comics_api_ver, comicid=self.comicid)
+
+    @property
     def comics_api_ver(self):
         if self._comics_api_ver is None:
             url = "https://prod-u.ishuhui.com/ver"
@@ -23,23 +29,20 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         return self._comics_api_ver
 
     def get_api_data(self):
-        # https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id=1&type=comics&.json
-        url = "https://prod-api.ishuhui.com/ver/{ver}/anime/detail?id={comicid}&type=comics&.json"\
-            .format(ver=self.comics_api_ver, comicid=self.comicid)
         if self.api_data is None:
-            self.api_data = self.get_json(url=url)
+            self.api_data = self.get_json(url=self.source_url)
         if not self.api_data.get("data"):
             msg = "资源未找到！ site={} comicid={}".format(self.site, self.comicid)
             raise ComicbookNotFound(msg)
-        return self.api_data, url
+        return self.api_data
 
     def get_comicbook_item(self):
-        api_data, url = self.get_api_data()
-        comicbook_item = self.parser_api_data(api_data, source_url=url)
+        api_data = self.get_api_data()
+        comicbook_item = self.parser_api_data(api_data, source_url=self.source_url)
         return comicbook_item
 
     def get_chapter_item(self, chapter_number):
-        api_data, source_url = self.get_api_data()
+        api_data = self.get_api_data()
         for interval, items in api_data['data']['comicsIndexes']['1']['nums'].items():
             for str_chapter_number, chapter_data_sources in items.items():
                 # str_chapter_number = "1-8"
@@ -112,7 +115,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                            source_url=source_url)
 
     @classmethod
-    def parser_qq_source(self, chapter_page_html):
+    def parser_qq_source(self, chapter_page_html, source_url=None):
         # https://ac.qq.com/ComicView/index/id/505430/cid/1
         from .qq import ComicBookCrawler as QQComicBookCrawler
-        return QQComicBookCrawler.parser_chapter_page(chapter_page_html)
+        return QQComicBookCrawler.parser_chapter_page(chapter_page_html, source_url=source_url)

@@ -6,8 +6,6 @@ from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem
 
 class ComicBookCrawler(ComicBookCrawlerBase):
 
-    COMIC_HOST = 'https://manhua.163.com/source/4458002705630123103'
-
     source_name = '网易漫画'
     site = "wangyi"
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="f-toe sr-detail__heading">(.*?)</h1>')
@@ -28,14 +26,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         self.api_data = None
         self.index_page = None
 
+        # https://manhua.163.com/source/4458002705630123103
+        self.source_url = "https://manhua.163.com/source/{comicid}".format(comicid=self.comicid)
+
     def get_index_page(self):
         if self.index_page is None:
-            # https://manhua.163.com/source/4458002705630123103
-            url = "https://manhua.163.com/source/{comicid}".format(comicid=self.comicid)
-            self.index_page = self.get_html(url)
-        else:
-            url = "https://manhua.163.com/source/{comicid}".format(comicid=self.comicid)
-        return self.index_page, url
+            self.index_page = self.get_html(self.source_url)
+        return self.index_page
 
     def get_api_data(self):
         if self.api_data:
@@ -43,13 +40,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         # https://manhua.163.com/book/catalog/4458002705630123103.json
         url = "https://manhua.163.com/book/catalog/{comicid}.json".format(comicid=self.comicid)
         self.api_data = self.get_json(url=url)
-        return self.api_data, url
+        return self.api_data
 
     def get_comicbook_item(self):
-        html, url = self.get_index_page()
+        html = self.get_index_page()
         name = self.COMIC_NAME_PATTERN.search(html).group(1)
 
-        api_data, _api_url = self.get_api_data()
+        api_data = self.get_api_data()
         desc = self.DESC_PATTERN.search(html).group(1)
         tag_html = self.TAG_HTML_PATTERN.search(html).group(1)
         tag = ','.join(self.TAG_PATTERN.findall(tag_html))
@@ -59,7 +56,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         return ComicBookItem(name=name, desc=desc, tag=tag,
                              max_chapter_number=max_chapter_number,
                              author=author,
-                             source_url=url,
+                             source_url=self.source_url,
                              source_name=self.source_name,
                              cover_image_url=cover_image_url)
 
@@ -76,7 +73,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def login(self):
         import webbrowser
-        html,url=self.get_index_page()
+        html = self.get_index_page()
         csrf_token = self.CSRF_TOKEN_PATTERN.search(html).group(1)
         timestamp = int(time.time())
         login_url = 'https://manhua.163.com/login/qrCodeLoginImage.json?csrfToken={csrf_token}&_={timestamp}'\

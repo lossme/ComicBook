@@ -36,12 +36,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         # {int_chapter_number: chapter_page_html}
         self.chapter_page_html_db = {}
 
+        self.source_url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
+
     def get_comicbook_page_html(self):
-        source_url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
         if self.comicbook_page_html is None:
-            comicbook_page_html = self.get_html(source_url)
+            comicbook_page_html = self.get_html(self.source_url)
             self.comicbook_page_html = comicbook_page_html
-        return self.comicbook_page_html, source_url
+        return self.comicbook_page_html
 
     def get_chapter_page_url(self, chapter_number):
         if chapter_number not in self.chapter_page_url_db:
@@ -49,7 +50,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             raise ChapterSourceNotFound(msg)
         return self.chapter_page_url_db[chapter_number]
 
-    def get_chapter_page_html(self, chapter_number):
+    def get_chapter_page_html_and_url(self, chapter_number):
         chapter_page_url = self.get_chapter_page_url(chapter_number)
         if chapter_number not in self.chapter_page_html_db:
             chapter_page_html = self.get_html(chapter_page_url)
@@ -59,13 +60,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     @property
     def chapter_page_url_db(self):
         if self._chapter_page_url_db is None:
-            html, source_url = self.get_comicbook_page_html()
+            html = self.get_comicbook_page_html()
             self._chapter_page_url_db = self.parser_chapter_url_from_comicbook_page(html)
         return self._chapter_page_url_db
 
     def get_comicbook_item(self):
         # https://ac.qq.com/Comic/ComicInfo/id/505430
-        html, source_url = self.get_comicbook_page_html()
+        html = self.get_comicbook_page_html()
         name = self.COMIC_NAME_PATTERN.search(html).group(1).strip()
         desc = self.COMIC_DESC_PATTERN.search(html).group(1).strip()
         tag = self.TAG_PATTERN.search(html).group(1).strip()
@@ -79,13 +80,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                        max_chapter_number=max_chapter_number,
                                        cover_image_url=cover_image_url,
                                        author=author,
-                                       source_url=source_url,
+                                       source_url=self.source_url,
                                        source_name=self.source_name)
         return comicbook_item
 
     def get_chapter_item(self, chapter_number):
-        chapter_page_html, source_url = self.get_chapter_page_html(chapter_number)
-        chapter_item = self.parser_chapter_page(chapter_page_html, source_url)
+        chapter_page_html, chapter_page_url = self.get_chapter_page_html_and_url(chapter_number)
+        chapter_item = self.parser_chapter_page(chapter_page_html, source_url=chapter_page_url)
         return chapter_item
 
     @classmethod
