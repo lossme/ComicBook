@@ -25,6 +25,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     COVER_IMAGE_URL_PATTERN = re.compile(r'<div class="works-cover ui-left">.*?<img src="(.*?)"', re.S)
     AUTHOR_PATTERN = re.compile(r'<span class="first".*?作者：<em style="max-width: 168px;">(.*?)&nbsp')
 
+    CHAPTER_JSON_STR_PATTERN = re.compile(r'("chapter":{.*)')
+
     def __init__(self, comicid):
         super().__init__()
         self.comicid = comicid
@@ -112,14 +114,16 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def parser_chapter_page(cls, chapter_page_html, source_url=None):
         # 该方法只能解出部分数据，会缺失前面的一部分json字符串
         bs64_data = re.search(r"var DATA\s*=\s*'(.*?)'", chapter_page_html).group(1)
-        json_str = ""
         for i in range(len(bs64_data)):
             try:
-                s = base64.b64decode(bs64_data[i:]).decode('utf-8')
-                json_str = "{" + re.search(r'("chapter":{.*)', s).group(1)
+                json_str_part = base64.b64decode(bs64_data[i:]).decode('utf-8')
                 break
-            except Exception:
+            except Exception as e:
                 pass
+        else:
+            raise
+
+        json_str = "{" + cls.CHAPTER_JSON_STR_PATTERN.search(json_str_part).group(1)
         data = json.loads(json_str)
         title = data["chapter"]["cTitle"]
         chapter_number = data["chapter"]["cSeq"]
