@@ -27,10 +27,12 @@ class ComicBook():
 
     def __init__(self, comicbook_crawler):
         self.crawler = comicbook_crawler
-        self.comicbook_item = self.crawler.comicbook_item
-
+        self.comicbook_item = self.crawler.get_comicbook_item()
         for field in self.comicbook_item.FIELDS:
             setattr(self, field, getattr(self.comicbook_item, field))
+
+        # {chapter_number: Chapter}
+        self.chapter_db = {}
 
     @classmethod
     def init(cls, worker=4):
@@ -45,23 +47,27 @@ class ComicBook():
         return cls(comicbook_crawler=crawler)
 
     def to_dict(self):
-        return self.crawler.comicbook_item.to_dict()
+        return self.comicbook_item.to_dict()
 
     def __repr__(self):
-        return "<ComicBook>: {}".format(self.crawler.comicbook_item.to_dict())
+        return "<ComicBook>: {}".format(self.to_dict())
 
     def Chapter(self, chapter_number):
-        return Chapter(chapter_number=chapter_number, comicbook_crawler=self.crawler)
+        if chapter_number not in self.chapter_db:
+            chapter_item = self.crawler.get_chapter_item(chapter_number)
+            chapter = Chapter(comicbook_item=self.comicbook_item, chapter_item=chapter_item)
+            self.chapter_db[chapter_number] = chapter
+        return self.chapter_db[chapter_number]
 
 
 class Chapter():
     IMAGE_DOWNLOAD_POOL = None
     DEFAULT_POOL_SIZE = 4
 
-    def __init__(self, chapter_number, comicbook_crawler):
-        self.crawler = comicbook_crawler
-        self.chapter_number = chapter_number
-        self.chapter_item = self.crawler.ChapterItem(chapter_number)
+    def __init__(self, comicbook_item, chapter_item):
+        self.comicbook_item = comicbook_item
+        self.chapter_item = chapter_item
+
         for field in self.chapter_item.FIELDS:
             setattr(self, field, getattr(self.chapter_item, field))
 
@@ -83,17 +89,17 @@ class Chapter():
         return "<Chapter>: {}".format(self.to_dict())
 
     def get_chapter_image_dir(self, output_dir):
-        chapter_dir = os.path.join(output_dir,
-                                   safe_filename(self.crawler.source_name),
-                                   safe_filename(self.crawler.comicbook_item.name),
-                                   safe_filename("{} {}".format(self.chapter_number, self.title)))
+        first_dir = safe_filename(self.comicbook_item.source_name)
+        second_dir = safe_filename(self.comicbook_item.name)
+        third_dir = safe_filename("{} {}".format(self.chapter_item.chapter_number, self.chapter_item.title))
+        chapter_dir = os.path.join(output_dir, first_dir, second_dir, third_dir)
         return chapter_dir
 
     def get_chapter_pdf_path(self, output_dir):
-        pdf_path = os.path.join(output_dir,
-                                safe_filename(self.crawler.source_name),
-                                safe_filename("{} pdf".format(self.comicbook.name)),
-                                safe_filename("{} {}.pdf".format(self.chapter_number, self.title)))
+        first_dir = safe_filename(self.comicbook_item.source_name)
+        second_dir = safe_filename(self.comicbook_item.name)
+        file_name = safe_filename("{} {}.pdf".format(self.chapter_number, self.title))
+        pdf_path = os.path.join(output_dir, first_dir, second_dir, file_name)
         return pdf_path
 
     def save(self, output_dir):

@@ -11,12 +11,12 @@ def test_qq_crawler():
     comicid = "505430"
     crawler = QQComicBookCrawler(comicid=comicid)
 
-    comicbook_item = crawler.comicbook_item
+    comicbook_item = crawler.get_comicbook_item()
     assert comicbook_item.name
     assert comicbook_item.max_chapter_number >= 933
     assert comicbook_item.author
 
-    chapter_item = crawler.ChapterItem(chapter_number=933)
+    chapter_item = crawler.get_chapter_item(chapter_number=933)
     assert chapter_item.title
     assert len(chapter_item.image_urls) > 0
 
@@ -29,12 +29,12 @@ def test_ishuhui_crawler():
     comicid = "1"
     crawler = IshuhuiComicBookCrawler(comicid=comicid)
 
-    comicbook_item = crawler.comicbook_item
+    comicbook_item = crawler.get_comicbook_item()
     assert comicbook_item.name
     assert comicbook_item.max_chapter_number >= 933
     assert comicbook_item.author
 
-    chapter_item = crawler.ChapterItem(chapter_number=933)
+    chapter_item = crawler.get_chapter_item(chapter_number=933)
     assert chapter_item.title
     assert len(chapter_item.image_urls) > 0
 
@@ -47,11 +47,11 @@ def test_wangyi_crwaler():
     comicid = "5015165829890111936"
     crawler = WangyiComicBookCrawler(comicid=comicid)
 
-    comicbook_item = crawler.comicbook_item
+    comicbook_item = crawler.get_comicbook_item()
     assert comicbook_item.name
     assert comicbook_item.max_chapter_number >= 933
     assert comicbook_item.author
 
-    chapter_item = crawler.ChapterItem(chapter_number=934)
+    chapter_item = crawler.get_chapter_item(chapter_number=934)
     assert chapter_item.title
     assert len(chapter_item.image_urls) > 0
