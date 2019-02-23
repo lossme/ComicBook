@@ -33,6 +33,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             # https://manhua.163.com/source/4458002705630123103
             url = "https://manhua.163.com/source/{comicid}".format(comicid=self.comicid)
             self.index_page = self.get_html(url)
+        else:
+            url = "https://manhua.163.com/source/{comicid}".format(comicid=self.comicid)
         return self.index_page, url
 
     def get_api_data(self):
@@ -74,8 +76,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def login(self):
         import webbrowser
-
-        csrf_token = self.CSRF_TOKEN_PATTERN.search(self.get_index_page()).group(1)
+        html,url=self.get_index_page()
+        csrf_token = self.CSRF_TOKEN_PATTERN.search(html).group(1)
         timestamp = int(time.time())
         login_url = 'https://manhua.163.com/login/qrCodeLoginImage.json?csrfToken={csrf_token}&_={timestamp}'\
             .format(csrf_token=csrf_token, timestamp=timestamp)
