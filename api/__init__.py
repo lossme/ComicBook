@@ -18,12 +18,12 @@ def index():
         {
             "api_status": "ok",
             "example": [
-                "/info/ishuhui/1",
-                "/info/ishuhui/1/933",
-                "/info/qq/505430",
-                "/info/qq/505430/933",
-                "/info/wangyi/5015165829890111936",
-                "/info/wangyi/5015165829890111936/933",
+                "/comic/ishuhui/1",
+                "/comic/ishuhui/1/933",
+                "/comic/qq/505430",
+                "/comic/qq/505430/933",
+                "/comic/wangyi/5015165829890111936",
+                "/comic/wangyi/5015165829890111936/933",
                 "/search/qq?name=海贼王",
                 "/search/wangyi?name=海贼王"
             ]

@@ -10,12 +10,13 @@ import requests
 
 from .utils import safe_filename
 from .image_cache import ImageCache
+from .exceptions import SiteNotSupport
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 class ComicBook():
-    SUPPORT_SITE = list(
+    SUPPORT_SITE = frozenset(
         map(
             lambda x: x.split(".py")[0],
             filter(
@@ -41,13 +42,15 @@ class ComicBook():
     @classmethod
     def create_comicbook(cls, site, comicid):
         if site not in cls.SUPPORT_SITE:
-            raise Exception("site={} 暂不支持")
+            raise SiteNotSupport("site={} 暂不支持".format(site))
         module = importlib.import_module(".site.{}".format(site), __package__)
         crawler = module.ComicBookCrawler(comicid)
         return cls(comicbook_crawler=crawler)
 
     @classmethod
     def search(cls, site, name):
+        if site not in cls.SUPPORT_SITE:
+            raise SiteNotSupport("site={} 暂不支持".format(site))
         module = importlib.import_module(".site.{}".format(site), __package__)
         return module.ComicBookCrawler.search(name)
 

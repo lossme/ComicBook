@@ -2,6 +2,7 @@ import re
 import time
 
 from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
+from ..exceptions import ComicbookNotFound, ChapterNotFound
 
 
 class ComicBookCrawler(ComicBookCrawlerBase):
@@ -48,8 +49,12 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_comicbook_item(self):
         html = self.get_index_page()
-        name = self.COMIC_NAME_PATTERN.search(html).group(1)
 
+        r = self.COMIC_NAME_PATTERN.search(html)
+        if not r:
+            msg = "资源未找到！ site={} comicid={}".format(self.SITE, self.comicid)
+            raise ComicbookNotFound(msg)
+        name = r.group(1)
         api_data = self.get_api_data()
         desc = self.DESC_PATTERN.search(html).group(1)
         tag_html = self.TAG_HTML_PATTERN.search(html).group(1)
@@ -66,7 +71,11 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_chapter_item(self, chapter_number):
         api_data = self.get_api_data()
-        chapter_data = api_data['catalog']['sections'][0]['sections'][chapter_number - 1]
+        try:
+            chapter_data = api_data['catalog']['sections'][0]['sections'][chapter_number - 1]
+        except IndexError:
+            msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
+            raise ChapterNotFound(msg)
         url = "https://manhua.163.com/reader/{}/{}".format(chapter_data['bookId'],
                                                            chapter_data['sectionId'])
         html = self.get_html(url)

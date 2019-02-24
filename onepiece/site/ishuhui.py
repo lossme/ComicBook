@@ -1,5 +1,6 @@
 import re
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, ComicbookNotFound, ChapterSourceNotFound
+from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem
+from ..exceptions import ComicbookNotFound, ChapterNotFound
 
 
 class ComicBookCrawler(ComicBookCrawlerBase):
@@ -82,7 +83,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                     return chapter_item
 
         msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
-        raise ChapterSourceNotFound(msg)
+        raise ChapterNotFound(msg)
 
     @classmethod
     def parser_api_data(cls, api_data, source_url=None):

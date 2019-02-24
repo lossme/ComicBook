@@ -2,18 +2,29 @@ from flask import Blueprint, jsonify, request, abort
 import cachetools.func
 
 from onepiece.comicbook import ComicBook
-from onepiece.exceptions import NotFoundError
+from onepiece.exceptions import ComicbookException, NotFoundError, SiteNotSupport
 
 
 app = Blueprint("main", __name__)
 
 
-@app.errorhandler(NotFoundError)
+@app.errorhandler(ComicbookException)
 def handle_404(error):
-    return jsonify(
-        {
-            "message": str(error)
-        }), 404
+    if isinstance(error, NotFoundError):
+        return jsonify(
+            {
+                "message": str(error)
+            }), 404
+    elif isinstance(error, SiteNotSupport):
+        return jsonify(
+            {
+                "message": str(error)
+            }), 400
+    else:
+        return jsonify(
+            {
+                "message": str(error)
+            }), 500
 
 
 @cachetools.func.ttl_cache(maxsize=1024, ttl=3600, typed=False)
