@@ -1,5 +1,7 @@
 import re
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem
+import difflib
+
+from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
 from ..exceptions import ComicbookNotFound, ChapterNotFound
 
 
@@ -9,25 +11,26 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SITE = "ishuhui"
     CHAPTER_INTERVAL_PATTERN = re.compile(r"^(?P<start_chapter_number>\d+)\-(?P<end_chapter_number>\d+)")
 
+    COMIC_API_VER = None
+
     def __init__(self, comicid):
         super().__init__()
         self.comicid = comicid
         self.api_data = None
-        self._comics_api_ver = None
 
     @property
     def source_url(self):
         # https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id=1&type=comics&.json
         return "https://prod-api.ishuhui.com/ver/{ver}/anime/detail?id={comicid}&type=comics&.json"\
-            .format(ver=self.comics_api_ver, comicid=self.comicid)
+            .format(ver=self.get_comics_api_ver(), comicid=self.comicid)
 
-    @property
-    def comics_api_ver(self):
-        if self._comics_api_ver is None:
+    @classmethod
+    def get_comics_api_ver(cls):
+        if cls.COMIC_API_VER is None:
             url = "https://prod-u.ishuhui.com/ver"
-            data = self.get_json(url)
-            self._comics_api_ver = data["data"]["comics"]
-        return self._comics_api_ver
+            data = cls.get_json(url)
+            cls.COMIC_API_VER = data["data"]["comics"]
+        return cls.COMIC_API_VER
 
     def get_api_data(self):
         if self.api_data is None:
@@ -120,3 +123,17 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         # https://ac.qq.com/ComicView/index/id/505430/cid/1
         from .qq import ComicBookCrawler as QQComicBookCrawler
         return QQComicBookCrawler.parser_chapter_page(chapter_page_html, source_url=source_url)
+
+    @classmethod
+    def search(cls, name):
+        url = "https://prod-api.ishuhui.com/ver/{}/comics/list?page=1&pageSize=100&toView=true&.json"\
+            .format(cls.get_comics_api_ver())
+        data = cls.get_json(url)
+        rv = []
+        for item in data["data"]["data"]:
+            search_result_item = SearchResultItem(site=cls.SITE,
+                                                  name=item["title"],
+                                                  comicid=item["animeID"],
+                                                  cover_image_url=item["thumb"])
+            rv.append(search_result_item)
+        return sorted(rv, key=lambda x: difflib.SequenceMatcher(None, name, x.name).ratio(), reverse=True)

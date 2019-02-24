@@ -142,7 +142,7 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
     def search(cls, name):
         url = "https://ac.qq.com/Comic/searchList/search/{}".format(name)
 
-        html = cls._get_html(url)
+        html = cls.get_html(url)
         if cls.SEARCH_NOT_FOUNT_PATTERN.search(html):
             return []
         rv = []

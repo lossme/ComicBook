@@ -27,6 +27,26 @@ def handle_404(error):
             }), 500
 
 
+@app.route("/")
+def index():
+    return jsonify(
+        {
+            "api_status": "ok",
+            "example": [
+                "/comic/ishuhui/1",
+                "/comic/ishuhui/1/933",
+                "/comic/qq/505430",
+                "/comic/qq/505430/933",
+                "/comic/wangyi/5015165829890111936",
+                "/comic/wangyi/5015165829890111936/933",
+                "/search/qq?name=海贼王",
+                "/search/wangyi?name=海贼王",
+                "/search/ishuhui?name=海贼王"
+            ]
+        }
+    )
+
+
 @cachetools.func.ttl_cache(maxsize=1024, ttl=3600, typed=False)
 def get_comicbook(site, comicid):
     return ComicBook.create_comicbook(site=site, comicid=comicid)

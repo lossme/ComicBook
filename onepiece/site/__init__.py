@@ -57,34 +57,34 @@ class ComicBookCrawlerBase():
     SITE = ""
 
     DEAFULT_SESSION = requests.session()
+    _session = None
 
     def __init__(self, **kwargs):
-        self.session = requests.session()
+        self._session = requests.session()
 
-    def set_session(self, session):
-        self.session = session
+    @classmethod
+    def get_session(cls):
+        return cls._session or cls.DEAFULT_SESSION
 
-    def send_request(self, url, **kwargs):
-        kwargs.setdefault('headers', self.DEFAULT_HEADERS)
-        kwargs.setdefault('timeout', self.TIMEOUT)
+    @classmethod
+    def send_request(cls, url, **kwargs):
+        kwargs.setdefault('headers', cls.DEFAULT_HEADERS)
+        kwargs.setdefault('timeout', cls.TIMEOUT)
+        session = cls.get_session()
         try:
-            return self.session.get(url, **kwargs)
+            return session.get(url, **kwargs)
         except Exception as e:
             msg = "URL链接访问异常！ url={}".format(url)
             raise URLException(msg) from e
 
-    def get_html(self, url):
-        response = self.send_request(url)
+    @classmethod
+    def get_html(cls, url):
+        response = cls.send_request(url)
         return response.text
 
     @classmethod
-    def _get_html(cls, url, **kwargs):
-        kwargs.setdefault('headers', cls.DEFAULT_HEADERS)
-        response = cls.DEAFULT_SESSION.get(url, **kwargs)
-        return response.text
-
-    def get_json(self, url):
-        response = self.send_request(url)
+    def get_json(cls, url):
+        response = cls.send_request(url)
         return response.json()
 
     def get_comicbook_item(self):
@@ -100,7 +100,7 @@ class ComicBookCrawlerBase():
         raise NotImplementedError
 
     @classmethod
-    def search(self, name):
+    def search(cls, name):
         """
         :return SearchResultItem list:
         """

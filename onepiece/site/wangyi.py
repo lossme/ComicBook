@@ -112,7 +112,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     @classmethod
     def search(cls, name):
         url = "https://manhua.163.com/search/book/key.do?key={}".format(name)
-        html = cls._get_html(url)
+        html = cls.get_html(url)
         rv = []
         for item in cls.SEARCH_DATA_PATTERN.findall(html):
             comicid, name1, name2, cover_image_url = item
