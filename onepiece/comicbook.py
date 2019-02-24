@@ -46,6 +46,11 @@ class ComicBook():
         crawler = module.ComicBookCrawler(comicid)
         return cls(comicbook_crawler=crawler)
 
+    @classmethod
+    def search(cls, site, name):
+        module = importlib.import_module(".site.{}".format(site), __package__)
+        return module.ComicBookCrawler.search(name)
+
     def to_dict(self):
         return self.comicbook_item.to_dict()
 

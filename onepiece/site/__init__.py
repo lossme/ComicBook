@@ -21,12 +21,6 @@ class URLException(ComicbookCrawlerException):
     pass
 
 
-HEADERS = {
-    'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                   'Chrome/65.0.3325.146 Safari/537.36')
-}
-
-
 class ComicBookItem():
     FIELDS = ["name", "desc", "tag", "max_chapter_number", "cover_image_url", "author", "source_url", "source_name"]
 
@@ -58,13 +52,30 @@ class ChapterItem():
         return {field: getattr(self, field) for field in self.FIELDS}
 
 
+class SearchResultItem():
+    FIELDS = ["site", "comicid", "name", "cover_image_url"]
+
+    def __init__(self, site=None, comicid=None, name=None, cover_image_url=None):
+        self.site = site
+        self.comicid = comicid
+        self.name = name
+        self.cover_image_url = cover_image_url
+
+    def to_dict(self):
+        return {field: getattr(self, field) for field in self.FIELDS}
+
+
 class ComicBookCrawlerBase():
 
-    HEADERS = HEADERS
     TIMEOUT = 30
+    DEFAULT_HEADERS = {
+        'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                       'Chrome/65.0.3325.146 Safari/537.36')
+    }
+    SOURCE_NAME = "未知"
+    SITE = ""
 
-    source_name = "未知"
-    site = ""
+    DEAFULT_SESSION = requests.session()
 
     def __init__(self, **kwargs):
         self.session = requests.session()
@@ -73,7 +84,7 @@ class ComicBookCrawlerBase():
         self.session = session
 
     def send_request(self, url, **kwargs):
-        kwargs.setdefault('headers', self.HEADERS)
+        kwargs.setdefault('headers', self.DEFAULT_HEADERS)
         kwargs.setdefault('timeout', self.TIMEOUT)
         try:
             return self.session.get(url, **kwargs)
@@ -85,9 +96,10 @@ class ComicBookCrawlerBase():
         response = self.send_request(url)
         return response.text
 
-    @staticmethod
-    def _get_html(url):
-        response = requests.get(url, headers=HEADERS)
+    @classmethod
+    def _get_html(cls, url, **kwargs):
+        kwargs.setdefault('headers', cls.DEFAULT_HEADERS)
+        response = cls.DEAFULT_SESSION.get(url, **kwargs)
         return response.text
 
     def get_json(self, url):
@@ -105,6 +117,13 @@ class ComicBookCrawlerBase():
         :return ChapterItem instance:
         """
         raise NotImplementedError
+
+    @classmethod
+    def search(self, name):
+        """
+        :return SearchResultItem list:
+        """
+        return []
 
     def login(self):
         pass

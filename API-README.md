@@ -12,11 +12,11 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
 ## 接口文档
 
-`GET /api/<site>/<comicid>`
+`GET /comic/<site>/<comicid>`
 
 请求示例
 ```sh
-curl ${host}/api/ishuhui/1
+curl ${host}/comic/ishuhui/1
 ```
 
 ```json
@@ -35,11 +35,11 @@ curl ${host}/api/ishuhui/1
 ------
 
 
-`GET /api/<site>/<comicid>/<chapter_number>`
+`GET /comic/<site>/<comicid>/<chapter_number>`
 
 请求示例
 ```sh
-curl ${host}/api/ishuhui/1/933
+curl ${host}/comic/ishuhui/1/933
 ```
 
 ```json
@@ -78,5 +78,65 @@ curl ${host}/api/ishuhui/1/933
   "source_name": "鼠绘漫画",
   "source_url": "https://prod-api.ishuhui.com/ver/fe058362/anime/detail?id=1&type=comics&.json",
   "tag": "熱血,冒險,搞笑"
+}
+```
+
+------
+
+`GET /search/qq?name={name}`
+
+请求示例
+
+```sh
+curl -G "{host}/search/qq" --data-urlencode "name=海贼王"
+```
+
+```json
+
+{
+  "search_result": [
+    {
+      "comicid": "505430",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_16_48_0e28c8aabf48e91d395689b5f6a7689f.jpg/420",
+      "name": "航海王",
+      "site": "qq"
+    },
+    {
+      "comicid": "531616",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_17_06_cb4ba7f7af603a3380bb1e5ed415804b.jpg/420",
+      "name": "航海王（番外篇）",
+      "site": "qq"
+    },
+    {
+      "comicid": "550529",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_17_19_cdfbe709316c877ccfb23c57ab393d46.jpg/420",
+      "name": "中国贵州贵阳中等孩子的日常？",
+      "site": "qq"
+    },
+    {
+      "comicid": "512062",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_16_53_6b94329a848ab290f2a7fe8926c002cc.jpg/420",
+      "name": "航海王（全彩版）",
+      "site": "qq"
+    },
+    {
+      "comicid": "549637",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/24_22_37_a4aba72ff67134b2a8d6faf3202973c3_1545662258373.jpg/420",
+      "name": "抑郁症",
+      "site": "qq"
+    },
+    {
+      "comicid": "630588",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/26_17_12_a5b28a23f4d5df3cea863deb0a9b274c_1516957975778.jpg/420",
+      "name": "天堂岛",
+      "site": "qq"
+    },
+    {
+      "comicid": "628782",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/20_13_12_02857f7dbb8f571550c5a8e0e8e3104a_1513746733413.jpg/420",
+      "name": "济康传",
+      "site": "qq"
+    }
+  ]
 }
 ```

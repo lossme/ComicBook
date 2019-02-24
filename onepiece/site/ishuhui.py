@@ -4,8 +4,8 @@ from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, ComicbookNotFoun
 
 class ComicBookCrawler(ComicBookCrawlerBase):
 
-    source_name = '鼠绘漫画'
-    site = "ishuhui"
+    SOURCE_NAME = '鼠绘漫画'
+    SITE = "ishuhui"
     CHAPTER_INTERVAL_PATTERN = re.compile(r"^(?P<start_chapter_number>\d+)\-(?P<end_chapter_number>\d+)")
 
     def __init__(self, comicid):
@@ -32,7 +32,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         if self.api_data is None:
             self.api_data = self.get_json(url=self.source_url)
         if not self.api_data.get("data"):
-            msg = "资源未找到！ site={} comicid={}".format(self.site, self.comicid)
+            msg = "资源未找到！ site={} comicid={}".format(self.SITE, self.comicid)
             raise ComicbookNotFound(msg)
         return self.api_data
 
@@ -81,7 +81,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                                                source_url=ishuhui_source_url)
                     return chapter_item
 
-        msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.site, self.comicid, chapter_number)
+        msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
         raise ChapterSourceNotFound(msg)
 
     @classmethod
@@ -101,7 +101,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                              cover_image_url=cover_image_url,
                              author=author,
                              source_url=source_url,
-                             source_name=cls.source_name)
+                             source_name=cls.SOURCE_NAME)
 
     @classmethod
     def parser_ishuihui_source(cls, chapter_api_data, source_url=None):

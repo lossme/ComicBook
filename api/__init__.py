@@ -18,12 +18,14 @@ def index():
         {
             "api_status": "ok",
             "example": [
-                "/api/ishuhui/1",
-                "/api/ishuhui/1/933",
-                "/api/qq/505430",
-                "/api/qq/505430/933",
-                "/api/wangyi/5015165829890111936",
-                "/api/wangyi/5015165829890111936/933",
+                "/info/ishuhui/1",
+                "/info/ishuhui/1/933",
+                "/info/qq/505430",
+                "/info/qq/505430/933",
+                "/info/wangyi/5015165829890111936",
+                "/info/wangyi/5015165829890111936/933",
+                "/search/qq?name=海贼王",
+                "/search/wangyi?name=海贼王"
             ]
         }
     )

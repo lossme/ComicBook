@@ -1,13 +1,14 @@
 import re
 import time
 
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem
+from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
 
 
 class ComicBookCrawler(ComicBookCrawlerBase):
 
-    source_name = '网易漫画'
-    site = "wangyi"
+    SOURCE_NAME = '网易漫画'
+    SITE = "wangyi"
+
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="f-toe sr-detail__heading">(.*?)</h1>')
     IMAGE_PATTERN = re.compile(r'url: window.IS_SUPPORT_WEBP \? ".*?" : "(.*?AccessKeyId=\w{32})')
     CHAPTER_TITLE_PATTERN = re.compile('fullTitle: "(.*?)"')
@@ -18,6 +19,9 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     TAG_PATTERN = re.compile(r'<a title="(.*?)".*?</a>', re.S)
     AUTHOR_PATTERN = re.compile(
         r'<a class="sr-detail__author".*?<img src=".*?" alt="(.*?)" class="sr-detail__avatar f-fl" />', re.S)
+
+    SEARCH_DATA_PATTERN = re.compile("""<div class="img-block">\s*<a href="/source/(.*?)" title="(.*?)" target="_blank">\s*\
+<img alt="(.*?)" src="(.*?)".*?</a>\s*</div>""", re.S)
 
     def __init__(self, comicid):
         super().__init__()
@@ -57,7 +61,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                              max_chapter_number=max_chapter_number,
                              author=author,
                              source_url=self.source_url,
-                             source_name=self.source_name,
+                             source_name=self.SOURCE_NAME,
                              cover_image_url=cover_image_url)
 
     def get_chapter_item(self, chapter_number):
@@ -95,3 +99,17 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                 break
             time.sleep(2)
         return
+
+    @classmethod
+    def search(cls, name):
+        url = "https://manhua.163.com/search/book/key.do?key={}".format(name)
+        html = cls._get_html(url)
+        rv = []
+        for item in cls.SEARCH_DATA_PATTERN.findall(html):
+            comicid, name1, name2, cover_image_url = item
+            search_result_item = SearchResultItem(site=cls.SITE,
+                                                  comicid=comicid,
+                                                  name=name1,
+                                                  cover_image_url=cover_image_url)
+            rv.append(search_result_item)
+        return rv

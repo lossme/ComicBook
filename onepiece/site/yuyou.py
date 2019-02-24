@@ -3,8 +3,8 @@ from ..exceptions import ChapterSourceNotFound
 
 
 class ComicBookCrawler(ComicBookCrawlerBase):
-    source_name = '狱友提供'
-    site = "yuyou"
+    SOURCE_NAME = '狱友提供'
+    SITE = "yuyou"
 
     def __init__(self, comicid=None):
         super().__init__()

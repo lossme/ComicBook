@@ -3,23 +3,27 @@ import base64
 import json
 from urllib import parse
 
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, ChapterSourceNotFound, ComicbookNotFound
+from . import (ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem,
+               ChapterSourceNotFound, ComicbookNotFound)
 
 
 class ComicBookCrawler(ComicBookCrawlerBase):
 
     QQ_COMIC_HOST = 'https://ac.qq.com'
-    site = "qq"
-    source_name = '腾讯漫画'
+    SITE = "qq"
+    SOURCE_NAME = '腾讯漫画'
 
     COMIC_NAME_PATTERN = re.compile(r"""<h2 class="works-intro-title ui-left"><strong>(.*?)</strong></h2>""")
     COMIC_DESC_PATTERN = re.compile(r"""<p class="works-intro-short ui-text-gray9">(.*?)</p>""", re.S)
 
     CHAPTER_TITLE_PATTERN = re.compile(r"""<span class="title-comicHeading">(.*?)</span>""")
 
-    SEARCH_PAGE_PATTERN = re.compile(
-        r'<a href="/Comic/comicInfo/id/(?P<comicid>\d+)" title="(?P<title>.*?)" class="f14".*?</a>'
-    )
+    SEARCH_NOT_FOUNT_PATTERN = re.compile(r'<div class="mod_960wr mod_of search_wr" style="background-color: #fff;">')
+    SEARCH_UL_PATTERN = re.compile(r'<ul class="mod_book_list mod_all_works_list mod_of">(.*?)</ul>', re.S)
+    SEARCH_LI_PATTERN = re.compile(r'<li>(.*?)</li>', re.S)
+    SEARCH_DATA_PATTERN = re.compile("""<a href="/Comic/comicInfo/id/(?P<comicid>.*?)" \
+title="(?P<name>.*?)" class="mod_book_cover db" \
+target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
     TAG_PATTERN = re.compile(r"""<meta.*?的标签：(.*?)\"""", re.S)
     COVER_IMAGE_URL_PATTERN = re.compile(r'<div class="works-cover ui-left">.*?<img src="(.*?)"', re.S)
@@ -45,7 +49,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_chapter_page_url(self, chapter_number):
         if chapter_number not in self.chapter_page_url_db:
-            msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.site, self.comicid, chapter_number)
+            msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
             raise ChapterSourceNotFound(msg)
         return self.chapter_page_url_db[chapter_number]
 
@@ -73,7 +77,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url,
-                                       source_name=self.source_name)
+                                       source_name=self.SOURCE_NAME)
         return comicbook_item
 
     def get_chapter_item(self, chapter_number):
@@ -133,9 +137,17 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     @classmethod
     def search(cls, name):
         url = "https://ac.qq.com/Comic/searchList/search/{}".format(name)
+
         html = cls._get_html(url)
-        result = cls.SEARCH_PAGE_PATTERN.findall(html)
-        if result is None:
-            msg = "资源未找到！ site={} name={}".format(cls.site, name)
-            raise ComicbookNotFound(msg)
-        return [cls(comicid=item[0]) for item in result]
+        if cls.SEARCH_NOT_FOUNT_PATTERN.search(html):
+            return []
+        rv = []
+        ul_tag = cls.SEARCH_UL_PATTERN.search(html).group(1)
+        for li_tag in cls.SEARCH_LI_PATTERN.findall(ul_tag):
+            r = cls.SEARCH_DATA_PATTERN.search(li_tag)
+            search_result_item = SearchResultItem(site=cls.SITE,
+                                                  comicid=r.group("comicid"),
+                                                  name=r.group("name"),
+                                                  cover_image_url=r.group("cover_image_url"))
+            rv.append(search_result_item)
+        return rv
