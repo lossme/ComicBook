@@ -8,18 +8,18 @@ from .utils.mail import Mail
 from . import VERSION
 
 
-def parser_chapter(chapter_str, max_chapter_number, is_all=None):
+def parser_chapter(chapter_str, last_chapter_number, is_all=None):
     """将字符串描述的区间转化为一个一个数字
     :param str chapter: 类似 1-10,20-30,66 这样的字符串
     :return list number_list: [1, 2, 3, 4, ...]
     """
     if is_all:
-        return list(range(1, max_chapter_number))
+        return list(range(1, last_chapter_number))
 
     try:
         chapter_number = int(chapter_str)
         if chapter_number < 0:
-            chapter_number = max_chapter_number - chapter_number - 1
+            chapter_number = last_chapter_number - chapter_number - 1
         return [chapter_number, ]
     except ValueError:
         pass
@@ -43,10 +43,9 @@ def parser_chapter(chapter_str, max_chapter_number, is_all=None):
     rv = []
     for chapter_number in chapter_number_list:
         if chapter_number < 0:
-            chapter_number = max_chapter_number - chapter_number - 1
-        if chapter_number <= max_chapter_number:
+            chapter_number = last_chapter_number - chapter_number - 1
+        if chapter_number <= last_chapter_number:
             rv.append(chapter_number)
-    print(rv)
     return rv
 
 
@@ -151,12 +150,14 @@ def main():
     if is_login:
         comicbook.crawler.login()
 
-    echo("{source_name} {name} 更新至 {max_chapter_number}"
-         .format(source_name=comicbook.source_name,
-                 name=comicbook.name,
-                 max_chapter_number=comicbook.max_chapter_number))
+    msg = "{source_name} {name} 更新至 {last_chapter_number} {last_chapter_title}"\
+        .format(source_name=comicbook.source_name,
+                name=comicbook.name,
+                last_chapter_number=comicbook.last_chapter_number,
+                last_chapter_title=comicbook.last_chapter_title)
+    echo(msg)
     chapter_number_list = parser_chapter(chapter_str=args.chapter,
-                                         max_chapter_number=comicbook.max_chapter_number,
+                                         last_chapter_number=comicbook.last_chapter_number,
                                          is_all=is_download_all)
 
     for chapter_number in chapter_number_list:

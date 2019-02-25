@@ -1,20 +1,24 @@
 import requests
+import datetime
 from ..exceptions import URLException
 
 
 class ComicBookItem():
-    FIELDS = ["name", "desc", "tag", "max_chapter_number", "cover_image_url", "author", "source_url", "source_name"]
+    FIELDS = ["name", "desc", "tag", "last_chapter_number", "last_chapter_title",
+              "cover_image_url", "author", "source_url", "source_name", "crawl_time"]
 
-    def __init__(self, name=None, desc=None, tag=None, max_chapter_number=None,
-                 cover_image_url=None, author=None, source_url=None, source_name=None):
+    def __init__(self, name=None, desc=None, tag=None, last_chapter_number=None, last_chapter_title=None,
+                 cover_image_url=None, author=None, source_url=None, source_name=None, crawl_time=None):
         self.name = name or ""
         self.desc = desc or ""
         self.tag = tag or ""
-        self.max_chapter_number = max_chapter_number or 0
+        self.last_chapter_number = last_chapter_number or 0
+        self.last_chapter_title = last_chapter_title or ""
         self.cover_image_url = cover_image_url or ""
         self.author = author or ""
         self.source_url = source_url or ""
         self.source_name = source_name or ""
+        self.crawl_time = crawl_time or datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}

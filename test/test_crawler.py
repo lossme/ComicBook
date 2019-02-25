@@ -13,7 +13,7 @@ def test_qq_crawler():
 
     comicbook_item = crawler.get_comicbook_item()
     assert comicbook_item.name
-    assert comicbook_item.max_chapter_number >= 933
+    assert comicbook_item.last_chapter_number >= 933
     assert comicbook_item.author
 
     chapter_item = crawler.get_chapter_item(chapter_number=933)
@@ -31,7 +31,7 @@ def test_ishuhui_crawler():
 
     comicbook_item = crawler.get_comicbook_item()
     assert comicbook_item.name
-    assert comicbook_item.max_chapter_number >= 933
+    assert comicbook_item.last_chapter_number >= 933
     assert comicbook_item.author
 
     chapter_item = crawler.get_chapter_item(chapter_number=933)
@@ -49,7 +49,7 @@ def test_wangyi_crwaler():
 
     comicbook_item = crawler.get_comicbook_item()
     assert comicbook_item.name
-    assert comicbook_item.max_chapter_number >= 933
+    assert comicbook_item.last_chapter_number >= 933
     assert comicbook_item.author
 
     chapter_item = crawler.get_chapter_item(chapter_number=934)

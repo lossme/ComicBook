@@ -21,7 +21,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     AUTHOR_PATTERN = re.compile(
         r'<a class="sr-detail__author".*?<img src=".*?" alt="(.*?)" class="sr-detail__avatar f-fl" />', re.S)
 
-    SEARCH_DATA_PATTERN = re.compile("""<div class="img-block">\s*<a href="/source/(.*?)" title="(.*?)" target="_blank">\s*\
+    SEARCH_DATA_PATTERN = re.compile(r"""<div class="img-block">\s*<a href="/source/(.*?)" title="(.*?)" target="_blank">\s*\
 <img alt="(.*?)" src="(.*?)".*?</a>\s*</div>""", re.S)
 
     def __init__(self, comicid):
@@ -61,9 +61,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         tag = ','.join(self.TAG_PATTERN.findall(tag_html))
         author = self.AUTHOR_PATTERN.search(html).group(1)
         cover_image_url = self.COVER_IMAGE_URL_PATTERN.search(html).group(1)
-        max_chapter_number = len(api_data['catalog']['sections'][0]['sections'])
-        return ComicBookItem(name=name, desc=desc, tag=tag,
-                             max_chapter_number=max_chapter_number,
+        last_chapter_number = len(api_data['catalog']['sections'][0]['sections'])
+        last_chapter_title = api_data['catalog']['sections'][0]['sections'][-1]["title"]
+
+        return ComicBookItem(name=name,
+                             desc=desc,
+                             tag=tag,
+                             last_chapter_number=last_chapter_number,
+                             last_chapter_title=last_chapter_title,
                              author=author,
                              source_url=self.source_url,
                              source_name=self.SOURCE_NAME,

@@ -9,14 +9,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def __init__(self, comicid=None):
         super().__init__()
         self.comicid = comicid
-        self.max_chapter_number = 1914
+        self.last_chapter_number = 1914
         self.min_chapter_number = 97
 
     def get_comicbook_item(self):
-        return ComicBookItem(name="狱友提供", desc="", tag="", max_chapter_number=self.max_chapter_number)
+        return ComicBookItem(name="狱友提供", desc="", tag="", last_chapter_number=self.last_chapter_number)
 
     def get_chapter_item(self, chapter_number):
-        if self.min_chapter_number > chapter_number or chapter_number > self.max_chapter_number:
+        if self.min_chapter_number > chapter_number or chapter_number > self.last_chapter_number:
             raise ChapterSourceNotFound()
         url = "http://182.61.35.52:8087/laidianwebapp/selectDetailsPost?id={}".format(chapter_number)
         response = self.session.post(url=url)
