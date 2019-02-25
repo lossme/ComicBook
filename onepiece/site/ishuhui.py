@@ -13,7 +13,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     COMIC_API_VER = None
 
-    CItem = collections.namedtuple("CItem", ["title", "url", "source"])
+    # source= qq/ishuhui
+    CItem = collections.namedtuple("CItem", ["title", "url", "source", "source_url"])
 
     def __init__(self, comicid):
         super().__init__()
@@ -22,9 +23,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
         # {int_chapter_number: CItem, }
         self.chapter_db = {}
+        self.source_url = "https://www.ishuhui.com/comics/anime/{}".format(comicid)
 
     @property
-    def source_url(self):
+    def api_url(self):
         # https://prod-api.ishuhui.com/ver/8a175090/anime/detail?id=1&type=comics&.json
         return "https://prod-api.ishuhui.com/ver/{ver}/anime/detail?id={comicid}&type=comics&.json"\
             .format(ver=self.get_comics_api_ver(), comicid=self.comicid)
@@ -39,7 +41,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_api_data(self):
         if self.api_data is None:
-            self.api_data = self.get_json(url=self.source_url)
+            self.api_data = self.get_json(url=self.api_url)
         if not self.api_data.get("data"):
             msg = "资源未找到！ site={} comicid={}".format(self.SITE, self.comicid)
             raise ComicbookNotFound(msg)
@@ -78,13 +80,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         item = chapter_db[chapter_number]
         if item.source == "qq":
             html = self.get_html(item.url)
-            chapter_item = self.parser_qq_source(html, source_url=item.url)
+            chapter_item = self.parser_qq_source(html, source_url=item.source_url)
             return chapter_item
 
         if item.source == "ishuhui":
             chapter_api_data = self.get_json(item.url)
             chapter_item = self.parser_ishuihui_source(chapter_api_data,
-                                                       source_url=item.url)
+                                                       source_url=item.source_url)
             return chapter_item
 
     def get_chapter_db(self):
@@ -116,18 +118,21 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
                     self.chapter_db[chapter_number] = self.CItem(title=chapter_data['title'],
                                                                  url=qq_source_url,
+                                                                 source_url=qq_source_url,
                                                                  source="qq")
                     continue
 
                 if 1 in chapter_source or 7 in chapter_source:
                     chapter_data = chapter_source[1] or chapter_source[7]
-
+                    cid = chapter_data['id']
+                    # https://www.ishuhui.com/comics/detail/11196
                     # https://prod-api.ishuhui.com/comics/detail?id=11196
-                    ishuhui_source_url = "https://prod-api.ishuhui.com/comics/detail?id={}"\
-                        .format(chapter_data['id'])
+                    url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(cid)
+                    source_url = "https://www.ishuhui.com/comics/detail/11370".format(cid)
                     self.chapter_db[chapter_number] = self.CItem(title=chapter_data['title'],
-                                                                 url=ishuhui_source_url,
-                                                                 source="ishuhui")
+                                                                 url=url,
+                                                                 source="ishuhui",
+                                                                 source_url=source_url)
                     continue
 
                 if chapter_data['sourceID'] == 6:
