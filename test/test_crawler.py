@@ -1,57 +1,43 @@
-from onepiece.site.qq import ComicBookCrawler as QQComicBookCrawler
-from onepiece.site.ishuhui import ComicBookCrawler as IshuhuiComicBookCrawler
-from onepiece.site.wangyi import ComicBookCrawler as WangyiComicBookCrawler
+from onepiece.comicbook import ComicBook
 
 
-def test_qq_crawler():
-    """
-    comicid="505430" # 海贼王
-    URL: https://ac.qq.com/Comic/ComicInfo/id/505430
-    """
+def crawl_comicbook(site, comicid, chapter_number):
+    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    chapter = comicbook.Chapter(chapter_number=chapter_number)
+    assert len(chapter.image_urls) > 0
+
+    print(chapter.to_dict())
+    print(comicbook.to_dict())
+    return comicbook, chapter
+
+
+def test_qq():
+    # 海贼王  URL: https://ac.qq.com/Comic/ComicInfo/id/505430
+    site = "qq"
     comicid = "505430"
-    crawler = QQComicBookCrawler(comicid=comicid)
-
-    comicbook_item = crawler.get_comicbook_item()
-    assert comicbook_item.name
-    assert comicbook_item.last_chapter_number >= 933
-    assert comicbook_item.author
-
-    chapter_item = crawler.get_chapter_item(chapter_number=933)
-    assert chapter_item.title
-    assert len(chapter_item.image_urls) > 0
+    chapter_number = -1
+    crawl_comicbook(site=site, comicid=comicid, chapter_number=chapter_number)
 
 
-def test_ishuhui_crawler():
-    """
-    comicid = "1" # 海贼王
-    URL: https://prod-api.ishuhui.com/ver/fe058362/anime/detail?id=1&type=comics&.json
-    """
+def test_ishuhui():
+    # 海贼王 URL: https://www.ishuhui.com/comics/anime/1
+    site = "ishuhui"
     comicid = "1"
-    crawler = IshuhuiComicBookCrawler(comicid=comicid)
-
-    comicbook_item = crawler.get_comicbook_item()
-    assert comicbook_item.name
-    assert comicbook_item.last_chapter_number >= 933
-    assert comicbook_item.author
-
-    chapter_item = crawler.get_chapter_item(chapter_number=933)
-    assert chapter_item.title
-    assert len(chapter_item.image_urls) > 0
+    chapter_number = -1
+    crawl_comicbook(site=site, comicid=comicid, chapter_number=chapter_number)
 
 
-def test_wangyi_crwaler():
-    """
-    comicid = "5015165829890111936" # 海贼王
-    URL: https://manhua.163.com/source/5015165829890111936
-    """
+def test_wangyi():
+    # 海贼王 URL: https://manhua.163.com/source/5015165829890111936
+    site = "wangyi"
     comicid = "5015165829890111936"
-    crawler = WangyiComicBookCrawler(comicid=comicid)
+    chapter_number = -1
+    crawl_comicbook(site=site, comicid=comicid, chapter_number=chapter_number)
 
-    comicbook_item = crawler.get_comicbook_item()
-    assert comicbook_item.name
-    assert comicbook_item.last_chapter_number >= 933
-    assert comicbook_item.author
 
-    chapter_item = crawler.get_chapter_item(chapter_number=934)
-    assert chapter_item.title
-    assert len(chapter_item.image_urls) > 0
+def test_u17():
+    # 雏蜂 URL: http://www.u17.com/comic/195.html
+    site = "u17"
+    comicid = "195"
+    chapter_number = -1
+    crawl_comicbook(site=site, comicid=comicid, chapter_number=chapter_number)
