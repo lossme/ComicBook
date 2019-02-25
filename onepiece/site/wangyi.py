@@ -21,7 +21,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     AUTHOR_PATTERN = re.compile(
         r'<a class="sr-detail__author".*?<img src=".*?" alt="(.*?)" class="sr-detail__avatar f-fl" />', re.S)
 
-    SEARCH_DATA_PATTERN = re.compile(r"""<div class="img-block">\s*<a href="/source/(.*?)" title="(.*?)" target="_blank">\s*\
+    SEARCH_DATA_PATTERN = re.compile("""<div class="img-block">\s*<a href="/source/(.*?)" title="(.*?)" target="_blank">\s*\
 <img alt="(.*?)" src="(.*?)".*?</a>\s*</div>""", re.S)
 
     def __init__(self, comicid):
@@ -121,9 +121,11 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         rv = []
         for item in cls.SEARCH_DATA_PATTERN.findall(html):
             comicid, name1, name2, cover_image_url = item
+            source_url = "https://manhua.163.com/source/{comicid}".format(comicid=comicid)
             search_result_item = SearchResultItem(site=cls.SITE,
                                                   comicid=comicid,
                                                   name=name1,
-                                                  cover_image_url=cover_image_url)
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
             rv.append(search_result_item)
         return rv

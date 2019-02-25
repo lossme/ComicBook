@@ -103,50 +103,56 @@ curl -G "{host}/search/qq" --data-urlencode "name=海贼王"
 ```
 
 ```json
-
 {
   "search_result": [
     {
       "comicid": "505430",
       "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_16_48_0e28c8aabf48e91d395689b5f6a7689f.jpg/420",
       "name": "航海王",
-      "site": "qq"
+      "site": "qq",
+      "source_url": "https://ac.qq.com/Comic/ComicInfo/id/505430"
     },
     {
       "comicid": "531616",
       "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_17_06_cb4ba7f7af603a3380bb1e5ed415804b.jpg/420",
       "name": "航海王（番外篇）",
-      "site": "qq"
-    },
-    {
-      "comicid": "550529",
-      "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_17_19_cdfbe709316c877ccfb23c57ab393d46.jpg/420",
-      "name": "中国贵州贵阳中等孩子的日常？",
-      "site": "qq"
+      "site": "qq",
+      "source_url": "https://ac.qq.com/Comic/ComicInfo/id/531616"
     },
     {
       "comicid": "512062",
       "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_16_53_6b94329a848ab290f2a7fe8926c002cc.jpg/420",
       "name": "航海王（全彩版）",
-      "site": "qq"
+      "site": "qq",
+      "source_url": "https://ac.qq.com/Comic/ComicInfo/id/512062"
+    },
+    {
+      "comicid": "550529",
+      "cover_image_url": "https://manhua.qpic.cn/vertical/0/17_17_19_cdfbe709316c877ccfb23c57ab393d46.jpg/420",
+      "name": "中国贵州贵阳中等孩子的日常？",
+      "site": "qq",
+      "source_url": "https://ac.qq.com/Comic/ComicInfo/id/550529"
     },
     {
       "comicid": "549637",
       "cover_image_url": "https://manhua.qpic.cn/vertical/0/24_22_37_a4aba72ff67134b2a8d6faf3202973c3_1545662258373.jpg/420",
       "name": "抑郁症",
-      "site": "qq"
+      "site": "qq",
+      "source_url": "https://ac.qq.com/Comic/ComicInfo/id/549637"
     },
     {
       "comicid": "630588",
       "cover_image_url": "https://manhua.qpic.cn/vertical/0/26_17_12_a5b28a23f4d5df3cea863deb0a9b274c_1516957975778.jpg/420",
       "name": "天堂岛",
-      "site": "qq"
+      "site": "qq",
+      "source_url": "https://ac.qq.com/Comic/ComicInfo/id/630588"
     },
     {
       "comicid": "628782",
       "cover_image_url": "https://manhua.qpic.cn/vertical/0/20_13_12_02857f7dbb8f571550c5a8e0e8e3104a_1513746733413.jpg/420",
       "name": "济康传",
-      "site": "qq"
+      "site": "qq",
+      "source_url": "https://ac.qq.com/Comic/ComicInfo/id/628782"
     }
   ]
 }

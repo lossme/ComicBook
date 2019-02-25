@@ -1,6 +1,6 @@
 # TencentComicBook
 
-腾讯漫画、鼠绘漫画、网易漫画爬虫
+腾讯漫画、鼠绘漫画、网易漫画、有妖气爬虫
 
 ## 本项目特点
 
@@ -39,6 +39,8 @@
 - 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --comicid=505430 --pdf --mail`
 - 从鼠绘漫画下载: `python3 -m onepiece --site=ishuhui --comicid=1 --chapter=1-5`
 - 从网易漫画下载: `python3 -m onepiece --site=wangyi --comicid=5015165829890111936 --chapter=1-5`
+- 从有妖气下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=-1`
+
 
 ## 使用帮助
 
@@ -46,7 +48,7 @@
 usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
                 [--worker WORKER] [--all] [--pdf] [--login] [--mail]
                 [--config CONFIG] [-o OUTPUT]
-                [--site {yuyou,wangyi,qq,ishuhui}] [--nocache] [-V]
+                [--site {wangyi,u17,qq,ishuhui,yuyou}] [--nocache] [-V]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -65,8 +67,8 @@ optional arguments:
   --config CONFIG       配置文件路径，默认取当前目录下的config.ini
   -o OUTPUT, --output OUTPUT
                         文件保存路径，默认保存在当前路径下的download文件夹
-  --site {yuyou,wangyi,qq,ishuhui}
-                        数据源网站：支持yuyou,wangyi,qq,ishuhui
+  --site {wangyi,u17,qq,ishuhui,yuyou}
+                        数据源网站：支持wangyi,u17,qq,ishuhui,yuyou
   --nocache             禁用图片缓存
   -V, --version         show program's version number and exit
 ```

@@ -23,7 +23,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SEARCH_NOT_FOUNT_PATTERN = re.compile(r'<div class="mod_960wr mod_of search_wr" style="background-color: #fff;">')
     SEARCH_UL_PATTERN = re.compile(r'<ul class="mod_book_list mod_all_works_list mod_of">(.*?)</ul>', re.S)
     SEARCH_LI_PATTERN = re.compile(r'<li>(.*?)</li>', re.S)
-    SEARCH_DATA_PATTERN = re.compile(r"""<a href="/Comic/comicInfo/id/(?P<comicid>.*?)" \
+    SEARCH_DATA_PATTERN = re.compile("""<a href="/Comic/comicInfo/id/(?P<comicid>.*?)" \
 title="(?P<name>.*?)" class="mod_book_cover db" \
 target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
@@ -143,17 +143,22 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
     @classmethod
     def search(cls, name):
         url = "https://ac.qq.com/Comic/searchList/search/{}".format(name)
-
         html = cls.get_html(url)
         if cls.SEARCH_NOT_FOUNT_PATTERN.search(html):
             return []
+
         rv = []
         ul_tag = cls.SEARCH_UL_PATTERN.search(html).group(1)
         for li_tag in cls.SEARCH_LI_PATTERN.findall(ul_tag):
             r = cls.SEARCH_DATA_PATTERN.search(li_tag)
+            comicid = r.group("comicid")
+            name = r.group("name")
+            cover_image_url = r.group("cover_image_url")
+            source_url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(comicid)
             search_result_item = SearchResultItem(site=cls.SITE,
-                                                  comicid=r.group("comicid"),
-                                                  name=r.group("name"),
-                                                  cover_image_url=r.group("cover_image_url"))
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
             rv.append(search_result_item)
         return rv

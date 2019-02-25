@@ -38,13 +38,14 @@ class ChapterItem():
 
 
 class SearchResultItem():
-    FIELDS = ["site", "comicid", "name", "cover_image_url"]
+    FIELDS = ["site", "comicid", "name", "cover_image_url", "source_url"]
 
-    def __init__(self, site=None, comicid=None, name=None, cover_image_url=None):
-        self.site = site
-        self.comicid = comicid
-        self.name = name
-        self.cover_image_url = cover_image_url
+    def __init__(self, site=None, comicid=None, name=None, cover_image_url=None, source_url=None):
+        self.site = site or ""
+        self.comicid = comicid or ""
+        self.name = name or ""
+        self.cover_image_url = cover_image_url or ""
+        self.source_url = source_url or ""
 
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}

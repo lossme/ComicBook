@@ -164,9 +164,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         data = cls.get_json(url)
         rv = []
         for item in data["data"]["data"]:
+            comicid = item["animeID"]
+            name = item["title"]
+            cover_image_url = item["thumb"]
+            source_url = "https://www.ishuhui.com/comics/anime/{}".format(comicid)
             search_result_item = SearchResultItem(site=cls.SITE,
-                                                  name=item["title"],
-                                                  comicid=item["animeID"],
-                                                  cover_image_url=item["thumb"])
+                                                  name=name,
+                                                  comicid=comicid,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
             rv.append(search_result_item)
         return sorted(rv, key=lambda x: difflib.SequenceMatcher(None, name, x.name).ratio(), reverse=True)

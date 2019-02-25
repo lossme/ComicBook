@@ -124,6 +124,12 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         for li_tag in cls.SEARCH_LI_TAG_PATTERN.findall(ul_tag):
             cover_image_url = cls.SEARCH_COVER_IMAGE_URL_PATTERN.search(li_tag).group(1)
             comicid, name = cls.SEARCH_DATA_PATTERN.search(li_tag).groups()
-            item = SearchResultItem(site=cls.SITE, comicid=comicid, name=name, cover_image_url=cover_image_url)
+            source_url = "http://www.u17.com/comic/{}.html".format(comicid)
+
+            item = SearchResultItem(site=cls.SITE,
+                                    comicid=comicid,
+                                    name=name,
+                                    cover_image_url=cover_image_url,
+                                    source_url=source_url)
             rv.append(item)
         return rv
