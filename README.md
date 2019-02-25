@@ -1,12 +1,12 @@
 # TencentComicBook
 
-腾讯漫画、鼠绘漫画、网易漫画、有妖气爬虫
+腾讯漫画、鼠绘漫画、网易漫画、有妖气漫画爬虫
 
 ## 本项目特点
 
 - [x] 漫画批量下载或全集下载
 - [x] 分目录保存
-- [x] 支持鼠绘漫画、腾讯漫画、网易漫画
+- [x] 支持鼠绘漫画、腾讯漫画、网易漫画、有妖气漫画
 - [x] 支持生成pdf
 - [x] 支持发送到邮箱
 - [x] 集成api，方便调用 [API-README](API-README.md)
@@ -27,7 +27,7 @@
 
 ## 常规使用
 
-默认从腾讯漫画下载，注意鼠绘漫画和腾讯漫画的id区别
+默认从腾讯漫画下载，注意不同站点的comicid区别
 
 - 下载海贼王最新一集: `python3 -m onepiece`
 - 下载漫画 id=505430 最新一集: `python3 -m onepiece --comicid=505430`
@@ -39,7 +39,7 @@
 - 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --comicid=505430 --pdf --mail`
 - 从鼠绘漫画下载: `python3 -m onepiece --site=ishuhui --comicid=1 --chapter=1-5`
 - 从网易漫画下载: `python3 -m onepiece --site=wangyi --comicid=5015165829890111936 --chapter=1-5`
-- 从有妖气下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=-1`
+- 从有妖气漫画下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=-1`
 
 
 ## 使用帮助

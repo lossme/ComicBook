@@ -109,11 +109,12 @@ def main():
     if is_login:
         comicbook.crawler.login()
 
-    msg = "{source_name} {name} 更新至 {last_chapter_number} {last_chapter_title}"\
+    msg = "{source_name} {name} 更新至 {last_chapter_number} {last_chapter_title} 数据来源: {source_url}"\
         .format(source_name=comicbook.source_name,
                 name=comicbook.name,
                 last_chapter_number=comicbook.last_chapter_number,
-                last_chapter_title=comicbook.last_chapter_title)
+                last_chapter_title=comicbook.last_chapter_title,
+                source_url=comicbook.source_url)
     echo(msg)
     chapter_number_list = parser_chapter_str(chapter_str=args.chapter,
                                              last_chapter_number=comicbook.last_chapter_number,

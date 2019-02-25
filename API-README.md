@@ -29,13 +29,13 @@ curl ${host}/comic/ishuhui/1
 {
   "author": "尾田荣一郎",
   "cover_image_url": "http://oss.ishuhui.com/oldImg/cartoon/book/thumb/1/YDdFCpDpUAveOWJvxJRusmHb.jpg",
-  "crawl_time": "2019-02-25 10:13:58",
+  "crawl_time": "2019-02-26 05:28:45",
   "desc": "《ONE PIECE》（海賊王、航海王）簡稱“OP”，是日本漫畫家尾田榮一郎作畫的少年漫畫作品。在《週刊少年Jump》1997年34號開始連載。描寫了擁有橡皮身體戴草帽的青年路飛，以成為“海賊王”為目標和同伴在大海展開冒險的故事。另外有同名的海賊王劇場版、電視動畫和遊戲等周邊媒體產品。擁有財富、名聲、權力，這世界上的一切的男人 “海賊王”哥爾·D·羅傑，在被行刑受死之前說了一句話，讓全世界的人都湧向了大海。“想要我的寶藏嗎？如果想要的話，那就到海上去找吧，我全部都放在那裡。”，世界開始迎接“大海賊時代”的來臨。時值“大海賊時代”，為了尋找傳說中海賊王羅傑所留下的大秘寶“ONE PIECE”，無數海賊揚起旗幟，互相爭鬥。一個叫路飛的少年為了與因救他而斷臂的香克斯的約定而出海，在旅途中不斷尋找志同道合的夥伴，開始了以成為海賊王為目標的偉大冒險旅程。",
   "last_chapter_number": 934,
   "last_chapter_title": "花豹五郎",
   "name": "海賊王",
   "source_name": "鼠绘漫画",
-  "source_url": "https://prod-api.ishuhui.com/ver/a0084278/anime/detail?id=1&type=comics&.json",
+  "source_url": "https://www.ishuhui.com/comics/anime/1",
   "tag": "熱血,冒險,搞笑"
 }
 ```
@@ -77,15 +77,17 @@ curl ${host}/comic/ishuhui/1/933
       "https://oss.ishuhui.com/img/comics/2019/02/37ff3131-8ccc-4634-960f-ed944785465a.png",
       "https://oss.ishuhui.com/img/comics/2019/02/7b92e407-60d2-4f86-bad6-7970c7e6f9ff.jpeg"
     ],
-    "source_url": "https://prod-api.ishuhui.com/comics/detail?id=11363",
+    "source_url": "https://www.ishuhui.com/comics/detail/11370",
     "title": "武士的仁慈"
   },
   "cover_image_url": "http://oss.ishuhui.com/oldImg/cartoon/book/thumb/1/YDdFCpDpUAveOWJvxJRusmHb.jpg",
+  "crawl_time": "2019-02-26 05:27:31",
   "desc": "《ONE PIECE》（海賊王、航海王）簡稱“OP”，是日本漫畫家尾田榮一郎作畫的少年漫畫作品。在《週刊少年Jump》1997年34號開始連載。描寫了擁有橡皮身體戴草帽的青年路飛，以成為“海賊王”為目標和同伴在大海展開冒險的故事。另外有同名的海賊王劇場版、電視動畫和遊戲等周邊媒體產品。擁有財富、名聲、權力，這世界上的一切的男人 “海賊王”哥爾·D·羅傑，在被行刑受死之前說了一句話，讓全世界的人都湧向了大海。“想要我的寶藏嗎？如果想要的話，那就到海上去找吧，我全部都放在那裡。”，世界開始迎接“大海賊時代”的來臨。時值“大海賊時代”，為了尋找傳說中海賊王羅傑所留下的大秘寶“ONE PIECE”，無數海賊揚起旗幟，互相爭鬥。一個叫路飛的少年為了與因救他而斷臂的香克斯的約定而出海，在旅途中不斷尋找志同道合的夥伴，開始了以成為海賊王為目標的偉大冒險旅程。",
-  "max_chapter_number": 933,
+  "last_chapter_number": 934,
+  "last_chapter_title": "花豹五郎",
   "name": "海賊王",
   "source_name": "鼠绘漫画",
-  "source_url": "https://prod-api.ishuhui.com/ver/fe058362/anime/detail?id=1&type=comics&.json",
+  "source_url": "https://www.ishuhui.com/comics/anime/1",
   "tag": "熱血,冒險,搞笑"
 }
 ```
