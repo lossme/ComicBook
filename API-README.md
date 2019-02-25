@@ -94,7 +94,7 @@ curl ${host}/comic/ishuhui/1/933
 
 ### 1.3 搜索接口
 
-`GET /search/qq?name={name}`
+`GET /search/<site>?name={name}`
 
 请求示例
 

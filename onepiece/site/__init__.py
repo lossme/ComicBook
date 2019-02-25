@@ -64,8 +64,9 @@ class ComicBookCrawlerBase():
     DEAFULT_SESSION = requests.session()
     _session = None
 
-    def __init__(self, **kwargs):
-        self._session = requests.session()
+    @classmethod
+    def set_session(cls, session):
+        cls._session = session
 
     @classmethod
     def get_session(cls):

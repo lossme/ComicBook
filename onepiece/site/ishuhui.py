@@ -165,11 +165,11 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         rv = []
         for item in data["data"]["data"]:
             comicid = item["animeID"]
-            name = item["title"]
+            _name = item["title"]
             cover_image_url = item["thumb"]
             source_url = "https://www.ishuhui.com/comics/anime/{}".format(comicid)
             search_result_item = SearchResultItem(site=cls.SITE,
-                                                  name=name,
+                                                  name=_name,
                                                   comicid=comicid,
                                                   cover_image_url=cover_image_url,
                                                   source_url=source_url)
