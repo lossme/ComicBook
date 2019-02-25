@@ -19,7 +19,7 @@ def parser_chapter(chapter_str, last_chapter_number, is_all=None):
     try:
         chapter_number = int(chapter_str)
         if chapter_number < 0:
-            chapter_number = last_chapter_number - chapter_number - 1
+            chapter_number = last_chapter_number + chapter_number + 1
         return [chapter_number, ]
     except ValueError:
         pass
@@ -39,14 +39,7 @@ def parser_chapter(chapter_str, last_chapter_number, is_all=None):
             if number not in appeared:
                 appeared.add(number)
                 chapter_number_list.append(number)
-
-    rv = []
-    for chapter_number in chapter_number_list:
-        if chapter_number < 0:
-            chapter_number = last_chapter_number - chapter_number - 1
-        if chapter_number <= last_chapter_number:
-            rv.append(chapter_number)
-    return rv
+    return chapter_number_list
 
 
 def parse_args():
