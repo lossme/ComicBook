@@ -39,8 +39,8 @@ def index():
                 "/comic/qq/505430/933",
                 "/comic/wangyi/5015165829890111936",
                 "/comic/wangyi/5015165829890111936/933",
-                "/comic/u7/195",
-                "/comic/u7/195/274",
+                "/comic/u17/195",
+                "/comic/u17/195/274",
                 "/search/qq?name=海贼王",
                 "/search/wangyi?name=海贼王",
                 "/search/ishuhui?name=海贼王",
@@ -65,9 +65,7 @@ def get_comicbook_info(site, comicid):
 def get_chapter_info(site, comicid, chapter_number):
     comicbook = get_comicbook(site, comicid)
     chapter = comicbook.Chapter(chapter_number)
-    rv = comicbook.to_dict()
-    rv["chapter"] = chapter.to_dict()
-    return jsonify(rv)
+    return jsonify(chapter.to_dict())
 
 
 @app.route("/search/<site>")

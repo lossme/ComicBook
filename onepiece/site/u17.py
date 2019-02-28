@@ -12,7 +12,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SOURCE_NAME = "有妖气"
     SITE = "u17"
 
-    CItem = collections.namedtuple("CItem", ["title", "url"])
+    CItem = collections.namedtuple("CItem", ["chapter_number", "title", "url"])
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="fl".*?>(.*?)</h1>', re.S)
     DESC_ALL_PATTERN = re.compile(r'<div class="textbox" id="words_all".*?>.*?<p class="ti2">(.*?)</p>', re.S)
     DESC_PATTERN = re.compile(r'<p class="words" id="words">(.*?)<', re.S)
@@ -58,7 +58,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         for idx, item in enumerate(self.LI_DATA_PATTERN.findall(ul_tag), start=1):
             url, title = item
             title = title[:-10]
-            self.chapter_db[idx] = self.CItem(url=url, title=title)
+            self.chapter_db[idx] = self.CItem(chapter_number=idx, url=url, title=title)
         return self.chapter_db
 
     def get_comicbook_item(self):
@@ -83,17 +83,19 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
         chapter_db = self.get_chapter_db()
 
-        last_chapter_number = max(chapter_db.keys())
-        last_chapter_title = chapter_db[last_chapter_number].title
+        chapters = []
+        for chapter_number, item in chapter_db.items():
+            c = {"chapter_number": chapter_number, "title": item.title}
+            chapters.append(c)
+
         return ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
-                             last_chapter_number=last_chapter_number,
-                             last_chapter_title=last_chapter_title,
                              cover_image_url=cover_image_url,
                              author=author,
                              source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+                             source_name=self.SOURCE_NAME,
+                             chapters=chapters)
 
     def get_chapter_item(self, chapter_number):
         chapter_db = self.get_chapter_db()

@@ -33,7 +33,7 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
     CHAPTER_JSON_STR_PATTERN = re.compile(r'("chapter":{.*)')
 
-    CItem = collections.namedtuple("CItem", ["title", "url"])
+    CItem = collections.namedtuple("CItem", ["chapter_number", "title", "url"])
 
     def __init__(self, comicid):
         super().__init__()
@@ -78,7 +78,9 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
             chapter_page_url = parse.urljoin(self.QQ_COMIC_HOST, url)
 
-            self.chapter_db[chapter_number] = self.CItem(title=title, url=chapter_page_url)
+            self.chapter_db[chapter_number] = self.CItem(chapter_number=chapter_number,
+                                                         title=title,
+                                                         url=chapter_page_url)
         return self.chapter_db
 
     def get_comicbook_item(self):
@@ -96,18 +98,19 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
         chapter_db = self.get_chapter_db()
 
-        last_chapter_number = max(chapter_db.keys())
-        last_chapter_title = chapter_db[last_chapter_number].title
+        chapters = []
+        for chapter_number, item in chapter_db.items():
+            c = {"chapter_number": chapter_number, "title": item.title}
+            chapters.append(c)
 
         comicbook_item = ComicBookItem(name=name,
                                        desc=desc,
                                        tag=tag,
-                                       last_chapter_number=last_chapter_number,
-                                       last_chapter_title=last_chapter_title,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url,
-                                       source_name=self.SOURCE_NAME)
+                                       source_name=self.SOURCE_NAME,
+                                       chapters=chapters)
         return comicbook_item
 
     def get_chapter_item(self, chapter_number):

@@ -61,18 +61,20 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         tag = ','.join(self.TAG_PATTERN.findall(tag_html))
         author = self.AUTHOR_PATTERN.search(html).group(1)
         cover_image_url = self.COVER_IMAGE_URL_PATTERN.search(html).group(1)
-        last_chapter_number = len(api_data['catalog']['sections'][0]['sections'])
-        last_chapter_title = api_data['catalog']['sections'][0]['sections'][-1]["title"]
+
+        chapters = []
+        for chapter_number, item in enumerate(api_data['catalog']['sections'][0]['sections'], start=1):
+            c = {"chapter_number": chapter_number, "title": item["fullTitle"]}
+            chapters.append(c)
 
         return ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
-                             last_chapter_number=last_chapter_number,
-                             last_chapter_title=last_chapter_title,
                              author=author,
                              source_url=self.source_url,
                              source_name=self.SOURCE_NAME,
-                             cover_image_url=cover_image_url)
+                             cover_image_url=cover_image_url,
+                             chapters=chapters)
 
     def get_chapter_item(self, chapter_number):
         api_data = self.get_api_data()
