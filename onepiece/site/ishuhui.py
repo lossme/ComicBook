@@ -131,7 +131,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                     # https://www.ishuhui.com/comics/detail/11196
                     # https://prod-api.ishuhui.com/comics/detail?id=11196
                     url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(cid)
-                    source_url = "https://www.ishuhui.com/comics/detail/11370".format(cid)
+                    source_url = "https://www.ishuhui.com/comics/detail/{}".format(cid)
                     self.chapter_db[chapter_number] = self.CItem(chapter_number=chapter_number,
                                                                  title=chapter_data['title'],
                                                                  url=url,
