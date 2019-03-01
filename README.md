@@ -41,6 +41,12 @@
 - 从网易漫画下载: `python3 -m onepiece --site=wangyi --comicid=5015165829890111936 --chapter=1-5`
 - 从有妖气漫画下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=-1`
 
+若不清楚或不记得comicid，可以使用名字来搜索，按照提示输入comicid
+
+- `python3 -m onepiece --site=qq --name=海贼 --chapter=1-5`
+- `python3 -m onepiece --site=wangyi --name=海贼 --chapter=-1`
+- `python3 -m onepiece --site=u17 --name=雏蜂 --chapter=-1`
+
 
 ## 使用帮助
 

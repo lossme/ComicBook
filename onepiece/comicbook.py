@@ -35,6 +35,13 @@ class ComicBook():
         # {chapter_number: Chapter}
         self.chapter_db = {}
 
+        if len(self.comicbook_item.chapters) > 0:
+            self.last_chapter_number = self.comicbook_item.chapters[-1]["chapter_number"]
+            self.last_chapter_title = self.comicbook_item.chapters[-1]["title"]
+        else:
+            self.last_chapter_number = 0
+            self.last_chapter_title = ""
+
     @classmethod
     def init(cls, worker=4):
         Chapter.init(worker=worker)
@@ -48,11 +55,11 @@ class ComicBook():
         return cls(comicbook_crawler=crawler)
 
     @classmethod
-    def search(cls, site, name):
+    def search(cls, site, name, limit=None):
         if site not in cls.SUPPORT_SITE:
             raise SiteNotSupport("site={} 暂不支持".format(site))
         module = importlib.import_module(".site.{}".format(site), __package__)
-        return module.ComicBookCrawler.search(name)
+        return module.ComicBookCrawler.search(name)[:limit]
 
     def to_dict(self):
         return self.comicbook_item.to_dict()

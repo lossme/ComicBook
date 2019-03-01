@@ -21,7 +21,7 @@ class ComicBookItem():
         self.crawl_time = crawl_time or datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # [{"chapter_number": 1, "title": "xx"}, ]
-        self.chapters = sorted(chapters, key=lambda x: x["chapter_number"]) or []
+        self.chapters = sorted(chapters, key=lambda x: x["chapter_number"]) if chapters else []
 
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}

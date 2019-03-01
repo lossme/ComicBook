@@ -84,7 +84,7 @@ curl ${host}/comic/ishuhui/1/933
     "https://oss.ishuhui.com/img/comics/2019/02/37ff3131-8ccc-4634-960f-ed944785465a.png",
     "https://oss.ishuhui.com/img/comics/2019/02/7b92e407-60d2-4f86-bad6-7970c7e6f9ff.jpeg"
   ],
-  "source_url": "https://www.ishuhui.com/comics/detail/11370",
+  "source_url": "https://www.ishuhui.com/comics/detail/11363",
   "title": "武士的仁慈"
 }
 ```
@@ -93,12 +93,12 @@ curl ${host}/comic/ishuhui/1/933
 
 ### 1.3 搜索接口
 
-`GET /search/<site>?name={name}`
+`GET /search/<site>?name={name}&limit={limit}`
 
 请求示例
 
 ```sh
-curl -G "{host}/search/qq" --data-urlencode "name=海贼王"
+curl -G "{host}/search/qq" --data-urlencode "name=海贼王" --data-urlencode "limit=20"
 ```
 
 ```json

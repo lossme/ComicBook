@@ -71,9 +71,10 @@ def get_chapter_info(site, comicid, chapter_number):
 @app.route("/search/<site>")
 def search(site):
     name = request.args.get('name')
+    limit = request.args.get('limit', default=20, type=int)
     if not name:
         abort(400)
-    search_result_item_list = ComicBook.search(site=site, name=name)
+    search_result_item_list = ComicBook.search(site=site, name=name, limit=limit)
     return jsonify(
         {
             "search_result": [item.to_dict() for item in search_result_item_list]

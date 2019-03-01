@@ -34,6 +34,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SEARCH_COVER_IMAGE_URL_PATTERN = re.compile(r'<div class="cover">.*?<img src="(.*?)">')
 
     def __init__(self, comicid):
+        super().__init__()
         self.comicid = comicid
         self.source_url = "http://www.u17.com/comic/{}.html".format(comicid)
 

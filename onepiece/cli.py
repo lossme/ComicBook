@@ -102,6 +102,12 @@ def main():
     if args.nocache:
         ImageInfo.IS_USE_CACHE = False
 
+    if args.name:
+        result = ComicBook.search(site=args.site, name=args.name, limit=10)
+        for item in result:
+            print("name={}\tcomicid={}\tsource_url={}".format(item.name, item.comicid, item.source_url))
+        comicid = input("请输入要下载的comicid: ")
+
     echo("正在获取最新数据")
     ComicBook.init(worker=args.worker)
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
