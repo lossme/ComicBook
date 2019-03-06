@@ -50,7 +50,13 @@
 
 ## 使用帮助
 
+
+```sh
+# 查看帮助
+python3 -m onepiece --help
 ```
+
+```sh
 usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
                 [--worker WORKER] [--all] [--pdf] [--login] [--mail]
                 [--config CONFIG] [-o OUTPUT]
