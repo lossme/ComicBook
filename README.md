@@ -54,7 +54,8 @@
 usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
                 [--worker WORKER] [--all] [--pdf] [--login] [--mail]
                 [--config CONFIG] [-o OUTPUT]
-                [--site {wangyi,u17,qq,ishuhui,yuyou}] [--nocache] [-V]
+                [--site {yuyou,qq,buka,ishuhui,wangyi,u17}]
+                [--cachedir CACHEDIR] [--nocache] [-V]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -73,8 +74,9 @@ optional arguments:
   --config CONFIG       配置文件路径，默认取当前目录下的config.ini
   -o OUTPUT, --output OUTPUT
                         文件保存路径，默认保存在当前路径下的download文件夹
-  --site {wangyi,u17,qq,ishuhui,yuyou}
-                        数据源网站：支持wangyi,u17,qq,ishuhui,yuyou
+  --site {yuyou,qq,buka,ishuhui,wangyi,u17}
+                        数据源网站：支持yuyou,qq,buka,ishuhui,wangyi,u17
+  --cachedir CACHEDIR   图片缓存目录，默认为当前目录下.cache
   --nocache             禁用图片缓存
   -V, --version         show program's version number and exit
 ```

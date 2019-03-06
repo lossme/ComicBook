@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from .comicbook import ComicBook, ImageInfo
+from .comicbook import ComicBook
 from .image_cache import ImageCache
 from .utils import get_current_time_str, parser_chapter_str
 from .utils.mail import Mail
@@ -65,6 +65,9 @@ def parse_args():
     parser.add_argument('--site', type=str, default='qq', choices=ComicBook.SUPPORT_SITE,
                         help="数据源网站：支持{}".format(','.join(ComicBook.SUPPORT_SITE)))
 
+    parser.add_argument('--cachedir', type=str, default='./.cache',
+                        help="图片缓存目录，默认为当前目录下.cache")
+
     parser.add_argument('--nocache', action='store_true',
                         help="禁用图片缓存")
 
@@ -92,15 +95,17 @@ def main():
     if args.mail:
         Mail.init(args.config)
 
-    if comicid is None:
-        if site == "ishuhui":
-            comicid = "1"
-        elif site == "qq":
-            comicid = "505430"
-        elif site == "wangyi":
-            comicid = "5015165829890111936"
-    if args.nocache:
-        ImageInfo.IS_USE_CACHE = False
+    ImageCache.DEFAULT_POOL_SIZE = args.worker
+    ImageCache.IS_USE_CACHE = False if args.nocache else True
+    ImageCache.set_cache_dir(args.cachedir)
+
+    default_comic_id = {
+        "ishuhui": "1",                   # 海贼王
+        "qq": "505430",                   # 海贼王
+        "wangyi": "5015165829890111936",  # 海贼王
+        "u17": "195"                      # 雏蜂
+    }
+    comicid = comicid or default_comic_id.get(site)
 
     if args.name:
         result = ComicBook.search(site=args.site, name=args.name, limit=10)
@@ -109,7 +114,7 @@ def main():
         comicid = input("请输入要下载的comicid: ")
 
     echo("正在获取最新数据")
-    ComicBook.init(worker=args.worker)
+
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
 
     if is_login:
