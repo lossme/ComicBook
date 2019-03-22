@@ -8,6 +8,9 @@ pip install requests flask cachetools gunicorn
 启动接口
 ```sh
 gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
+
+# 查看可选的配置选项 gunicorn --help
+# 文档 http://docs.gunicorn.org/en/latest/settings.html
 ```
 
 ## 接口文档
@@ -98,7 +101,7 @@ curl ${host}/comic/ishuhui/1/933
 请求示例
 
 ```sh
-curl -G "{host}/search/qq" --data-urlencode "name=海贼王" --data-urlencode "limit=20"
+curl "${host}/search/qq?name=海贼王&limit=20"
 ```
 
 ```json
