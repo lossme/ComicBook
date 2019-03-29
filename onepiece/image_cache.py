@@ -7,7 +7,6 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
-from PIL import Image
 
 from .exceptions import ImageDownloadError
 
@@ -96,6 +95,9 @@ class ImageCache():
         if target_path is None:
             return cache_path
         else:
+            target_dir = os.path.dirname(target_path)
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir, exist_ok=True)
             shutil.copyfile(cache_path, target_path)
             return target_path
 
