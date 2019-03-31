@@ -37,7 +37,8 @@ def walk(rootdir):
 
 
 class ImageCache():
-    CACHE_DIR = os.path.abspath(os.path.join(HERE, os.path.pardir, ".cache/image_cache"))
+    CACHE_DIR_NAME = "image_cache"
+    CACHE_DIR = os.path.abspath(os.path.join(HERE, os.path.pardir, ".cache", CACHE_DIR_NAME))
     URL_PATTERN = re.compile(r'^https?://.*')
     EXPIRE = 10 * 24 * 60 * 60   # 缓存有效期 10 天
     _session = requests.Session()
@@ -58,8 +59,8 @@ class ImageCache():
 
     @classmethod
     def set_cache_dir(cls, cache_dir):
+        cls.CACHE_DIR = os.path.abspath(os.path.join(cache_dir, cls.CACHE_DIR_NAME))
         os.makedirs(cache_dir, exist_ok=True)
-        cls.CACHE_DIR = cache_dir
 
     @classmethod
     def url_to_path(cls, image_path_or_url):
