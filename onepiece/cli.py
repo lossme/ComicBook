@@ -3,6 +3,7 @@ import os
 
 from .comicbook import ComicBook
 from .image_cache import ImageCache
+from .site import ComicBookCrawlerBase
 from .utils import get_current_time_str, parser_chapter_str
 from .utils.mail import Mail
 from . import VERSION
@@ -63,13 +64,15 @@ def parse_args():
                         help="文件保存路径，默认保存在当前路径下的download文件夹")
 
     parser.add_argument('--site', type=str, default='qq', choices=ComicBook.SUPPORT_SITE,
-                        help="数据源网站：支持{}".format(','.join(ComicBook.SUPPORT_SITE)))
+                        help="数据源网站：支持{}".format(','.join(sorted(ComicBook.SUPPORT_SITE))))
 
     parser.add_argument('--cachedir', type=str, default='./.cache',
                         help="图片缓存目录，默认为当前目录下.cache")
 
     parser.add_argument('--nocache', action='store_true',
                         help="禁用图片缓存")
+
+    parser.add_argument('--driver-path', type=str, help="selenium driver")
 
     parser.add_argument('-V', '--version', action='version', version=VERSION)
 
@@ -94,7 +97,7 @@ def main():
 
     if args.mail:
         Mail.init(args.config)
-
+    ComicBookCrawlerBase.DRIVER_PATH = args.driver_path
     ImageCache.DEFAULT_POOL_SIZE = args.worker
     ImageCache.IS_USE_CACHE = False if args.nocache else True
     ImageCache.set_cache_dir(args.cachedir)

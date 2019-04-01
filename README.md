@@ -60,8 +60,8 @@ python3 -m onepiece --help
 usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
                 [--worker WORKER] [--all] [--pdf] [--login] [--mail]
                 [--config CONFIG] [-o OUTPUT]
-                [--site {yuyou,qq,buka,ishuhui,wangyi,u17}]
-                [--cachedir CACHEDIR] [--nocache] [-V]
+                [--site {yuyou,qq,wangyi,u17,ishuhui}] [--cachedir CACHEDIR]
+                [--nocache] [--driver-path DRIVER_PATH] [-V]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -80,11 +80,23 @@ optional arguments:
   --config CONFIG       配置文件路径，默认取当前目录下的config.ini
   -o OUTPUT, --output OUTPUT
                         文件保存路径，默认保存在当前路径下的download文件夹
-  --site {yuyou,qq,buka,ishuhui,wangyi,u17}
-                        数据源网站：支持yuyou,qq,buka,ishuhui,wangyi,u17
+  --site {yuyou,qq,wangyi,u17,ishuhui}
+                        数据源网站：支持ishuhui,qq,u17,wangyi,yuyou
   --cachedir CACHEDIR   图片缓存目录，默认为当前目录下.cache
   --nocache             禁用图片缓存
+  --driver-path DRIVER_PATH
+                        selenium driver
   -V, --version         show program's version number and exit
 ```
+
+#### 关于腾讯漫画登录
+
+限于本人能力有限，qq登录搞不掂只好上selenium这个大杀器
+
+1. 安装selenium: `python3 -m pip install selenium`
+2. 安装chrome浏览器
+3. [下载chromedriver](https://sites.google.com/a/chromium.org/chromedriver/home)
+4. `python3 -m onepiece --site=qq --login --driver-path="chromedriver-path"`
+
 
 **免责声明**：本项目仅供学习交流之用，请勿用于非法用途。

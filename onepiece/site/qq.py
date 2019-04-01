@@ -165,3 +165,25 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
                                                   source_url=source_url)
             rv.append(search_result_item)
         return rv
+
+    def login(self):
+        assert self.DRIVER_PATH, "qq登录必须设置 DRIVER_PATH"
+
+        import time
+        from selenium import webdriver
+        driver = webdriver.Chrome(self.DRIVER_PATH)
+
+        login_index_url = "https://xui.ptlogin2.qq.com/cgi-bin/xlogin?style=0&appid=637009801&target=self&daid=43&s_url=https%3A%2F%2Fac.qq.com%2FloginSuccess.html%3Furl%3Dhttps%253A%252F%252Fac.qq.com%252Findex%253Fauth%253D1"
+
+        driver.get(login_index_url)
+
+        while not driver.current_url.startswith("https://ac.qq.com"):
+            time.sleep(1)
+            pass
+        for cookie in driver.get_cookies():
+            self.get_session().cookies.set(name=cookie["name"],
+                                           value=cookie["value"],
+                                           path=cookie["path"],
+                                           domain=cookie["domain"],
+                                           secure=cookie["secure"])
+        driver.close()
