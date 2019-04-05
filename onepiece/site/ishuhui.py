@@ -106,12 +106,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                 else:
                     chapter_number = int(str_chapter_number)
 
-                # {source_id : {}}
+                # chapter_source = {int_source_id : chapter_data}
                 chapter_source = {}
                 for chapter_data in chapter_data_sources:
                     source_id = chapter_data['sourceID']
                     chapter_source[source_id] = chapter_data
 
+                # sourceID = 2 腾讯漫画源
                 if 2 in chapter_source:
                     chapter_data = chapter_source[2]
                     # http://ac.qq.com/ComicView/index/id/505430/cid/1
@@ -125,11 +126,18 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                                                  source="qq")
                     continue
 
-                if 1 in chapter_source or 7 in chapter_source:
-                    chapter_data = chapter_source[1] or chapter_source[7]
+                # sourceID = 1/5/7 站内资源
+                chapter_data = None
+                if 1 in chapter_source:
+                    chapter_data = chapter_source[1]
+                elif 5 in chapter_source:
+                    chapter_data = chapter_source[5]
+                elif 7 in chapter_source:
+                    chapter_data = chapter_source[7]
+                if chapter_data:
                     cid = chapter_data['id']
-                    # https://www.ishuhui.com/comics/detail/11196
-                    # https://prod-api.ishuhui.com/comics/detail?id=11196
+                    # 页面 https://www.ishuhui.com/comics/detail/11196
+                    # api https://prod-api.ishuhui.com/comics/detail?id=11196
                     url = "https://prod-api.ishuhui.com/comics/detail?id={}".format(cid)
                     source_url = "https://www.ishuhui.com/comics/detail/{}".format(cid)
                     self.chapter_db[chapter_number] = self.CItem(chapter_number=chapter_number,
@@ -139,9 +147,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                                                  source_url=source_url)
                     continue
 
-                if chapter_data['sourceID'] == 6:
-                    # 百度网盘
+                # sourceID = 6 百度网盘
+                if 6 in chapter_source:
                     pass
+
         return self.chapter_db
 
     @classmethod
