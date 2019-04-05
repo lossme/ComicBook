@@ -103,7 +103,7 @@ def main():
     is_send_mail = args.mail
     is_gen_pdf = args.pdf
     is_login = args.login
-    session_path = os.path.abspath(args.session_path)
+    session_path = os.path.abspath(args.session_path) if args.session_path else None
 
     if args.mail:
         Mail.init(args.config)
@@ -113,7 +113,7 @@ def main():
     ImageCache.set_cache_dir(args.cachedir)
 
     # 加载 session
-    if os.path.exists(session_path):
+    if session_path and os.path.exists(session_path):
         ComicBookCrawlerBase.load_session(session_path)
 
     default_comicid = {

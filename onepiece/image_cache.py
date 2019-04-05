@@ -41,11 +41,26 @@ class ImageCache():
     CACHE_DIR = os.path.abspath(os.path.join(HERE, os.path.pardir, ".cache", CACHE_DIR_NAME))
     URL_PATTERN = re.compile(r'^https?://.*')
     EXPIRE = 10 * 24 * 60 * 60   # 缓存有效期 10 天
-    _session = requests.Session()
+    _session = None
     IS_USE_CACHE = True
 
     IMAGE_DOWNLOAD_POOL = None
     DEFAULT_POOL_SIZE = 4
+
+    @classmethod
+    def get_session(cls):
+        if cls._session is None:
+            headers = {
+                'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                               'Chrome/65.0.3325.146 Safari/537.36'),
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*",
+                "DNT": "1"
+
+
+            }
+            cls._session = requests.Session()
+            cls._session.headers.update(headers)
+        return cls._session
 
     @staticmethod
     def calc_str_md5(s):
@@ -73,7 +88,8 @@ class ImageCache():
     @retry(times=3, delay=1)
     def download_image_without_cache(cls, image_url, target_path):
         try:
-            response = cls._session.get(image_url)
+            session = cls.get_session()
+            response = session.get(image_url)
             if response.status_code != 200:
                 msg = '图片下载失败: status_code={} image_url={}'.format(response.status_code, image_url)
                 raise ImageDownloadError(msg)
