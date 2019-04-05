@@ -25,6 +25,13 @@ class ComicBookItem():
         # [{"chapter_number": 1, "title": "xx"}, ]
         self.chapters = sorted(chapters, key=lambda x: x["chapter_number"]) if chapters else []
 
+    @classmethod
+    def create_chapter(cls, chapter_number, title):
+        return {"chapter_number": chapter_number, "title": title}
+
+    def create_chapters(cls, param_list):
+        return [cls.create_chapter(**param) for param in param_list]
+
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}
 
@@ -105,6 +112,16 @@ class ComicBookCrawlerBase():
         session = cls.get_session()
         try:
             return session.get(url, **kwargs)
+        except Exception as e:
+            msg = "URL链接访问异常！ url={}".format(url)
+            raise URLException(msg) from e
+
+    def post_request(cls, url, **kwargs):
+        kwargs.setdefault('headers', cls.DEFAULT_HEADERS)
+        kwargs.setdefault('timeout', cls.TIMEOUT)
+        session = cls.get_session()
+        try:
+            return session.post(url, **kwargs)
         except Exception as e:
             msg = "URL链接访问异常！ url={}".format(url)
             raise URLException(msg) from e

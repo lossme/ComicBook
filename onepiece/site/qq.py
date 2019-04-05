@@ -100,8 +100,8 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
         chapters = []
         for chapter_number, item in chapter_db.items():
-            c = {"chapter_number": chapter_number, "title": item.title}
-            chapters.append(c)
+            chapter = ComicBookItem.create_chapter(chapter_number=chapter_number, title=item.title)
+            chapters.append(chapter)
 
         comicbook_item = ComicBookItem(name=name,
                                        desc=desc,

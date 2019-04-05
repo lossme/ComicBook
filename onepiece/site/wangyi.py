@@ -64,8 +64,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
         chapters = []
         for chapter_number, item in enumerate(api_data['catalog']['sections'][0]['sections'], start=1):
-            c = {"chapter_number": chapter_number, "title": item["fullTitle"]}
-            chapters.append(c)
+            chapter = ComicBookItem.create_chapter(chapter_number=chapter_number, title=item["fullTitle"])
+            chapters.append(chapter)
 
         return ComicBookItem(name=name,
                              desc=desc,
