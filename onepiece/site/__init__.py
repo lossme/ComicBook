@@ -1,5 +1,7 @@
 import requests
 import datetime
+import pickle
+import time
 
 from ..exceptions import URLException
 
@@ -61,13 +63,16 @@ class ComicBookCrawlerBase():
         'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                        'Chrome/65.0.3325.146 Safari/537.36')
     }
+
     SOURCE_NAME = "未知"
     SITE = ""
 
-    DEAFULT_SESSION = requests.session()
     _session = None
 
     DRIVER_PATH = None
+    DRIVER_TYPE = None
+    DEFAULT_DRIVER_TYPE = "Chrome"
+    SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie"])
 
     @classmethod
     def set_session(cls, session):
@@ -75,7 +80,23 @@ class ComicBookCrawlerBase():
 
     @classmethod
     def get_session(cls):
-        return cls._session or cls.DEAFULT_SESSION
+        if cls._session is None:
+            session = requests.session()
+            session.headers.update(cls.DEFAULT_HEADERS)
+            cls._session = session
+        return cls._session
+
+    @classmethod
+    def export_session(cls, path):
+        session = cls.get_session()
+        with open(path, "wb") as f:
+            pickle.dump(session, f)
+
+    @classmethod
+    def load_session(cls, path):
+        with open(path, "rb") as f:
+            session = pickle.load(f)
+            cls.set_session(session)
 
     @classmethod
     def send_request(cls, url, **kwargs):
@@ -117,5 +138,51 @@ class ComicBookCrawlerBase():
         """
         return []
 
-    def login(self):
+    @classmethod
+    def login(cls):
         pass
+
+    @classmethod
+    def selenium_login(cls, login_url, check_login_status_func):
+        if check_login_status_func():
+            print("已登录")
+            return
+
+        driver = cls.create_driver()
+        driver.get(login_url)
+
+        while True:
+            print("等待登录")
+            for cookie in driver.get_cookies():
+                cls.get_session().cookies.set(name=cookie["name"],
+                                              value=cookie["value"],
+                                              path=cookie["path"],
+                                              domain=cookie["domain"],
+                                              secure=cookie["secure"])
+            if check_login_status_func():
+                print("登录成功")
+                break
+            time.sleep(2)
+
+        print("关闭 driver")
+        driver.close()
+
+    @classmethod
+    def create_driver(cls):
+        assert cls.DRIVER_PATH, "必须设置 DRIVER_PATH"
+
+        driver_type = cls.DRIVER_TYPE or cls.DEFAULT_DRIVER_TYPE
+
+        assert driver_type in cls.SUPPORT_DRIVER_TYPE, "DRIVER_TYPE 必须为: {}"\
+            .format(",".join(cls.SUPPORT_DRIVER_TYPE))
+
+        from selenium import webdriver
+
+        if driver_type == "Chrome":
+            return webdriver.Chrome(cls.DRIVER_PATH)
+        elif driver_type == "Firefox":
+            return webdriver.Firefox(cls.DRIVER_PATH)
+        elif driver_type == "Opera":
+            return webdriver.Opera(cls.DRIVER_PATH)
+        elif driver_type == "Ie":
+            return webdriver.Ie(cls.DRIVER_PATH)

@@ -2,6 +2,7 @@ import re
 import collections
 import json
 import base64
+import urllib.parse
 
 from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
 from ..exceptions import ChapterNotFound, ComicbookNotFound
@@ -120,7 +121,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     @classmethod
     def search(cls, name):
-        url = "http://so.u17.com/all/{}/m0_p1.html".format(name)
+        url = "http://so.u17.com/all/{}/m0_p1.html".format(urllib.parse.quote(name))
         html = cls.get_html(url)
         ul_tag = cls.SEARCH_UL_PATTERN.search(html).group(1)
         rv = []
@@ -136,3 +137,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                     source_url=source_url)
             rv.append(item)
         return rv
+
+    @classmethod
+    def login(cls):
+        login_url = "http://passport.u17.com/member_v2/login.php?url=http://www.u17.com/"
+        cls.selenium_login(login_url=login_url, check_login_status_func=cls.check_login_status_func)
+
+    @classmethod
+    def check_login_status(cls):
+        session = cls.get_session()
+        if session.cookies.get("xxauthkey", domain=".u17.com"):
+            return True

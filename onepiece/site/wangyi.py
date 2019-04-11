@@ -91,15 +91,30 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
         return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls, source_url=url)
 
-    def login(self):
+    @classmethod
+    def login(cls):
+        if not cls.DRIVER_PATH:
+            return cls.qr_code_login()
+        login_url = "https://manhua.163.com/"
+        cls.selenium_login(login_url=login_url, check_login_status_func=cls.check_login_status)
+
+    @classmethod
+    def check_login_status(cls):
+        session = cls.get_session()
+        if session.cookies.get("P_INFO", domain=".163.com"):
+            return True
+
+    @classmethod
+    def qr_code_login(cls):
         import webbrowser
-        html = self.get_index_page()
-        csrf_token = self.CSRF_TOKEN_PATTERN.search(html).group(1)
+        index_url = "https://manhua.163.com"
+        html = cls.get_html(index_url)
+        csrf_token = cls.CSRF_TOKEN_PATTERN.search(html).group(1)
         timestamp = int(time.time())
         login_url = 'https://manhua.163.com/login/qrCodeLoginImage.json?csrfToken={csrf_token}&_={timestamp}'\
             .format(csrf_token=csrf_token, timestamp=timestamp)
 
-        data = self.get_json(login_url)
+        data = cls.get_json(login_url)
         token = data["token"]
         qrcode_url = "https://manhua.163.com" + data["url"]
         webbrowser.open(qrcode_url)
@@ -108,7 +123,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             .format(token=token, csrf_token=csrf_token, timestamp=timestamp)
         while True:
             print("请扫描二维码")
-            check_data = self.get_json(check_url)
+            check_data = cls.get_json(check_url)
             status = check_data['status']
             if status == 2:
                 print("登录成功")

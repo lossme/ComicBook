@@ -74,6 +74,15 @@ def parse_args():
 
     parser.add_argument('--driver-path', type=str, help="selenium driver")
 
+    parser.add_argument('--driver-type', type=str,
+                        choices=ComicBookCrawlerBase.SUPPORT_DRIVER_TYPE,
+                        help="支持的浏览器: {}. 默认为 {}".format(
+                            ",".join(sorted(ComicBookCrawlerBase.SUPPORT_DRIVER_TYPE)),
+                            ComicBookCrawlerBase.DEFAULT_DRIVER_TYPE)
+                        )
+
+    parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
+
     parser.add_argument('-V', '--version', action='version', version=VERSION)
 
     args = parser.parse_args()
@@ -94,6 +103,7 @@ def main():
     is_send_mail = args.mail
     is_gen_pdf = args.pdf
     is_login = args.login
+    session_path = os.path.abspath(args.session_path)
 
     if args.mail:
         Mail.init(args.config)
@@ -102,13 +112,17 @@ def main():
     ImageCache.IS_USE_CACHE = False if args.nocache else True
     ImageCache.set_cache_dir(args.cachedir)
 
-    default_comic_id = {
+    # 加载 session
+    if os.path.exists(session_path):
+        ComicBookCrawlerBase.load_session(session_path)
+
+    default_comicid = {
         "ishuhui": "1",                   # 海贼王
         "qq": "505430",                   # 海贼王
         "wangyi": "5015165829890111936",  # 海贼王
         "u17": "195"                      # 雏蜂
     }
-    comicid = comicid or default_comic_id.get(site)
+    comicid = comicid or default_comicid.get(site)
 
     if args.name:
         result = ComicBook.search(site=args.site, name=args.name, limit=10)
@@ -148,6 +162,12 @@ def main():
                 chapter.save(output_dir=output_dir)
         except Exception as e:
             print(e)
+
+    # 保存 session
+    if session_path:
+        os.makedirs(os.path.dirname(session_path), exist_ok=True)
+        ComicBookCrawlerBase.export_session(session_path)
+        echo("session保存在: {}".format(session_path))
 
     ImageCache.auto_clean()
 
