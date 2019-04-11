@@ -52,7 +52,6 @@
 
 ## 使用帮助
 
-
 ```sh
 # 查看帮助
 python3 -m onepiece --help
@@ -62,9 +61,9 @@ python3 -m onepiece --help
 usage: onepiece [-h] [-id COMICID] [--name NAME] [-c CHAPTER]
                 [--worker WORKER] [--all] [--pdf] [--login] [--mail]
                 [--config CONFIG] [-o OUTPUT]
-                [--site {qq,ishuhui,yuyou,wangyi,u17}] [--cachedir CACHEDIR]
+                [--site {wangyi,u17,ishuhui,qq,yuyou}] [--cachedir CACHEDIR]
                 [--nocache] [--driver-path DRIVER_PATH]
-                [--driver-type {Ie,Opera,Chrome,Firefox}]
+                [--driver-type {Firefox,Opera,Ie,Chrome}]
                 [--session-path SESSION_PATH] [-V]
 
 optional arguments:
@@ -78,24 +77,23 @@ optional arguments:
   --worker WORKER       线程池数，默认开启4个线程池
   --all                 是否下载该漫画的所有章节, 如 --all
   --pdf                 是否生成pdf文件, 如 --pdf
-  --login               是否登录账号（目前仅支持登录网易账号），如 --login
+  --login               是否登录账号，如 --login
   --mail                是否发送pdf文件到邮箱, 如 --mail。需要预先配置邮件信息。
                         可以参照config.ini.example文件，创建并修改config.ini文件
   --config CONFIG       配置文件路径，默认取当前目录下的config.ini
   -o OUTPUT, --output OUTPUT
                         文件保存路径，默认保存在当前路径下的download文件夹
-  --site {qq,ishuhui,yuyou,wangyi,u17}
+  --site {wangyi,u17,ishuhui,qq,yuyou}
                         数据源网站：支持ishuhui,qq,u17,wangyi,yuyou
   --cachedir CACHEDIR   图片缓存目录，默认为当前目录下.cache
   --nocache             禁用图片缓存
   --driver-path DRIVER_PATH
                         selenium driver
-  --driver-type {Ie,Opera,Chrome,Firefox}
+  --driver-type {Firefox,Opera,Ie,Chrome}
                         支持的浏览器: Chrome,Firefox,Ie,Opera. 默认为 Chrome
   --session-path SESSION_PATH
                         读取或保存上次使用的session路径
   -V, --version         show program's version number and exit
-
 
 ```
 
@@ -108,9 +106,10 @@ optional arguments:
 3. [下载chromedriver](https://sites.google.com/a/chromium.org/chromedriver/home)
 4. 登录，并将cookies保存在本地（保存登录状态，存着下次用）
 ```sh
-python3 -m onepiece --site=qq --login \
+python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
+  --login \
   --driver-path="chromedriver-path" \
-  --driver-path="Chrome" \
+  --driver-type="Chrome" \
   --session-path=".cache/session.pickle"
 ```
 
