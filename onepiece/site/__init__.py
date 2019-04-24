@@ -106,34 +106,24 @@ class ComicBookCrawlerBase():
             cls.set_session(session)
 
     @classmethod
-    def send_request(cls, url, **kwargs):
+    def send_request(cls, method, url, **kwargs):
         kwargs.setdefault('headers', cls.DEFAULT_HEADERS)
         kwargs.setdefault('timeout', cls.TIMEOUT)
         session = cls.get_session()
         try:
-            return session.get(url, **kwargs)
-        except Exception as e:
-            msg = "URL链接访问异常！ url={}".format(url)
-            raise URLException(msg) from e
-
-    def post_request(cls, url, **kwargs):
-        kwargs.setdefault('headers', cls.DEFAULT_HEADERS)
-        kwargs.setdefault('timeout', cls.TIMEOUT)
-        session = cls.get_session()
-        try:
-            return session.post(url, **kwargs)
+            return session.request(method=method, url=url, **kwargs)
         except Exception as e:
             msg = "URL链接访问异常！ url={}".format(url)
             raise URLException(msg) from e
 
     @classmethod
     def get_html(cls, url):
-        response = cls.send_request(url)
+        response = cls.send_request("GET", url)
         return response.text
 
     @classmethod
     def get_json(cls, url):
-        response = cls.send_request(url)
+        response = cls.send_request("GET", url)
         return response.json()
 
     def get_comicbook_item(self):

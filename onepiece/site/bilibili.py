@@ -57,11 +57,11 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_chapter_api_data(self, cid):
         url = "https://manga.bilibili.com/twirp/comic.v1.Comic/Index?device=h5&platform=h5"
-        response = self.post_request(url, data={"ep_id": cid})
+        response = self.send_request("POST", url, data={"ep_id": cid})
 
         data = self.DATA_HOST + response.json()["data"]
         url = urllib.parse.urljoin(self.DATA_HOST, data)
-        response = self.send_request(url)
+        response = self.send_request("GET", url)
         indexData = response.content
         hashKey = self.generateHashKey(seasonId=self.comicid, episodeId=cid)
         indexData = list(indexData)[9:]
@@ -80,7 +80,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def get_api_data(self):
         if self.api_data is None:
             data = {"comic_id": self.comicid}
-            response = self.post_request(url=self.api_url, data=data)
+            response = self.send_request("POST", url=self.api_url, data=data)
             if response.status_code == 404:
                 msg = "资源未找到！ site={} comicid={}".format(self.SITE, self.comicid)
                 raise ComicbookNotFound(msg)
@@ -136,7 +136,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         image_urls = ["{}{}".format(self.DATA_HOST, url) for url in chapter_api_data["pics"]]
 
         # token_url = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
-        # response = self.post_request(token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
+        # response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
         # data = response.json()
         # image_urls = ["{}{}?{}".format(self.DATA_HOST, item["url"], item["token"]) for item in data["data"]]
 

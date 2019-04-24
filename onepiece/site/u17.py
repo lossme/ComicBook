@@ -46,7 +46,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     def get_index_page(self):
         if self.index_page is None:
-            response = self.send_request(self.source_url)
+            response = self.send_request("GET", self.source_url)
             self.index_page = response.text
         return self.index_page
 
