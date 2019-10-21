@@ -103,7 +103,7 @@ optional arguments:
 
 1. 安装selenium: `python3 -m pip install selenium`
 2. 安装chrome浏览器
-3. [下载chromedriver](https://sites.google.com/a/chromium.org/chromedriver/home)
+3. [下载chromedriver](https://chromedriver.chromium.org/downloads)
 4. 登录，并将cookies保存在本地（保存登录状态，存着下次用）
 ```sh
 python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
