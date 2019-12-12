@@ -1,5 +1,4 @@
 import re
-import time
 
 from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
 from ..exceptions import ComicbookNotFound, ChapterNotFound
@@ -24,6 +23,9 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SEARCH_DATA_PATTERN = re.compile("""<div class="img-block">\s*<a href="/source/(.*?)" title="(.*?)" target="_blank">\s*\
 <img alt="(.*?)" src="(.*?)".*?</a>\s*</div>""", re.S)
 
+    HOST = "https://163.bilibili.com"
+    LOGIN_URL = "https://163.bilibili.com"
+
     def __init__(self, comicid):
         super().__init__()
         self.comicid = comicid
@@ -31,8 +33,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         self.api_data = None
         self.index_page = None
 
-        # https://manhua.163.com/source/4458002705630123103
-        self.source_url = "https://manhua.163.com/source/{comicid}".format(comicid=self.comicid)
+        # https://163.bilibili.com/source/4458002705630123103
+        self.source_url = "{host}/source/{comicid}".format(host=self.HOST, comicid=self.comicid)
 
     def get_index_page(self):
         if self.index_page is None:
@@ -42,17 +44,17 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def get_api_data(self):
         if self.api_data:
             return self.api_data
-        # https://manhua.163.com/book/catalog/4458002705630123103.json
-        url = "https://manhua.163.com/book/catalog/{comicid}.json".format(comicid=self.comicid)
+        # https://163.bilibili.com/book/catalog/4458002705630123103.json
+        url = "{host}/book/catalog/{comicid}.json".format(host=self.HOST, comicid=self.comicid)
         self.api_data = self.get_json(url=url)
         return self.api_data
 
     def get_comicbook_item(self):
         html = self.get_index_page()
-
         r = self.COMIC_NAME_PATTERN.search(html)
         if not r:
-            msg = "资源未找到！ site={} comicid={}".format(self.SITE, self.comicid)
+            msg = "资源未找到！ site={} comicid={} source_url={}"\
+                .format(self.SITE, self.comicid, self.source_url)
             raise ComicbookNotFound(msg)
         name = r.group(1)
         api_data = self.get_api_data()
@@ -83,8 +85,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         except IndexError:
             msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
             raise ChapterNotFound(msg)
-        url = "https://manhua.163.com/reader/{}/{}".format(chapter_data['bookId'],
-                                                           chapter_data['sectionId'])
+        url = "{host}/reader/{bookid}/{sectionid}"\
+            .format(host=self.HOST,
+                    bookid=chapter_data['bookId'],
+                    sectionid=chapter_data['sectionId'])
         html = self.get_html(url)
         image_urls = self.IMAGE_PATTERN.findall(html)
         title = self.CHAPTER_TITLE_PATTERN.search(html).group(1)
@@ -93,52 +97,22 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     @classmethod
     def login(cls):
-        if not cls.DRIVER_PATH:
-            return cls.qr_code_login()
-        login_url = "https://manhua.163.com/"
-        cls.selenium_login(login_url=login_url, check_login_status_func=cls.check_login_status)
+        cls.selenium_login(login_url=cls.LOGIN_URL, check_login_status_func=cls.check_login_status)
 
     @classmethod
     def check_login_status(cls):
         session = cls.get_session()
-        if session.cookies.get("P_INFO", domain=".163.com"):
+        if session.cookies.get("MANHUA_U_C", domain=".163.bilibili.com"):
             return True
 
     @classmethod
-    def qr_code_login(cls):
-        import webbrowser
-        index_url = "https://manhua.163.com"
-        html = cls.get_html(index_url)
-        csrf_token = cls.CSRF_TOKEN_PATTERN.search(html).group(1)
-        timestamp = int(time.time())
-        login_url = 'https://manhua.163.com/login/qrCodeLoginImage.json?csrfToken={csrf_token}&_={timestamp}'\
-            .format(csrf_token=csrf_token, timestamp=timestamp)
-
-        data = cls.get_json(login_url)
-        token = data["token"]
-        qrcode_url = "https://manhua.163.com" + data["url"]
-        webbrowser.open(qrcode_url)
-        check_url = ("https://manhua.163.com/login/qrCodeCheck.json"
-                     "?token={token}&status=0&csrfToken={csrf_token}&_={timestamp}")\
-            .format(token=token, csrf_token=csrf_token, timestamp=timestamp)
-        while True:
-            print("请扫描二维码")
-            check_data = cls.get_json(check_url)
-            status = check_data['status']
-            if status == 2:
-                print("登录成功")
-                break
-            time.sleep(2)
-        return
-
-    @classmethod
     def search(cls, name):
-        url = "https://manhua.163.com/search/book/key.do?key={}".format(name)
+        url = "{host}/search/book/key.do?key={name}".format(host=cls.HOST, name=name)
         html = cls.get_html(url)
         rv = []
         for item in cls.SEARCH_DATA_PATTERN.findall(html):
             comicid, name1, name2, cover_image_url = item
-            source_url = "https://manhua.163.com/source/{comicid}".format(comicid=comicid)
+            source_url = "{host}/source/{comicid}".format(host=cls.HOST, comicid=comicid)
             search_result_item = SearchResultItem(site=cls.SITE,
                                                   comicid=comicid,
                                                   name=name1,
