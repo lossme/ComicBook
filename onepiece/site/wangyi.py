@@ -53,8 +53,9 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         html = self.get_index_page()
         r = self.COMIC_NAME_PATTERN.search(html)
         if not r:
-            msg = "资源未找到！ site={} comicid={} source_url={}"\
-                .format(self.SITE, self.comicid, self.source_url)
+            msg = ComicbookNotFound.TEMPLATE.format(site=self.SITE,
+                                                    comicid=self.comicid,
+                                                    source_url=self.source_url)
             raise ComicbookNotFound(msg)
         name = r.group(1)
         api_data = self.get_api_data()
@@ -83,7 +84,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         try:
             chapter_data = api_data['catalog']['sections'][0]['sections'][chapter_number - 1]
         except IndexError:
-            msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
+            msg = ChapterNotFound.TEMPLATE.format(site=self.SITE,
+                                                  comicid=self.comicid,
+                                                  chapter_number=chapter_number,
+                                                  source_url=self.source_url)
             raise ChapterNotFound(msg)
         url = "{host}/reader/{bookid}/{sectionid}"\
             .format(host=self.HOST,

@@ -43,7 +43,9 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         if self.api_data is None:
             self.api_data = self.get_json(url=self.api_url)
         if not self.api_data.get("data"):
-            msg = "资源未找到！ site={} comicid={}".format(self.SITE, self.comicid)
+            msg = ComicbookNotFound.TEMPLATE.format(site=self.SITE,
+                                                    comicid=self.comicid,
+                                                    source_url=self.source_url)
             raise ComicbookNotFound(msg)
         return self.api_data
 
@@ -76,7 +78,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def get_chapter_item(self, chapter_number):
         chapter_db = self.get_chapter_db()
         if chapter_number not in chapter_db:
-            msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
+            msg = ChapterNotFound.TEMPLATE.format(site=self.SITE,
+                                                  comicid=self.comicid,
+                                                  chapter_number=chapter_number,
+                                                  source_url=self.source_url)
             raise ChapterNotFound(msg)
 
         item = chapter_db[chapter_number]

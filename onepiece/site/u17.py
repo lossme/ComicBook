@@ -69,7 +69,9 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             name = self.COMIC_NAME_PATTERN.search(html).group(1)
             name = name.strip()
         except Exception:
-            msg = "资源未找到！ site={} comicid={}".format(self.SITE, self.comicid)
+            msg = ComicbookNotFound.TEMPLATE.format(site=self.SITE,
+                                                    comicid=self.comicid,
+                                                    source_url=self.source_url)
             raise ComicbookNotFound(msg)
 
         r = self.DESC_ALL_PATTERN.search(html)
@@ -102,7 +104,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def get_chapter_item(self, chapter_number):
         chapter_db = self.get_chapter_db()
         if chapter_number not in chapter_db:
-            msg = "资源未找到！ site={} comicid={} chapter_number={}".format(self.SITE, self.comicid, chapter_number)
+            msg = ChapterNotFound.TEMPLATE.format(site=self.SITE,
+                                                  comicid=self.comicid,
+                                                  chapter_number=chapter_number,
+                                                  source_url=self.source_url)
             raise ChapterNotFound(msg)
 
         chapter_url = chapter_db[chapter_number].url
