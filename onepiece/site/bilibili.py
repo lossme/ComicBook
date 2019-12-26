@@ -6,7 +6,7 @@ import os
 import zipfile
 import urllib.parse
 
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem
+from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 
@@ -138,15 +138,42 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
         chapter_api_data = self.get_chapter_api_data(cid=item.cid)
 
-        image_urls = ["{}{}".format(self.DATA_HOST, url) for url in chapter_api_data["pics"]]
-
-        # token_url = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
-        # response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
-        # data = response.json()
-        # image_urls = ["{}{}?{}".format(self.DATA_HOST, item["url"], item["token"]) for item in data["data"]]
+        token_url = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
+        response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
+        data = response.json()
+        image_urls = ["{}?token={}".format(item["url"], item["token"]) for item in data["data"]]
 
         source_url = self.get_chapter_soure_url(cid=item.cid)
         return ChapterItem(chapter_number=chapter_number,
                            title=item.title,
                            image_urls=image_urls,
                            source_url=source_url)
+    @classmethod
+    def search(cls, name):
+        url = "http://manga.bilibili.com/twirp/comic.v1.Comic/Search"
+        response = cls.send_request("POST", url, data={"key_word": name, "page_num": 1, "page_size": 9})
+        data = response.json()["data"]["list"]
+        rv = []
+        for result in data:
+            comicid = result["id"]
+            name = result["org_title"]
+            cover_image_url = result["horizontal_cover"] # or square_cover or vertical_cover
+            source_url = 'http://manga.bilibili.com/detail/mc{}'.format(comicid)
+            search_result_item = SearchResultItem(site=cls.SITE,
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
+            rv.append(search_result_item)
+        return rv
+
+    @classmethod
+    def login(cls):
+        login_url = "https://manga.bilibili.com/"
+        cls.selenium_login(login_url=login_url, check_login_status_func=cls.check_login_status)
+
+    @classmethod
+    def check_login_status(cls):
+        session = cls.get_session()
+        if session.cookies.get("DedeUserID", domain=".bilibili.com"):
+            return True
