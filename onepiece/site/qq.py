@@ -179,5 +179,5 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
     @classmethod
     def check_login_status(cls):
         session = cls.get_session()
-        if session.cookies.get("p_skey", domain=".ac.qq.com"):
+        if session.cookies.get("nav_userinfo_cookie", domain="ac.qq.com"):
             return True
