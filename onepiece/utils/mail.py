@@ -6,6 +6,8 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 
+from ..logs import logger
+
 
 class Mail():
     sender = None
@@ -56,11 +58,11 @@ class Mail():
             if debug:
                 s.set_debuglevel(1)
             s.login(sender, sender_passwd)
-            print('正在向 {} 发送 {}'.format(','.join(receivers), subject))
+            logger.info('正在向 {} 发送 {}'.format(','.join(receivers), subject))
             s.sendmail(sender, receivers, msg.as_string())
             s.quit()
         except smtplib.SMTPException as e:
-            print('发送 {} 邮件时出现错误！error:{}'.format(subject, e))
+            logger.info('发送 {} 邮件时出现错误！error:{}'.format(subject, e))
             raise
 
     @classmethod

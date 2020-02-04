@@ -9,8 +9,8 @@ from .exceptions import SiteNotSupport
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 
-class ComicBook():
-    SUPPORT_SITE = frozenset(
+def find_support_site():
+    sites = set(
         map(
             lambda x: x.split(".py")[0],
             filter(
@@ -19,6 +19,13 @@ class ComicBook():
             )
         )
     )
+    sites.remove('ishuhui')   # 蜡烛
+    sites.remove('wangyi')    # 被b站收购了
+    return frozenset(sites)
+
+
+class ComicBook():
+    SUPPORT_SITE = find_support_site()
 
     def __init__(self, comicbook_crawler):
         self.crawler = comicbook_crawler

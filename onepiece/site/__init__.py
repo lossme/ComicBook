@@ -4,6 +4,7 @@ import pickle
 import time
 
 from ..exceptions import URLException
+from ..logs import logger
 
 
 class ComicBookItem():
@@ -152,14 +153,14 @@ class ComicBookCrawlerBase():
     @classmethod
     def selenium_login(cls, login_url, check_login_status_func):
         if check_login_status_func():
-            print("已登录")
+            logger.info("已登录")
             return
 
         driver = cls.create_driver()
         driver.get(login_url)
 
         while True:
-            print("等待登录")
+            logger.info("等待登录")
             for cookie in driver.get_cookies():
                 cls.get_session().cookies.set(name=cookie["name"],
                                               value=cookie["value"],
@@ -167,11 +168,11 @@ class ComicBookCrawlerBase():
                                               domain=cookie["domain"],
                                               secure=cookie["secure"])
             if check_login_status_func():
-                print("登录成功")
+                logger.info("登录成功")
                 break
             time.sleep(2)
 
-        print("关闭 driver")
+        logger.info("关闭 driver")
         driver.close()
 
     @classmethod

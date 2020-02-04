@@ -1,12 +1,14 @@
 import argparse
 import os
+import logging
 
 from .comicbook import ComicBook
 from .image_cache import ImageCache
 from .site import ComicBookCrawlerBase
-from .utils import get_current_time_str, parser_chapter_str
+from .utils import parser_chapter_str
 from .utils.mail import Mail
 from . import VERSION
+from .logs import logger
 
 
 def parse_args():
@@ -84,13 +86,10 @@ def parse_args():
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
 
     parser.add_argument('-V', '--version', action='version', version=VERSION)
+    parser.add_argument('--debug', action='store_true', help="debug")
 
     args = parser.parse_args()
     return args
-
-
-def echo(msg):
-    print("{}: {}".format(get_current_time_str(), msg))
 
 
 def main():
@@ -104,7 +103,8 @@ def main():
     is_gen_pdf = args.pdf
     is_login = args.login
     session_path = os.path.abspath(args.session_path) if args.session_path else None
-
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
     if args.mail:
         Mail.init(args.config)
     ComicBookCrawlerBase.DRIVER_PATH = args.driver_path
@@ -130,20 +130,20 @@ def main():
             print("name={}\tcomicid={}\tsource_url={}".format(item.name, item.comicid, item.source_url))
         comicid = input("请输入要下载的comicid: ")
 
-    echo("正在获取最新数据")
+    logger.info("正在获取最新数据")
 
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
 
     if is_login:
         comicbook.crawler.login()
 
-    msg = "{source_name} {name} 更新至 {last_chapter_number} {last_chapter_title} 数据来源: {source_url}"\
+    msg = "{source_name} 【{name}】 更新至: {last_chapter_number} 【{last_chapter_title}】 数据来源: {source_url}"\
         .format(source_name=comicbook.source_name,
                 name=comicbook.name,
                 last_chapter_number=comicbook.last_chapter_number,
                 last_chapter_title=comicbook.last_chapter_title,
                 source_url=comicbook.source_url)
-    echo(msg)
+    logger.info(msg)
     chapter_number_list = parser_chapter_str(chapter_str=args.chapter,
                                              last_chapter_number=comicbook.last_chapter_number,
                                              is_all=is_download_all)
@@ -151,7 +151,7 @@ def main():
     for chapter_number in chapter_number_list:
         try:
             chapter = comicbook.Chapter(chapter_number)
-            echo("正在下载 {} {} {}".format(comicbook.name, chapter.chapter_number, chapter.title))
+            logger.info("正在下载 【{}】 {} 【{}】".format(comicbook.name, chapter.chapter_number, chapter.title))
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
                 if is_send_mail:
@@ -161,13 +161,13 @@ def main():
             else:
                 chapter.save(output_dir=output_dir)
         except Exception as e:
-            print(e)
+            logger.exception(e)
 
     # 保存 session
     if session_path:
         os.makedirs(os.path.dirname(session_path), exist_ok=True)
         ComicBookCrawlerBase.export_session(session_path)
-        echo("session保存在: {}".format(session_path))
+        logger.info("session保存在: {}".format(session_path))
 
     ImageCache.auto_clean()
 
