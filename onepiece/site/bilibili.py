@@ -97,7 +97,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             chapter_number = idx
             self.chapter_db[chapter_number] = self.CItem(chapter_number=chapter_number,
                                                          cid=item["id"],
-                                                         title=item['short_title'])
+                                                         title=item['title'])
         return self.chapter_db
 
     def get_comicbook_item(self):
@@ -141,13 +141,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         token_url = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
         response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
         data = response.json()
-        image_urls = ["{}?token={}".format(item["url"], item["token"]) for item in data["data"]]
+        image_urls = ["{}?token={}".format(i["url"], i["token"]) for i in data["data"]]
 
         source_url = self.get_chapter_soure_url(cid=item.cid)
         return ChapterItem(chapter_number=chapter_number,
                            title=item.title,
                            image_urls=image_urls,
                            source_url=source_url)
+
     @classmethod
     def search(cls, name):
         url = "http://manga.bilibili.com/twirp/comic.v1.Comic/Search"
@@ -157,7 +158,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         for result in data:
             comicid = result["id"]
             name = result["org_title"]
-            cover_image_url = result["horizontal_cover"] # or square_cover or vertical_cover
+            cover_image_url = result["horizontal_cover"]  # or square_cover or vertical_cover
             source_url = 'http://manga.bilibili.com/detail/mc{}'.format(comicid)
             search_result_item = SearchResultItem(site=cls.SITE,
                                                   comicid=comicid,
