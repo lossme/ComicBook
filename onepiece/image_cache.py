@@ -133,7 +133,7 @@ class ImageCache():
         future_list = []
         for idx, image_url in enumerate(image_urls, start=1):
             ext = cls.find_suffix(image_url)
-            target_path = os.path.join(output_dir, "{}.{}".format(idx, ext))
+            target_path = os.path.join(output_dir.rstrip(), "{}.{}".format(idx, ext))
             future = pool.submit(cls.download_image, image_url=image_url, target_path=target_path)
             future_list.append(future)
 
