@@ -20,7 +20,7 @@ def parser_chapter_str(chapter_str, last_chapter_number, is_all=None):
     :return list number_list: [1, 2, 3, 4, ...]
     """
     if is_all:
-        return list(range(1, last_chapter_number))
+        return list(range(1, last_chapter_number + 1))
 
     try:
         chapter_number = int(chapter_str)
