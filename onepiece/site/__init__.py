@@ -80,7 +80,7 @@ class ComicBookCrawlerBase():
     DRIVER_PATH = None
     DRIVER_TYPE = None
     DEFAULT_DRIVER_TYPE = "Chrome"
-    SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie"])
+    SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
 
     @classmethod
     def set_session(cls, session):
@@ -185,12 +185,5 @@ class ComicBookCrawlerBase():
             .format(",".join(cls.SUPPORT_DRIVER_TYPE))
 
         from selenium import webdriver
-
-        if driver_type == "Chrome":
-            return webdriver.Chrome(cls.DRIVER_PATH)
-        elif driver_type == "Firefox":
-            return webdriver.Firefox(cls.DRIVER_PATH)
-        elif driver_type == "Opera":
-            return webdriver.Opera(cls.DRIVER_PATH)
-        elif driver_type == "Ie":
-            return webdriver.Ie(cls.DRIVER_PATH)
+        driver_cls = getattr(webdriver, driver_type)
+        return driver_cls(cls.DRIVER_PATH)

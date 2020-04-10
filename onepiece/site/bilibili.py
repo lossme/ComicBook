@@ -171,7 +171,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     @classmethod
     def login(cls):
         login_url = "https://manga.bilibili.com/"
-        cls.selenium_login(login_url=login_url, check_login_status_func=cls.check_login_status)
+        cls.selenium_login(login_url=login_url,
+                           check_login_status_func=cls.check_login_status)
 
     @classmethod
     def check_login_status(cls):

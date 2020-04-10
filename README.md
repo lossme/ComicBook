@@ -88,8 +88,8 @@ optional arguments:
   --nocache             禁用图片缓存
   --driver-path DRIVER_PATH
                         selenium driver
-  --driver-type {Firefox,Ie,Opera,Chrome}
-                        支持的浏览器: Chrome,Firefox,Ie,Opera. 默认为 Chrome
+  --driver-type {Firefox,Ie,Chrome,Opera,Edge}
+                        支持的浏览器: Chrome,Edge,Firefox,Ie,Opera. 默认为 Chrome
   --session-path SESSION_PATH
                         读取或保存上次使用的session路径
   -V, --version         show program's version number and exit
@@ -101,13 +101,13 @@ optional arguments:
 限于本人能力有限，登录懒得搞，只好祭出selenium这个大杀器
 
 1. 安装selenium: `python3 -m pip install selenium`
-2. 安装chrome浏览器
-3. [下载chromedriver](https://chromedriver.chromium.org/downloads)
+2. 安装chrome浏览器，或其它浏览器
+3. [下载chromedriver](https://chromedriver.chromium.org/downloads)，或其它浏览器的driver
 4. 登录，并将cookies保存在本地（保存登录状态，存着下次用）
 ```sh
 python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
   --login \
-  --driver-path="chromedriver-path" \
+  --driver-path="driver路径" \
   --driver-type="Chrome" \
   --session-path=".cache/session.pickle"
 ```
