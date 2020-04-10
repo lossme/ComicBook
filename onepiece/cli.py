@@ -102,7 +102,9 @@ def main():
     is_send_mail = args.mail
     is_gen_pdf = args.pdf
     is_login = args.login
-    session_path = os.path.abspath(args.session_path) if args.session_path else None
+    session_path = None
+    if args.session_path:
+        session_path = os.path.abspath(args.session_path)
     if args.debug:
         logger.setLevel(logging.DEBUG)
     if args.mail:
@@ -137,12 +139,13 @@ def main():
     if is_login:
         comicbook.crawler.login()
 
-    msg = "{source_name} 【{name}】 更新至: {last_chapter_number} 【{last_chapter_title}】 数据来源: {source_url}"\
-        .format(source_name=comicbook.source_name,
-                name=comicbook.name,
-                last_chapter_number=comicbook.last_chapter_number,
-                last_chapter_title=comicbook.last_chapter_title,
-                source_url=comicbook.source_url)
+    msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
+           "【{last_chapter_title}】 数据来源: {source_url}").format(
+        source_name=comicbook.source_name,
+        name=comicbook.name,
+        last_chapter_number=comicbook.last_chapter_number,
+        last_chapter_title=comicbook.last_chapter_title,
+        source_url=comicbook.source_url)
     logger.info(msg)
     chapter_number_list = parser_chapter_str(chapter_str=args.chapter,
                                              last_chapter_number=comicbook.last_chapter_number,
@@ -151,7 +154,8 @@ def main():
     for chapter_number in chapter_number_list:
         try:
             chapter = comicbook.Chapter(chapter_number)
-            logger.info("正在下载 【{}】 {} 【{}】".format(comicbook.name, chapter.chapter_number, chapter.title))
+            logger.info("正在下载 【{}】 {} 【{}】".format(
+                comicbook.name, chapter.chapter_number, chapter.title))
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
                 if is_send_mail:

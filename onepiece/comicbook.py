@@ -92,15 +92,15 @@ class Chapter():
     def get_chapter_image_dir(self, output_dir):
         first_dir = safe_filename(self.comicbook_item.source_name)
         second_dir = safe_filename(self.comicbook_item.name)
-        third_dir = safe_filename("{} {}".format(self.chapter_item.chapter_number, self.chapter_item.title))
+        third_dir = safe_filename("{:>03} {}".format(self.chapter_item.chapter_number, self.chapter_item.title))
         chapter_dir = os.path.join(output_dir, first_dir, second_dir, third_dir)
         return chapter_dir
 
     def get_chapter_pdf_path(self, output_dir):
         first_dir = safe_filename(self.comicbook_item.source_name)
         second_dir = safe_filename(self.comicbook_item.name)
-        file_name = safe_filename("{} {}.pdf".format(self.chapter_number, self.title))
-        pdf_path = os.path.join(output_dir, first_dir, second_dir, file_name)
+        filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".pdf"
+        pdf_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return pdf_path
 
     def save(self, output_dir):

@@ -95,9 +95,10 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         api_data = self.get_api_data()
         for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
             chapter_number = idx
+            title = item['title'].strip() or str(chapter_number)
             self.chapter_db[chapter_number] = self.CItem(chapter_number=chapter_number,
                                                          cid=item["id"],
-                                                         title=item['title'])
+                                                         title=title)
         return self.chapter_db
 
     def get_comicbook_item(self):
@@ -111,7 +112,8 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         chapters = []
         chapter_db = self.get_chapter_db()
         for chapter_number, item in chapter_db.items():
-            chapter = ComicBookItem.create_chapter(chapter_number=chapter_number, title=item.title)
+            chapter = ComicBookItem.create_chapter(chapter_number=chapter_number,
+                                                   title=item.title)
             chapters.append(chapter)
 
         return ComicBookItem(name=name,
@@ -152,13 +154,15 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     @classmethod
     def search(cls, name):
         url = "http://manga.bilibili.com/twirp/comic.v1.Comic/Search"
-        response = cls.send_request("POST", url, data={"key_word": name, "page_num": 1, "page_size": 9})
+        response = cls.send_request(
+            "POST", url, data={"key_word": name, "page_num": 1, "page_size": 9})
         data = response.json()["data"]["list"]
         rv = []
         for result in data:
             comicid = result["id"]
             name = result["org_title"]
-            cover_image_url = result["horizontal_cover"]  # or square_cover or vertical_cover
+            # or square_cover or vertical_cover
+            cover_image_url = result["horizontal_cover"]
             source_url = 'http://manga.bilibili.com/detail/mc{}'.format(comicid)
             search_result_item = SearchResultItem(site=cls.SITE,
                                                   comicid=comicid,
