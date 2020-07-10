@@ -31,7 +31,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SEARCH_UL_PATTERN = re.compile(r'<div class="comiclist">\s*<ul>(.*?)</ul>', re.S)
     SEARCH_LI_TAG_PATTERN = re.compile(r'<li>(.*?)</li>', re.S)
     SEARCH_DATA_PATTERN = re.compile(
-        r'<strong><a href="http://www.u17.com/comic/(\d+).html" target="_blank" class="u" title="(.*?)">')
+        r'<strong><a href="https?://www.u17.com/comic/(\d+).html" target="_blank" class="u" title="(.*?)">')
     SEARCH_COVER_IMAGE_URL_PATTERN = re.compile(r'<div class="cover">.*?<img src="(.*?)">')
 
     def __init__(self, comicid):
