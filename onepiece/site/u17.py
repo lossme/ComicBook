@@ -26,6 +26,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     COVER_IMAGE_URL_PATTERN = re.compile(r'var cover_url = "(.*?)";')
     AUTHOR_PATTERN = re.compile(r'<div class="author_info">.*?<a.*?class="name">(.*?)</a>', re.S)
     IMAGE_CONFIG_PATTERN = re.compile(r'var image_config = (\{.*?\});', re.S)
+    IMAGE_CONFIG_NAME_PATTERN = re.compile(r'("name":".*?):\s+(.*?")')
     IMAGE_CONFIG_KEY_PATTERN = re.compile(r'\s*(.\w+): ')
 
     SEARCH_UL_PATTERN = re.compile(r'<div class="comiclist">\s*<ul>(.*?)</ul>', re.S)
@@ -113,6 +114,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         chapter_url = chapter_db[chapter_number].url
         html = self.get_html(chapter_url)
         image_config_str = self.IMAGE_CONFIG_PATTERN.search(html).group(1)
+        image_config_str = self.IMAGE_CONFIG_NAME_PATTERN.sub(r'\1:\2', image_config_str)
         image_config_str = self.IMAGE_CONFIG_KEY_PATTERN.sub(r'"\1":', image_config_str)
         data = json.loads(image_config_str.replace("'", '"'))
         title = data["chapter"]["name"]
