@@ -74,6 +74,9 @@ def parse_args():
     parser.add_argument('--nocache', action='store_true',
                         help="禁用图片缓存")
 
+    parser.add_argument('--noverify', action='store_true',
+                        help="noverify")
+
     parser.add_argument('--driver-path', type=str, help="selenium driver")
 
     parser.add_argument('--driver-type', type=str,
@@ -109,6 +112,8 @@ def main():
         logger.setLevel(logging.DEBUG)
     if args.mail:
         Mail.init(args.config)
+    if args.noverify:
+        ImageCache.set_verify(verify=False)
     ComicBookCrawlerBase.DRIVER_PATH = args.driver_path
     ImageCache.DEFAULT_POOL_SIZE = args.worker
     ImageCache.IS_USE_CACHE = False if args.nocache else True

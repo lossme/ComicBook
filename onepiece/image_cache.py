@@ -13,6 +13,8 @@ from .exceptions import ImageDownloadError
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
+requests.packages.urllib3.disable_warnings()
+
 
 def retry(times=3, delay=0):
     def _wrapper1(func):
@@ -46,6 +48,11 @@ class ImageCache():
 
     IMAGE_DOWNLOAD_POOL = None
     DEFAULT_POOL_SIZE = 4
+    VERIFY = True
+
+    @classmethod
+    def set_verify(cls, verify):
+        cls.VERIFY = verify
 
     @classmethod
     def get_session(cls):
@@ -89,7 +96,7 @@ class ImageCache():
     def download_image_without_cache(cls, image_url, target_path):
         try:
             session = cls.get_session()
-            response = session.get(image_url)
+            response = session.get(image_url, verify=cls.VERIFY)
             if response.status_code != 200:
                 msg = '图片下载失败: status_code={} image_url={}'.format(response.status_code, image_url)
                 raise ImageDownloadError(msg)
