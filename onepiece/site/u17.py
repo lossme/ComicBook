@@ -13,7 +13,7 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SOURCE_NAME = "有妖气"
     SITE = "u17"
 
-    CItem = collections.namedtuple("CItem", ["chapter_number", "title", "url"])
+    CItem = collections.namedtuple("CItem", ["chapter_number", "title", "url", "chapter_id"])
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="fl".*?>(.*?)</h1>', re.S)
     DESC_ALL_PATTERN = re.compile(r'<div class="textbox" id="words_all".*?>.*?<p class="ti2">(.*?)</p>', re.S)
     DESC_PATTERN = re.compile(r'<p class="words" id="words">(.*?)<', re.S)
@@ -33,6 +33,9 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     SEARCH_DATA_PATTERN = re.compile(
         r'<strong><a href="https?://www.u17.com/comic/(\d+).html" target="_blank" class="u" title="(.*?)">')
     SEARCH_COVER_IMAGE_URL_PATTERN = re.compile(r'<div class="cover">.*?<img src="(.*?)">')
+    COMIC_BOOK_API = "https://www.u17.com/comic/ajax.php?mod=chapter&act=get_chapter_list&comic_id={comicid}"
+    CHAPTER_API = "https://www.u17.com/comic/ajax.php?mod=chapter&act=get_chapter_v5&chapter_id={chapter_id}"
+    CHAPTER_URL = "https://www.u17.com/chapter/{chapter_id}.html"
 
     def __init__(self, comicid):
         super().__init__()
@@ -43,6 +46,13 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         self.chapter_db = {}
 
         self.index_page = None
+        self.api_data = None
+
+    def get_api_data(self):
+        if self.api_data is None:
+            url = self.COMIC_BOOK_API.format(comicid=self.comicid)
+            self.api_data = self.get_json(url)
+        return self.api_data
 
     def get_index_page(self):
         if self.index_page is None:
@@ -53,14 +63,16 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     def get_chapter_db(self):
         if self.chapter_db:
             return self.chapter_db
-
-        html = self.get_index_page()
-        ul_tag = self.UL_PATTERN.search(html).group(1)
-
-        for idx, item in enumerate(self.LI_DATA_PATTERN.findall(ul_tag), start=1):
-            url, title = item
-            title = title[:-10]
-            self.chapter_db[idx] = self.CItem(chapter_number=idx, url=url, title=title)
+        api_data = self.get_api_data()
+        for idx, item in enumerate(api_data['chapter_list'], start=1):
+            chapter_id = item['chapter_id']
+            title = item['name']
+            chapter_url = self.CHAPTER_URL.format(chapter_id=chapter_id)
+            self.chapter_db[idx] = self.CItem(
+                chapter_number=idx,
+                url=chapter_url,
+                title=title,
+                chapter_id=chapter_id)
         return self.chapter_db
 
     def get_comicbook_item(self):
@@ -110,17 +122,15 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                                                   source_url=self.source_url)
             raise ChapterNotFound(msg)
 
+        chapter_id = chapter_db[chapter_number].chapter_id
         chapter_url = chapter_db[chapter_number].url
-        html = self.get_html(chapter_url)
-        image_config_str = self.IMAGE_CONFIG_PATTERN.search(html).group(1)
-        data = eval(image_config_str, type('js', (dict,), dict(__getitem__=lambda image_config_str, n: n))())
+        chapter_api_url = self.CHAPTER_API.format(chapter_id=chapter_id)
+        data = self.get_json(chapter_api_url)
         title = data["chapter"]["name"]
         image_urls = []
-        for k, v in data["image_list"].items():
-            image_url = base64.b64decode(v["src"].encode()).decode()
+        for item in data["image_list"]:
             # image_url = base64.b64decode(v["lightning"].encode()).decode()
-            image_urls.append(image_url)
-
+            image_urls.append(item['src'])
         return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls, source_url=chapter_url)
 
     @classmethod
