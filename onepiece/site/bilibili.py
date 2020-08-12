@@ -153,12 +153,12 @@ class ComicBookCrawler(ComicBookCrawlerBase):
 
     @classmethod
     def search(cls, name):
-        url = "http://manga.bilibili.com/twirp/comic.v1.Comic/Search"
+        url = "https://manga.bilibili.com/twirp/comic.v1.Comic/Search?device=pc&platform=web"
         response = cls.send_request(
             "POST", url, data={"key_word": name, "page_num": 1, "page_size": 9})
-        data = response.json()["data"]["list"]
+        data = response.json()
         rv = []
-        for result in data:
+        for result in data["data"]["list"]:
             comicid = result["id"]
             name = result["org_title"]
             # or square_cover or vertical_cover
