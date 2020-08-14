@@ -92,6 +92,11 @@ curl ${host}/comic/ishuhui/1/933
 }
 ```
 
+获取章节图片，并刷新图片链接
+```sh
+curl "${host}/comic/bilibili/28201/1?force_refresh=true"
+```
+
 ------
 
 ### 1.3 搜索接口

@@ -62,9 +62,9 @@ def get_comicbook_info(site, comicid):
 
 
 @app.route("/comic/<site>/<comicid>/<int:chapter_number>")
-def get_chapter_info(site, comicid, chapter_number):
+def get_chapter_info(site, comicid, chapter_number, force_refresh=False):
     comicbook = get_comicbook(site, comicid)
-    chapter = comicbook.Chapter(chapter_number)
+    chapter = comicbook.Chapter(chapter_number, force_refresh=force_refresh)
     return jsonify(chapter.to_dict())
 
 

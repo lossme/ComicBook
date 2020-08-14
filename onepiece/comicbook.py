@@ -64,10 +64,10 @@ class ComicBook():
     def __repr__(self):
         return "<ComicBook>: {}".format(self.to_dict())
 
-    def Chapter(self, chapter_number):
+    def Chapter(self, chapter_number, force_refresh=False):
         if chapter_number < 0:
             chapter_number = self.last_chapter_number + chapter_number + 1
-        if chapter_number not in self.chapter_db:
+        if chapter_number not in self.chapter_db or force_refresh:
             chapter_item = self.crawler.get_chapter_item(chapter_number)
             chapter = Chapter(comicbook_item=self.comicbook_item, chapter_item=chapter_item)
             self.chapter_db[chapter_number] = chapter
