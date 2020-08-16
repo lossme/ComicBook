@@ -1,31 +1,34 @@
 import tempfile
-import collections
 import io
 import json
 import os
 import zipfile
+import re
 import urllib.parse
 
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
+from ..crawlerbase import (
+    CrawlerBase,
+    ChapterItem,
+    ComicBookItem,
+    Citem,
+    SearchResultItem)
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 
-class ComicBookCrawler(ComicBookCrawlerBase):
+class BilibiliCrawler(CrawlerBase):
 
     SITE = "bilibili"
     SOURCE_NAME = "哔哩哔哩漫画"
-    CItem = collections.namedtuple("CItem", ["chapter_number", "title", "cid"])
-
     DATA_HOST = "https://i0.hdslb.com"
+    COMICBOOK_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=h5&platform=h5"
 
-    def __init__(self, comicid):
+    def __init__(self, comicid=None):
         super().__init__()
-        self.comicid = comicid.lstrip("mc")
-        self.source_url = "https://manga.bilibili.com/m/detail/mc{}".format(self.comicid)
-        self.api_url = "https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=h5&platform=h5"
-        self.api_data = None
-        # {int_chapter_number: CItem, }
-        self.chapter_db = {}
+        self.comicid = comicid.replace("mc", "") if comicid else ''
+
+    @property
+    def source_url(self):
+        return "https://manga.bilibili.com/m/detail/mc{}".format(self.comicid)
 
     @classmethod
     def unzip(cls, file, target_dir):
@@ -78,28 +81,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         return json.load(open(json_file))
 
     def get_api_data(self):
-        if self.api_data is None:
-            data = {"comic_id": self.comicid}
-            response = self.send_request("POST", url=self.api_url, data=data)
-            if response.status_code == 404:
-                msg = ComicbookNotFound.TEMPLATE.format(site=self.SITE,
-                                                        comicid=self.comicid,
-                                                        source_url=self.source_url)
-                raise ComicbookNotFound(msg)
-            self.api_data = response.json()
-        return self.api_data
-
-    def get_chapter_db(self):
-        if self.chapter_db:
-            return self.chapter_db
-        api_data = self.get_api_data()
-        for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
-            chapter_number = idx
-            title = item['title'].strip() or str(chapter_number)
-            self.chapter_db[chapter_number] = self.CItem(chapter_number=chapter_number,
-                                                         cid=item["id"],
-                                                         title=title)
-        return self.chapter_db
+        data = {"comic_id": self.comicid}
+        response = self.send_request("POST", url=self.COMICBOOK_API, data=data)
+        if response.status_code == 404:
+            msg = ComicbookNotFound.TEMPLATE.format(site=self.SITE,
+                                                    comicid=self.comicid,
+                                                    source_url=self.source_url)
+            raise ComicbookNotFound(msg)
+        return response.json()
 
     def get_comicbook_item(self):
         api_data = self.get_api_data()
@@ -109,12 +98,14 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         author = " ".join(api_data['data']['author_name'])
         cover_image_url = api_data['data']['vertical_cover']
 
-        chapters = []
-        chapter_db = self.get_chapter_db()
-        for chapter_number, item in chapter_db.items():
-            chapter = ComicBookItem.create_chapter(chapter_number=chapter_number,
-                                                   title=item.title)
-            chapters.append(chapter)
+        citem_dict = {}
+        for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
+            chapter_number = idx
+            title = item['title'].strip() or str(chapter_number)
+            citem_dict[chapter_number] = Citem(
+                chapter_number=chapter_number,
+                cid=item["id"],
+                title=title)
 
         return ComicBookItem(name=name,
                              desc=desc,
@@ -123,48 +114,38 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                              author=author,
                              source_url=self.source_url,
                              source_name=self.SOURCE_NAME,
-                             chapters=chapters)
+                             citem_dict=citem_dict)
 
     def get_chapter_soure_url(self, cid):
         return "https://manga.bilibili.com/m/mc{}/{}".format(self.comicid, cid)
 
-    def get_chapter_item(self, chapter_number):
-        chapter_db = self.get_chapter_db()
-        if chapter_number not in chapter_db:
-            msg = ChapterNotFound.TEMPLATE.format(site=self.SITE,
-                                                  comicid=self.comicid,
-                                                  chapter_number=chapter_number,
-                                                  source_url=self.source_url)
-            raise ChapterNotFound(msg)
-        item = chapter_db[chapter_number]
-
-        chapter_api_data = self.get_chapter_api_data(cid=item.cid)
-
+    def get_chapter_item(self, citem):
+        chapter_api_data = self.get_chapter_api_data(cid=citem.cid)
         token_url = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
         response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
         data = response.json()
         image_urls = ["{}?token={}".format(i["url"], i["token"]) for i in data["data"]]
-
-        source_url = self.get_chapter_soure_url(cid=item.cid)
-        return ChapterItem(chapter_number=chapter_number,
-                           title=item.title,
+        source_url = self.get_chapter_soure_url(cid=citem.cid)
+        return ChapterItem(chapter_number=citem.chapter_number,
+                           title=citem.title,
                            image_urls=image_urls,
                            source_url=source_url)
 
-    @classmethod
-    def search(cls, name):
+    def search(self, name):
         url = "https://manga.bilibili.com/twirp/comic.v1.Comic/Search?device=pc&platform=web"
-        response = cls.send_request(
-            "POST", url, data={"key_word": name, "page_num": 1, "page_size": 9})
+        response = self.send_request(
+            "POST", url, data={"key_word": name, "page_num": 1, "page_size": 20})
         data = response.json()
         rv = []
         for result in data["data"]["list"]:
             comicid = result["id"]
-            name = result["org_title"]
+            title = result["title"]
+            name = re.sub(r'<[^>]+>', '', title, re.S)
+
             # or square_cover or vertical_cover
             cover_image_url = result["horizontal_cover"]
             source_url = 'http://manga.bilibili.com/detail/mc{}'.format(comicid)
-            search_result_item = SearchResultItem(site=cls.SITE,
+            search_result_item = SearchResultItem(site=self.SITE,
                                                   comicid=comicid,
                                                   name=name,
                                                   cover_image_url=cover_image_url,
@@ -172,14 +153,12 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             rv.append(search_result_item)
         return rv
 
-    @classmethod
-    def login(cls):
+    def login(self):
         login_url = "https://manga.bilibili.com/"
-        cls.selenium_login(login_url=login_url,
-                           check_login_status_func=cls.check_login_status)
+        self.selenium_login(login_url=login_url,
+                            check_login_status_func=self.check_login_status)
 
-    @classmethod
-    def check_login_status(cls):
-        session = cls.get_session()
+    def check_login_status(self):
+        session = self.get_session()
         if session.cookies.get("DedeUserID", domain=".bilibili.com"):
             return True

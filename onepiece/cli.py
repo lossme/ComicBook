@@ -3,12 +3,13 @@ import os
 import logging
 
 from .comicbook import ComicBook
-from .image_cache import ImageCache
-from .site import ComicBookCrawlerBase
+from .crawlerbase import CrawlerBase
+from .image_cache import image_cache
 from .utils import parser_chapter_str
 from .utils.mail import Mail
 from . import VERSION
-from .logs import logger
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args():
@@ -64,9 +65,9 @@ def parse_args():
 
     parser.add_argument('-o', '--output', type=str, default='./download',
                         help="文件保存路径，默认保存在当前路径下的download文件夹")
-
-    parser.add_argument('--site', type=str, default='qq', choices=ComicBook.SUPPORT_SITE,
-                        help="数据源网站：支持{}".format(','.join(sorted(ComicBook.SUPPORT_SITE))))
+    support_site = ComicBook.CRAWLER_CLS_MAP.keys()
+    parser.add_argument('--site', type=str, default='qq', choices=support_site,
+                        help="数据源网站：支持{}".format(','.join(sorted(support_site))))
 
     parser.add_argument('--cachedir', type=str, default='./.cache',
                         help="图片缓存目录，默认为当前目录下.cache")
@@ -80,10 +81,10 @@ def parse_args():
     parser.add_argument('--driver-path', type=str, help="selenium driver")
 
     parser.add_argument('--driver-type', type=str,
-                        choices=ComicBookCrawlerBase.SUPPORT_DRIVER_TYPE,
+                        choices=CrawlerBase.SUPPORT_DRIVER_TYPE,
                         help="支持的浏览器: {}. 默认为 {}".format(
-                            ",".join(sorted(ComicBookCrawlerBase.SUPPORT_DRIVER_TYPE)),
-                            ComicBookCrawlerBase.DEFAULT_DRIVER_TYPE)
+                            ",".join(sorted(CrawlerBase.SUPPORT_DRIVER_TYPE)),
+                            CrawlerBase.DEFAULT_DRIVER_TYPE)
                         )
 
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
@@ -93,6 +94,20 @@ def parse_args():
 
     args = parser.parse_args()
     return args
+
+
+def init_logger(level=None):
+    level = level or logging.INFO
+    logger = logging.getLogger(__name__)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        "%(asctime)s %(name)s [%(levelname)s] %(message)s",
+        datefmt='%Y/%m/%d %H:%M:%S'
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(level)
+    return logger
 
 
 def main():
@@ -108,42 +123,42 @@ def main():
     session_path = None
     if args.session_path:
         session_path = os.path.abspath(args.session_path)
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
+    loglevel = logging.DEBUG if args.debug else logging.INFO
+    init_logger(level=loglevel)
+
     if args.mail:
         Mail.init(args.config)
     if args.noverify:
-        ImageCache.set_verify(verify=False)
-    ComicBookCrawlerBase.DRIVER_PATH = args.driver_path
-    ImageCache.DEFAULT_POOL_SIZE = args.worker
-    ImageCache.IS_USE_CACHE = False if args.nocache else True
-    ImageCache.set_cache_dir(args.cachedir)
+        image_cache.set_verify(verify=False)
 
-    # 加载 session
-    if session_path and os.path.exists(session_path):
-        ComicBookCrawlerBase.load_session(session_path)
+    image_cache.DEFAULT_POOL_SIZE = args.worker
+    image_cache.IS_USE_CACHE = False if args.nocache else True
+    image_cache.set_cache_dir(args.cachedir)
 
     default_comicid = {
-        "ishuhui": "1",                   # 海贼王
-        "qq": "505430",                   # 海贼王
-        "wangyi": "5015165829890111936",  # 海贼王
-        "u17": "195"                      # 雏蜂
+        "qq": "505430",  # 海贼王
+        "u17": "195",    # 雏蜂
+        "bilibili": "mc24742",   # 海贼王
     }
     comicid = comicid or default_comicid.get(site)
+    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    comicbook.crawler.DRIVER_PATH = args.driver_path
+    # 加载 session
+    if session_path and os.path.exists(session_path):
+        comicbook.crawler.load_session(session_path)
 
     if args.name:
-        result = ComicBook.search(site=args.site, name=args.name, limit=10)
+        result = comicbook.search(site=args.site, name=args.name, limit=10)
         for item in result:
             print("name={}\tcomicid={}\tsource_url={}".format(item.name, item.comicid, item.source_url))
         comicid = input("请输入要下载的comicid: ")
 
     logger.info("正在获取最新数据")
 
-    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
-
     if is_login:
         comicbook.crawler.login()
 
+    comicbook.start_crawler()
     msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
            "【{last_chapter_title}】 数据来源: {source_url}").format(
         source_name=comicbook.source_name,
@@ -175,10 +190,10 @@ def main():
     # 保存 session
     if session_path:
         os.makedirs(os.path.dirname(session_path), exist_ok=True)
-        ComicBookCrawlerBase.export_session(session_path)
+        comicbook.crawler.export_session(session_path)
         logger.info("session保存在: {}".format(session_path))
 
-    ImageCache.auto_clean()
+    image_cache.auto_clean()
 
 
 if __name__ == '__main__':

@@ -1,15 +1,19 @@
 import re
 import base64
 import json
-import collections
-
 from urllib import parse
 
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
-from ..exceptions import ChapterNotFound, ComicbookNotFound
+from ..crawlerbase import (
+    CrawlerBase,
+    ChapterItem,
+    ComicBookItem,
+    Citem,
+    SearchResultItem
+)
+from ..exceptions import ComicbookNotFound
 
 
-class ComicBookCrawler(ComicBookCrawlerBase):
+class QQCrawler(CrawlerBase):
 
     QQ_COMIC_HOST = 'https://ac.qq.com'
     SITE = "qq"
@@ -33,17 +37,13 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
     CHAPTER_JSON_STR_PATTERN = re.compile(r'("chapter":{.*)')
 
-    CItem = collections.namedtuple("CItem", ["chapter_number", "title", "url"])
-
-    def __init__(self, comicid):
+    def __init__(self, comicid=None):
         super().__init__()
         self.comicid = comicid
-        self.index_page = None
 
-        # {int_chapter_number: CItem}
-        self.chapter_db = {}
-
-        self.source_url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
+    @property
+    def source_url(self):
+        return 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
 
     def get_index_page(self):
         if self.index_page is None:
@@ -51,11 +51,23 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
             self.index_page = index_page
         return self.index_page
 
-    def get_chapter_db(self):
-        if self.chapter_db:
-            return self.chapter_db
+    def get_comicbook_item(self):
+        # https://ac.qq.com/Comic/ComicInfo/id/505430
+        html = self.get_html(self.source_url)
+        r = self.COMIC_NAME_PATTERN.search(html)
+        if not r:
+            msg = ComicbookNotFound.TEMPLATE.format(site=self.SITE,
+                                                    comicid=self.comicid,
+                                                    source_url=self.source_url)
+            raise ComicbookNotFound(msg)
 
-        html = self.get_index_page()
+        name = r.group(1).strip()
+        desc = self.COMIC_DESC_PATTERN.search(html).group(1).strip()
+        tag = self.TAG_PATTERN.search(html).group(1).strip()
+        cover_image_url = self.COVER_IMAGE_URL_PATTERN.search(html).group(1)
+        author = self.AUTHOR_PATTERN.search(html).group(1)
+
+        citem_dict = {}
         ol = re.search(r'(<ol class="chapter-page-all works-chapter-list".+?</ol>)', html, re.S).group()
         all_atag = re.findall(r'''<a.*?title="(.*?)".*?href="(.*?)">(.*?)</a>''', ol, re.S)
         for idx, item in enumerate(all_atag, start=1):
@@ -73,38 +85,15 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
             else:
                 chapter_number = idx
 
-            if chapter_number in self.chapter_db:
+            if chapter_number in citem_dict:
                 continue
 
             chapter_page_url = parse.urljoin(self.QQ_COMIC_HOST, url)
 
-            self.chapter_db[chapter_number] = self.CItem(chapter_number=chapter_number,
-                                                         title=title,
-                                                         url=chapter_page_url)
-        return self.chapter_db
-
-    def get_comicbook_item(self):
-        # https://ac.qq.com/Comic/ComicInfo/id/505430
-        html = self.get_index_page()
-        r = self.COMIC_NAME_PATTERN.search(html)
-        if not r:
-            msg = ComicbookNotFound.TEMPLATE.format(site=self.SITE,
-                                                    comicid=self.comicid,
-                                                    source_url=self.source_url)
-            raise ComicbookNotFound(msg)
-        name = r.group(1).strip()
-        desc = self.COMIC_DESC_PATTERN.search(html).group(1).strip()
-        tag = self.TAG_PATTERN.search(html).group(1).strip()
-        cover_image_url = self.COVER_IMAGE_URL_PATTERN.search(html).group(1)
-        author = self.AUTHOR_PATTERN.search(html).group(1)
-
-        chapter_db = self.get_chapter_db()
-
-        chapters = []
-        for chapter_number, item in chapter_db.items():
-            chapter = ComicBookItem.create_chapter(chapter_number=chapter_number, title=item.title)
-            chapters.append(chapter)
-
+            citem_dict[chapter_number] = Citem(
+                chapter_number=chapter_number,
+                title=title,
+                chapter_page_url=chapter_page_url)
         comicbook_item = ComicBookItem(name=name,
                                        desc=desc,
                                        tag=tag,
@@ -112,18 +101,11 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
                                        author=author,
                                        source_url=self.source_url,
                                        source_name=self.SOURCE_NAME,
-                                       chapters=chapters)
+                                       citem_dict=citem_dict)
         return comicbook_item
 
-    def get_chapter_item(self, chapter_number):
-        chapter_db = self.get_chapter_db()
-        if chapter_number not in chapter_db:
-            msg = ChapterNotFound.TEMPLATE.format(site=self.SITE,
-                                                  comicid=self.comicid,
-                                                  chapter_number=chapter_number,
-                                                  source_url=self.source_url)
-            raise ChapterNotFound(msg)
-        chapter_page_url = chapter_db[chapter_number].url
+    def get_chapter_item(self, citem):
+        chapter_page_url = citem.chapter_page_url
         chapter_page_html = self.get_html(chapter_page_url)
         chapter_item = self.parser_chapter_page(chapter_page_html, source_url=chapter_page_url)
         return chapter_item
@@ -146,24 +128,26 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
         title = data["chapter"]["cTitle"]
         chapter_number = data["chapter"]["cSeq"]
         image_urls = [item['url'] for item in data["picture"]]
-        return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls, source_url=source_url)
+        return ChapterItem(chapter_number=chapter_number,
+                           title=title,
+                           image_urls=image_urls,
+                           source_url=source_url)
 
-    @classmethod
-    def search(cls, name):
+    def search(self, name):
         url = "https://ac.qq.com/Comic/searchList/search/{}".format(name)
-        html = cls.get_html(url)
-        if cls.SEARCH_NOT_FOUNT_PATTERN.search(html):
+        html = self.get_html(url)
+        if self.SEARCH_NOT_FOUNT_PATTERN.search(html):
             return []
 
         rv = []
-        ul_tag = cls.SEARCH_UL_PATTERN.search(html).group(1)
-        for li_tag in cls.SEARCH_LI_PATTERN.findall(ul_tag):
-            r = cls.SEARCH_DATA_PATTERN.search(li_tag)
+        ul_tag = self.SEARCH_UL_PATTERN.search(html).group(1)
+        for li_tag in self.SEARCH_LI_PATTERN.findall(ul_tag):
+            r = self.SEARCH_DATA_PATTERN.search(li_tag)
             comicid = r.group("comicid")
             name = r.group("name")
             cover_image_url = r.group("cover_image_url")
             source_url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(comicid)
-            search_result_item = SearchResultItem(site=cls.SITE,
+            search_result_item = SearchResultItem(site=self.SITE,
                                                   comicid=comicid,
                                                   name=name,
                                                   cover_image_url=cover_image_url,
@@ -171,13 +155,13 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
             rv.append(search_result_item)
         return rv
 
-    @classmethod
-    def login(cls):
+    def login(self):
         login_url = "https://ac.qq.com/"
-        cls.selenium_login(login_url=login_url, check_login_status_func=cls.check_login_status)
+        self.selenium_login(
+            login_url=login_url,
+            check_login_status_func=self.check_login_status)
 
-    @classmethod
-    def check_login_status(cls):
-        session = cls.get_session()
+    def check_login_status(self):
+        session = self.get_session()
         if session.cookies.get("nav_userinfo_cookie", domain="ac.qq.com"):
             return True

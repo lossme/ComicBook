@@ -1,12 +1,14 @@
 import os
 import configparser
+import logging
 import smtplib
 from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 
-from ..logs import logger
+
+logger = logging.getLogger(__name__)
 
 
 class Mail():

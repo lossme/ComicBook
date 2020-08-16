@@ -1,11 +1,22 @@
-from flask import Blueprint, jsonify, request, abort
+import datetime
+from flask import (
+    Blueprint,
+    jsonify,
+    request,
+    abort
+)
 import cachetools.func
 
 from onepiece.comicbook import ComicBook
-from onepiece.exceptions import ComicbookException, NotFoundError, SiteNotSupport
+from onepiece.exceptions import (
+    ComicbookException,
+    NotFoundError,
+    SiteNotSupport
+)
 
 
-app = Blueprint("main", __name__)
+app = Blueprint("api", __name__, url_prefix='/')
+CACHE_TIME = 600
 
 
 @app.errorhandler(ComicbookException)
@@ -33,50 +44,66 @@ def index():
         {
             "api_status": "ok",
             "example": [
-                "/comic/ishuhui/1",
-                "/comic/ishuhui/1/933",
-                "/comic/qq/505430",
-                "/comic/qq/505430/933",
-                "/comic/wangyi/5015165829890111936",
-                "/comic/wangyi/5015165829890111936/933",
-                "/comic/u17/195",
-                "/comic/u17/195/274",
-                "/search/qq?name=海贼王",
-                "/search/wangyi?name=海贼王",
-                "/search/ishuhui?name=海贼王",
-                "/search/u17?name=雏蜂",
+                "/qq?name=海贼王",
+                "/qq/505430",
+                "/qq/505430/933",
+
+                "/u17?name=雏蜂",
+                "/u17/195",
+                "/u17/195/274",
+
+                "/bilibili?name=海贼王",
+                "/bilibili/24742",
+                "/bilibili/24742/1"
             ]
         }
     )
 
 
-@cachetools.func.ttl_cache(maxsize=1024, ttl=3600, typed=False)
-def get_comicbook(site, comicid):
-    return ComicBook.create_comicbook(site=site, comicid=comicid)
+@cachetools.func.ttl_cache(maxsize=1024, ttl=CACHE_TIME, typed=False)
+def get_comicbook_from_cache(site, comicid):
+    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    return comicbook
 
 
-@app.route("/comic/<site>/<comicid>")
-def get_comicbook_info(site, comicid):
-    comicbook = get_comicbook(site=site, comicid=comicid)
-    return jsonify(comicbook.to_dict())
+def comicbook_update_check(comicbook, cache_time=CACHE_TIME, force_refresh=False):
+    if force_refresh \
+            or not comicbook.crawler_time \
+            or (datetime.datetime.now() - comicbook.crawler_time).total_seconds() > cache_time:
+        comicbook.start_crawler()
+    return comicbook
 
 
-@app.route("/comic/<site>/<comicid>/<int:chapter_number>")
-def get_chapter_info(site, comicid, chapter_number, force_refresh=False):
-    comicbook = get_comicbook(site, comicid)
-    chapter = comicbook.Chapter(chapter_number, force_refresh=force_refresh)
-    return jsonify(chapter.to_dict())
-
-
-@app.route("/search/<site>")
+@app.route("/<site>")
 def search(site):
     name = request.args.get('name')
     limit = request.args.get('limit', default=20, type=int)
     if not name:
         abort(400)
-    search_result_item_list = ComicBook.search(site=site, name=name, limit=limit)
+    comicbook = get_comicbook_from_cache(site, comicid=None)
+    search_result_item_list = comicbook.search(site=site, name=name, limit=limit)
     return jsonify(
         {
             "search_result": [item.to_dict() for item in search_result_item_list]
         }
     )
+
+
+@app.route("/<site>/<comicid>")
+def get_comicbook_info(site, comicid):
+    force_refresh = request.args.get('force_refresh') or ''
+    force_refresh = force_refresh.lower() == 'true'
+    comicbook = get_comicbook_from_cache(site=site, comicid=comicid)
+    comicbook_update_check(comicbook, force_refresh=force_refresh)
+    return jsonify(comicbook.to_dict())
+
+
+@app.route("/<site>/<comicid>/<int:chapter_number>")
+def get_chapter_info(site, comicid, chapter_number):
+    force_refresh = request.args.get('force_refresh') or ''
+    force_refresh = force_refresh.lower() == 'true'
+    comicbook = get_comicbook_from_cache(site, comicid)
+    print('force_refresh={}'.format(force_refresh))
+    comicbook_update_check(comicbook, force_refresh=force_refresh)
+    chapter = comicbook.Chapter(chapter_number, force_refresh=force_refresh)
+    return jsonify(chapter.to_dict())

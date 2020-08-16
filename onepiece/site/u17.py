@@ -1,19 +1,21 @@
 import re
-import collections
-import json
-import base64
 import urllib.parse
 
-from . import ComicBookCrawlerBase, ChapterItem, ComicBookItem, SearchResultItem
-from ..exceptions import ChapterNotFound, ComicbookNotFound
+from ..crawlerbase import (
+    CrawlerBase,
+    ChapterItem,
+    ComicBookItem,
+    Citem,
+    SearchResultItem
+)
+from ..exceptions import ComicbookNotFound
 
 
-class ComicBookCrawler(ComicBookCrawlerBase):
+class U17Crawler(CrawlerBase):
 
     SOURCE_NAME = "有妖气"
     SITE = "u17"
 
-    CItem = collections.namedtuple("CItem", ["chapter_number", "title", "url", "chapter_id"])
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="fl".*?>(.*?)</h1>', re.S)
     DESC_ALL_PATTERN = re.compile(r'<div class="textbox" id="words_all".*?>.*?<p class="ti2">(.*?)</p>', re.S)
     DESC_PATTERN = re.compile(r'<p class="words" id="words">(.*?)<', re.S)
@@ -37,46 +39,17 @@ class ComicBookCrawler(ComicBookCrawlerBase):
     CHAPTER_API = "https://www.u17.com/comic/ajax.php?mod=chapter&act=get_chapter_v5&chapter_id={chapter_id}"
     CHAPTER_URL = "https://www.u17.com/chapter/{chapter_id}.html"
 
-    def __init__(self, comicid):
+    def __init__(self, comicid=None):
         super().__init__()
         self.comicid = comicid
-        self.source_url = "http://www.u17.com/comic/{}.html".format(comicid)
 
-        # {int_chapter_number: CItem}
-        self.chapter_db = {}
-
-        self.index_page = None
-        self.api_data = None
-
-    def get_api_data(self):
-        if self.api_data is None:
-            url = self.COMIC_BOOK_API.format(comicid=self.comicid)
-            self.api_data = self.get_json(url)
-        return self.api_data
-
-    def get_index_page(self):
-        if self.index_page is None:
-            response = self.send_request("GET", self.source_url)
-            self.index_page = response.text
-        return self.index_page
-
-    def get_chapter_db(self):
-        if self.chapter_db:
-            return self.chapter_db
-        api_data = self.get_api_data()
-        for idx, item in enumerate(api_data['chapter_list'], start=1):
-            chapter_id = item['chapter_id']
-            title = item['name']
-            chapter_url = self.CHAPTER_URL.format(chapter_id=chapter_id)
-            self.chapter_db[idx] = self.CItem(
-                chapter_number=idx,
-                url=chapter_url,
-                title=title,
-                chapter_id=chapter_id)
-        return self.chapter_db
+    @property
+    def source_url(self):
+        return "http://www.u17.com/comic/{}.html".format(self.comicid)
 
     def get_comicbook_item(self):
-        html = self.get_index_page()
+        response = self.send_request("GET", self.source_url)
+        html = response.text
         try:
             name = self.COMIC_NAME_PATTERN.search(html).group(1)
             name = name.strip()
@@ -97,13 +70,19 @@ class ComicBookCrawler(ComicBookCrawlerBase):
         tag_html = self.TAG_HTLM_PATTERN.search(html).group(1)
         tag = ','.join(self.TAG_PATTERN.findall(tag_html)[:-1])
 
-        chapter_db = self.get_chapter_db()
-
-        chapters = []
-        for chapter_number, item in chapter_db.items():
-            chapter = ComicBookItem.create_chapter(chapter_number=chapter_number, title=item.title)
-            chapters.append(chapter)
-
+        citem_dict = {}
+        url = self.COMIC_BOOK_API.format(comicid=self.comicid)
+        api_data = self.get_json(url)
+        for idx, item in enumerate(api_data['chapter_list'], start=1):
+            chapter_number = idx
+            chapter_id = item['chapter_id']
+            title = item['name']
+            chapter_url = self.CHAPTER_URL.format(chapter_id=chapter_id)
+            citem_dict[chapter_number] = Citem(
+                chapter_number=chapter_number,
+                title=title,
+                chapter_url=chapter_url,
+                chapter_id=chapter_id)
         return ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
@@ -111,40 +90,33 @@ class ComicBookCrawler(ComicBookCrawlerBase):
                              author=author,
                              source_url=self.source_url,
                              source_name=self.SOURCE_NAME,
-                             chapters=chapters)
+                             citem_dict=citem_dict)
 
-    def get_chapter_item(self, chapter_number):
-        chapter_db = self.get_chapter_db()
-        if chapter_number not in chapter_db:
-            msg = ChapterNotFound.TEMPLATE.format(site=self.SITE,
-                                                  comicid=self.comicid,
-                                                  chapter_number=chapter_number,
-                                                  source_url=self.source_url)
-            raise ChapterNotFound(msg)
-
-        chapter_id = chapter_db[chapter_number].chapter_id
-        chapter_url = chapter_db[chapter_number].url
+    def get_chapter_item(self, citem):
+        chapter_id = citem.chapter_id
+        chapter_url = citem.chapter_url
         chapter_api_url = self.CHAPTER_API.format(chapter_id=chapter_id)
         data = self.get_json(chapter_api_url)
         title = data["chapter"]["name"]
         image_urls = []
         for item in data["image_list"]:
-            # image_url = base64.b64decode(v["lightning"].encode()).decode()
             image_urls.append(item['src'])
-        return ChapterItem(chapter_number=chapter_number, title=title, image_urls=image_urls, source_url=chapter_url)
+        return ChapterItem(chapter_number=citem.chapter_number,
+                           title=title,
+                           image_urls=image_urls,
+                           source_url=chapter_url)
 
-    @classmethod
-    def search(cls, name):
+    def search(self, name):
         url = "http://so.u17.com/all/{}/m0_p1.html".format(urllib.parse.quote(name))
-        html = cls.get_html(url)
-        ul_tag = cls.SEARCH_UL_PATTERN.search(html).group(1)
+        html = self.get_html(url)
+        ul_tag = self.SEARCH_UL_PATTERN.search(html).group(1)
         rv = []
-        for li_tag in cls.SEARCH_LI_TAG_PATTERN.findall(ul_tag):
-            cover_image_url = cls.SEARCH_COVER_IMAGE_URL_PATTERN.search(li_tag).group(1)
-            comicid, name = cls.SEARCH_DATA_PATTERN.search(li_tag).groups()
+        for li_tag in self.SEARCH_LI_TAG_PATTERN.findall(ul_tag):
+            cover_image_url = self.SEARCH_COVER_IMAGE_URL_PATTERN.search(li_tag).group(1)
+            comicid, name = self.SEARCH_DATA_PATTERN.search(li_tag).groups()
             source_url = "http://www.u17.com/comic/{}.html".format(comicid)
 
-            item = SearchResultItem(site=cls.SITE,
+            item = SearchResultItem(site=self.SITE,
                                     comicid=comicid,
                                     name=name,
                                     cover_image_url=cover_image_url,
@@ -152,13 +124,11 @@ class ComicBookCrawler(ComicBookCrawlerBase):
             rv.append(item)
         return rv
 
-    @classmethod
-    def login(cls):
+    def login(self):
         login_url = "http://passport.u17.com/member_v2/login.php?url=http://www.u17.com/"
-        cls.selenium_login(login_url=login_url, check_login_status_func=cls.check_login_status)
+        self.selenium_login(login_url=login_url, check_login_status_func=self.check_login_status)
 
-    @classmethod
-    def check_login_status(cls):
-        session = cls.get_session()
+    def check_login_status(self):
+        session = self.get_session()
         if session.cookies.get("xxauthkey", domain=".u17.com"):
             return True

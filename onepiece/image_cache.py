@@ -6,14 +6,12 @@ import shutil
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 
-import requests
-
 from .exceptions import ImageDownloadError
+from .session import default_session
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-
-requests.packages.urllib3.disable_warnings()
+PROJECT_HOME = os.path.abspath(os.path.join(HERE, os.path.pardir))
 
 
 def retry(times=3, delay=0):
@@ -39,49 +37,39 @@ def walk(rootdir):
 
 
 class ImageCache():
-    CACHE_DIR_NAME = "image_cache"
-    CACHE_DIR = os.path.abspath(os.path.join(HERE, os.path.pardir, ".cache", CACHE_DIR_NAME))
     URL_PATTERN = re.compile(r'^https?://.*')
-    EXPIRE = 10 * 24 * 60 * 60   # 缓存有效期 10 天
-    _session = None
-    IS_USE_CACHE = True
 
-    IMAGE_DOWNLOAD_POOL = None
-    DEFAULT_POOL_SIZE = 4
-    VERIFY = True
+    def __init__(self):
+        self.CACHE_DIR_NAME = "image_cache"
+        self.cache_dir = os.path.join(PROJECT_HOME, ".cache", self.CACHE_DIR_NAME)
+        self.EXPIRE = 10 * 24 * 60 * 60   # 缓存有效期 10 天
+        self._session = None
+        self.IS_USE_CACHE = True
+
+        self.IMAGE_DOWNLOAD_POOL = None
+        self.DEFAULT_POOL_SIZE = 4
+        self.VERIFY = True
 
     @classmethod
     def set_verify(cls, verify):
         cls.VERIFY = verify
 
-    @classmethod
-    def get_session(cls):
-        if cls._session is None:
-            headers = {
-                'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                               'Chrome/65.0.3325.146 Safari/537.36'),
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*",
-                "DNT": "1"
-
-
-            }
-            cls._session = requests.Session()
-            cls._session.headers.update(headers)
-        return cls._session
+    def get_session(self):
+        if self._session is None:
+            self._session = default_session
+        return self._session
 
     @staticmethod
     def calc_str_md5(s):
         return hashlib.md5(s.encode()).hexdigest()
 
-    @classmethod
-    def get_pool(cls):
-        if cls.IMAGE_DOWNLOAD_POOL is None:
-            cls.IMAGE_DOWNLOAD_POOL = ThreadPoolExecutor(max_workers=cls.DEFAULT_POOL_SIZE)
-        return cls.IMAGE_DOWNLOAD_POOL
+    def get_pool(self):
+        if self.IMAGE_DOWNLOAD_POOL is None:
+            self.IMAGE_DOWNLOAD_POOL = ThreadPoolExecutor(max_workers=self.DEFAULT_POOL_SIZE)
+        return self.IMAGE_DOWNLOAD_POOL
 
-    @classmethod
-    def set_cache_dir(cls, cache_dir):
-        cls.CACHE_DIR = os.path.abspath(os.path.join(cache_dir, cls.CACHE_DIR_NAME))
+    def set_cache_dir(self, cache_dir):
+        self.CACHE_DIR = os.path.abspath(os.path.join(cache_dir, self.CACHE_DIR_NAME))
         os.makedirs(cache_dir, exist_ok=True)
 
     @classmethod
@@ -91,12 +79,11 @@ class ImageCache():
         s = cls.calc_str_md5(image_path_or_url)
         return os.path.join(cls.CACHE_DIR, s[0:2], s[2:4], s[4:6], s)
 
-    @classmethod
     @retry(times=3, delay=1)
-    def download_image_without_cache(cls, image_url, target_path):
+    def download_image_without_cache(self, image_url, target_path):
         try:
-            session = cls.get_session()
-            response = session.get(image_url, verify=cls.VERIFY)
+            session = self.get_session()
+            response = session.get(image_url, verify=self.VERIFY)
             if response.status_code != 200:
                 msg = '图片下载失败: status_code={} image_url={}'.format(response.status_code, image_url)
                 raise ImageDownloadError(msg)
@@ -110,11 +97,10 @@ class ImageCache():
             f.write(response.content)
         return target_path
 
-    @classmethod
-    def download_image_use_cache(cls, image_url, target_path=None):
-        cache_path = cls.url_to_path(image_url)
+    def download_image_use_cache(self, image_url, target_path=None):
+        cache_path = self.url_to_path(image_url)
         if not os.path.exists(cache_path):
-            cls.download_image_without_cache(image_url=image_url, target_path=cache_path)
+            self.download_image_without_cache(image_url=image_url, target_path=cache_path)
 
         if target_path is None:
             return cache_path
@@ -125,23 +111,21 @@ class ImageCache():
             shutil.copyfile(cache_path, target_path)
             return target_path
 
-    @classmethod
-    def download_image(cls, image_url, target_path):
-        if cls.IS_USE_CACHE:
-            return cls.download_image_use_cache(image_url=image_url, target_path=target_path)
+    def download_image(self, image_url, target_path):
+        if self.IS_USE_CACHE:
+            return self.download_image_use_cache(image_url=image_url, target_path=target_path)
         else:
-            return cls.download_image_without_cache(image_url=image_url, target_path=target_path)
+            return self.download_image_without_cache(image_url=image_url, target_path=target_path)
 
-    @classmethod
-    def download_images(cls, image_urls, output_dir):
+    def download_images(self, image_urls, output_dir):
         """下载出错只打印出警告信息，不抛出异常
         """
-        pool = cls.get_pool()
+        pool = self.get_pool()
         future_list = []
         for idx, image_url in enumerate(image_urls, start=1):
-            ext = cls.find_suffix(image_url)
+            ext = self.find_suffix(image_url)
             target_path = os.path.join(output_dir.rstrip(), "{}.{}".format(idx, ext))
-            future = pool.submit(cls.download_image, image_url=image_url, target_path=target_path)
+            future = pool.submit(self.download_image, image_url=image_url, target_path=target_path)
             future_list.append(future)
 
         # 等全部图片下载完成
@@ -152,20 +136,18 @@ class ImageCache():
                 warnings.warn(str(e))
         return output_dir
 
-    @classmethod
-    def auto_clean(cls):
+    def auto_clean(self):
         """
         清除超过有效期的文件
         """
         now = time.time()
-        for file_path in walk(cls.CACHE_DIR):
-            if now - os.path.getctime(file_path) > cls.EXPIRE:
+        for file_path in walk(self.CACHE_DIR):
+            if now - os.path.getctime(file_path) > self.EXPIRE:
                 os.remove(file_path)
 
-    @classmethod
-    def remove_cache(cls):
+    def remove_cache(self):
         try:
-            shutil.rmtree(cls.CACHE_DIR)
+            shutil.rmtree(self.CACHE_DIR)
         except Exception as e:
             warnings.warn(str(e))
 
@@ -181,3 +163,6 @@ class ImageCache():
         if ext not in allow:
             return default
         return ext
+
+
+image_cache = ImageCache()
