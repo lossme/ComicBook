@@ -182,8 +182,10 @@ def main():
                     Mail.send(subject=os.path.basename(pdf_path),
                               content=None,
                               file_list=[pdf_path, ])
+                logger.info("下载成功 %s", pdf_path)
             else:
-                chapter.save(output_dir=output_dir)
+                chapter_dir = chapter.save(output_dir=output_dir)
+                logger.info("下载成功  %s", chapter_dir)
         except Exception as e:
             logger.exception(e)
 

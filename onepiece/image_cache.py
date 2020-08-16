@@ -41,7 +41,7 @@ class ImageCache():
 
     def __init__(self):
         self.CACHE_DIR_NAME = "image_cache"
-        self.cache_dir = os.path.join(PROJECT_HOME, ".cache", self.CACHE_DIR_NAME)
+        self.CACHE_DIR = os.path.join(PROJECT_HOME, ".cache", self.CACHE_DIR_NAME)
         self.EXPIRE = 10 * 24 * 60 * 60   # 缓存有效期 10 天
         self._session = None
         self.IS_USE_CACHE = True
@@ -70,14 +70,13 @@ class ImageCache():
 
     def set_cache_dir(self, cache_dir):
         self.CACHE_DIR = os.path.abspath(os.path.join(cache_dir, self.CACHE_DIR_NAME))
-        os.makedirs(cache_dir, exist_ok=True)
+        os.makedirs(self.CACHE_DIR, exist_ok=True)
 
-    @classmethod
-    def url_to_path(cls, image_path_or_url):
-        if not cls.URL_PATTERN.match(image_path_or_url):
+    def url_to_path(self, image_path_or_url):
+        if not self.URL_PATTERN.match(image_path_or_url):
             return image_path_or_url
-        s = cls.calc_str_md5(image_path_or_url)
-        return os.path.join(cls.CACHE_DIR, s[0:2], s[2:4], s[4:6], s)
+        s = self.calc_str_md5(image_path_or_url)
+        return os.path.join(self.CACHE_DIR, s[0:2], s[2:4], s[4:6], s)
 
     @retry(times=3, delay=1)
     def download_image_without_cache(self, image_url, target_path):
