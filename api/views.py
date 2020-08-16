@@ -15,7 +15,7 @@ from onepiece.exceptions import (
 )
 
 
-app = Blueprint("api", __name__, url_prefix='/')
+app = Blueprint("api", __name__, url_prefix='/api')
 CACHE_TIME = 600
 
 
@@ -44,17 +44,17 @@ def index():
         {
             "api_status": "ok",
             "example": [
-                "/qq?name=海贼王",
-                "/qq/505430",
-                "/qq/505430/933",
+                "/api/qq?name=海贼王",
+                "/api/qq/505430",
+                "/api/qq/505430/933",
 
-                "/u17?name=雏蜂",
-                "/u17/195",
-                "/u17/195/274",
+                "/api/u17?name=雏蜂",
+                "/api/u17/195",
+                "/api/u17/195/274",
 
-                "/bilibili?name=海贼王",
-                "/bilibili/24742",
-                "/bilibili/24742/1"
+                "/api/bilibili?name=海贼王",
+                "/api/bilibili/24742",
+                "/api/bilibili/24742/1"
             ]
         }
     )
