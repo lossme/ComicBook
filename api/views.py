@@ -38,28 +38,6 @@ def handle_404(error):
             }), 500
 
 
-@app.route("/")
-def index():
-    return jsonify(
-        {
-            "api_status": "ok",
-            "example": [
-                "/api/qq?name=海贼王",
-                "/api/qq/505430",
-                "/api/qq/505430/933",
-
-                "/api/u17?name=雏蜂",
-                "/api/u17/195",
-                "/api/u17/195/274",
-
-                "/api/bilibili?name=海贼王",
-                "/api/bilibili/24742",
-                "/api/bilibili/24742/1"
-            ]
-        }
-    )
-
-
 @cachetools.func.ttl_cache(maxsize=1024, ttl=CACHE_TIME, typed=False)
 def get_comicbook_from_cache(site, comicid):
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
@@ -103,7 +81,6 @@ def get_chapter_info(site, comicid, chapter_number):
     force_refresh = request.args.get('force_refresh') or ''
     force_refresh = force_refresh.lower() == 'true'
     comicbook = get_comicbook_from_cache(site, comicid)
-    print('force_refresh={}'.format(force_refresh))
     comicbook_update_check(comicbook, force_refresh=force_refresh)
     chapter = comicbook.Chapter(chapter_number, force_refresh=force_refresh)
     return jsonify(chapter.to_dict())
