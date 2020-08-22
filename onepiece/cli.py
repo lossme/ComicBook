@@ -152,6 +152,7 @@ def main():
         for item in result:
             print("name={}\tcomicid={}\tsource_url={}".format(item.name, item.comicid, item.source_url))
         comicid = input("请输入要下载的comicid: ")
+        comicbook.crawler.comicid = comicid
 
     logger.info("正在获取最新数据")
 
