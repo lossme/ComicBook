@@ -4,6 +4,7 @@ import hashlib
 import time
 import shutil
 import warnings
+import PIL.Image
 from concurrent.futures import ThreadPoolExecutor
 
 from .exceptions import ImageDownloadError
@@ -94,7 +95,16 @@ class ImageCache():
         os.makedirs(image_dir, exist_ok=True)
         with open(target_path, 'wb') as f:
             f.write(response.content)
+        try:
+            self.verify_image(target_path)
+        except Exception as e:
+            os.unlink(target_path)
+            raise ImageDownloadError(f'Corrupt image from {image_url}') from e
         return target_path
+
+    def verify_image(self, image_path):
+        with PIL.Image.open(image_path) as img:
+            img.verify()
 
     def download_image_use_cache(self, image_url, target_path=None):
         cache_path = self.url_to_path(image_url)
