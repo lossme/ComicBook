@@ -132,7 +132,11 @@ def main():
         image_cache.set_verify(verify=False)
 
     image_cache.DEFAULT_POOL_SIZE = args.worker
-    image_cache.IS_USE_CACHE = False if args.nocache else True
+    if args.nocache or site == 'bilibili':
+        image_cache.IS_USE_CACHE = False
+    else:
+        image_cache.IS_USE_CACHE = True
+
     image_cache.set_cache_dir(args.cachedir)
 
     default_comicid = {
