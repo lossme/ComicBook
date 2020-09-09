@@ -25,6 +25,10 @@ python3 -m pip install requirements.txt
 python3 -m onepiece --help
 ```
 
+如果在使用过程中，发现问题可以先更新代码再试下，说不定已经修复了。
+
+欢迎大家提建议和issue
+
 ## 常规使用
 
 默认从腾讯漫画下载，注意不同站点的comicid区别
@@ -51,7 +55,7 @@ python3 -m onepiece --help
 
 复制`config.ini.example`并命名为`config.ini`，并根据实际情况修改`config.ini`的参数
 
-#### 关于登录
+### 关于登录
 
 限于本人能力有限，登录懒得搞，只好祭出selenium这个大杀器
 
