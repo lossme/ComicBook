@@ -71,20 +71,8 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
         ol = re.search(r'(<ol class="chapter-page-all works-chapter-list".+?</ol>)', html, re.S).group()
         all_atag = re.findall(r'''<a.*?title="(.*?)".*?href="(.*?)">(.*?)</a>''', ol, re.S)
         for idx, item in enumerate(all_atag, start=1):
-            # title = "航海王：第916 和之国大相扑"         # p1
-            # title = "航海王：第843话 温思默克·山智""     # p1
-            # title = "秦侠：111.剥皮白王""                # p2
-            # title = "爱情漫过流星：她在上面"             # 其他
             title, url, _title = item
-            p1 = re.search(r"""(?P<comic_title>.*?)：第(?P<chapter_number>\d+)话? (?P<chapter_title>.*?)""", title)
-            p2 = re.search(r"""(?P<comic_title>.*?)：(?P<chapter_number>\d+)\.(?P<chapter_title>.*?)""", title)
-            if p1:
-                chapter_number = int(p1.group('chapter_number'))
-            elif p2:
-                chapter_number = int(p2.group('chapter_number'))
-            else:
-                chapter_number = idx
-
+            chapter_number = idx
             if chapter_number in citem_dict:
                 continue
 

@@ -50,6 +50,7 @@ class ImageCache():
         self.IMAGE_DOWNLOAD_POOL = None
         self.DEFAULT_POOL_SIZE = 4
         self.VERIFY = True
+        self.TIMEOUT = 30
 
     @classmethod
     def set_verify(cls, verify):
@@ -83,7 +84,7 @@ class ImageCache():
     def download_image_without_cache(self, image_url, target_path):
         try:
             session = self.get_session()
-            response = session.get(image_url, verify=self.VERIFY)
+            response = session.get(image_url, verify=self.VERIFY, timeout=self.TIMEOUT)
             if response.status_code != 200:
                 msg = '图片下载失败: status_code={} image_url={}'.format(response.status_code, image_url)
                 raise ImageDownloadError(msg)
