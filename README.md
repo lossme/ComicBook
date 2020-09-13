@@ -6,7 +6,7 @@
 
 - [x] 漫画批量下载
 - [x] 分目录按章节保存
-- [x] 支持腾讯漫画、哔哩哔哩漫画、有妖气漫画
+- [x] 支持腾讯漫画、哔哩哔哩漫画、有妖气漫画、快看漫画
 - [x] 支持登录
 - [x] 支持生成pdf
 - [x] 支持发送到邮箱
@@ -41,7 +41,6 @@ python3 -m onepiece --help
 - 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece --comicid=505430 --chapter=1-5,7,9-10`
 - 下载漫画 id=505430 并生成pdf文件: `python3 -m onepiece --comicid=505430 --pdf`
 - 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --comicid=505430 --pdf --mail`
-- 从鼠绘漫画下载: `python3 -m onepiece --site=ishuhui --comicid=1 --chapter=1-5`
 - 从哔哩哔哩漫画下载: `python3 -m onepiece --site=bilibili --comicid=mc24742 --chapter=1-5`
 - 从有妖气漫画下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=-1`
 

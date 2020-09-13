@@ -98,7 +98,7 @@ def parse_args():
 
 def init_logger(level=None):
     level = level or logging.INFO
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger()
     handler = logging.StreamHandler()
     formatter = logging.Formatter(
         "%(asctime)s %(name)s [%(levelname)s] %(message)s",
@@ -143,6 +143,7 @@ def main():
         "qq": "505430",  # 海贼王
         "u17": "195",    # 雏蜂
         "bilibili": "mc24742",   # 海贼王
+        "kuaikan": '1338',   # 海贼王
     }
     comicid = comicid or default_comicid.get(site)
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)

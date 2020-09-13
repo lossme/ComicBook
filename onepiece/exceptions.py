@@ -10,10 +10,20 @@ class ComicbookNotFound(NotFoundError):
     TEMPLATE = ("资源未找到！ site={site} comicid={comicid} "
                 "source_url={source_url}")
 
+    @classmethod
+    def from_template(cls, **kwargs):
+        msg = cls.TEMPLATE.format(**kwargs)
+        return cls(msg)
+
 
 class ChapterNotFound(NotFoundError):
     TEMPLATE = ("资源未找到！ site={site} comicid={comicid} "
                 "chapter_number={chapter_number} source_url={source_url}")
+
+    @classmethod
+    def from_template(cls, **kwargs):
+        msg = cls.TEMPLATE.format(**kwargs)
+        return cls(msg)
 
 
 class URLException(ComicbookException):
