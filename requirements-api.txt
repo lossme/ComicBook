@@ -2,3 +2,6 @@ Pillow>=5.1.0
 reportlab>=3.4.0
 requests>=2.20.0
 PyExecJS>=1.5.1
+gunicorn>=20.0.4
+Flask>=1.1.1
+cachetools>=4.1.1

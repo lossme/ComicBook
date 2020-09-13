@@ -2,7 +2,7 @@
 
 安装依赖
 ```sh
-pip install requests flask cachetools gunicorn
+pip install -r requirements-api.txt
 ```
 
 启动接口
