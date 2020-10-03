@@ -132,10 +132,8 @@ def main():
         image_cache.set_verify(verify=False)
 
     image_cache.DEFAULT_POOL_SIZE = args.worker
-    if args.nocache or site == 'bilibili':
+    if args.nocache:
         image_cache.IS_USE_CACHE = False
-    else:
-        image_cache.IS_USE_CACHE = True
 
     image_cache.set_cache_dir(args.cachedir)
 

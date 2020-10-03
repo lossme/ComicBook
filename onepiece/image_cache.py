@@ -77,7 +77,8 @@ class ImageCache():
     def url_to_path(self, image_path_or_url):
         if not self.URL_PATTERN.match(image_path_or_url):
             return image_path_or_url
-        s = self.calc_str_md5(image_path_or_url)
+        url = image_path_or_url.split('?')[0]
+        s = self.calc_str_md5(url)
         return os.path.join(self.CACHE_DIR, s[0:2], s[2:4], s[4:6], s)
 
     @retry(times=3, delay=1)
@@ -167,17 +168,19 @@ class ImageCache():
             warnings.warn(str(e))
 
     @staticmethod
-    def find_suffix(image_url, default='jpg', allow=frozenset(['jpg', 'png', 'jpeg', 'gif'])):
+    def find_suffix(image_url, default='jpg',
+                    allow=frozenset(['jpg', 'png', 'jpeg', 'gif', 'webp'])):
         """从图片url提取图片扩展名
         :param image_url: 图片链接
         :param default: 扩展名不在 allow 内，则返回默认扩展名
         :param allow: 允许的扩展名
         :return ext: 扩展名，不包含.
         """
-        ext = image_url.rsplit('.', 1)[-1].lower()
-        if ext not in allow:
-            return default
-        return ext
+        url = image_url.split('?')[0]
+        ext = url.rsplit('.', 1)[-1].lower()
+        if ext in allow:
+            return ext
+        return default
 
 
 image_cache = ImageCache()
