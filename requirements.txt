@@ -1,5 +1,6 @@
 Pillow>=6.2.0
 reportlab>=3.4.0
 requests>=2.20.0
+requests[socks]
 PyExecJS>=1.5.1
 bs4>=0.0.1

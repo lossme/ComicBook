@@ -89,6 +89,9 @@ def parse_args():
 
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
 
+    parser.add_argument('--proxy', type=str,
+                        help='设置代理，如 --proxy "socks5://127.0.0.1:1080"')
+
     parser.add_argument('-V', '--version', action='version', version=VERSION)
     parser.add_argument('--debug', action='store_true', help="debug")
 
@@ -123,6 +126,9 @@ def main():
     session_path = None
     if args.session_path:
         session_path = os.path.abspath(args.session_path)
+    if args.proxy:
+        image_cache.get_session().set_proxy(args.proxy)
+
     loglevel = logging.DEBUG if args.debug else logging.INFO
     init_logger(level=loglevel)
 
@@ -138,6 +144,9 @@ def main():
     image_cache.set_cache_dir(args.cachedir)
 
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    if args.proxy:
+        comicbook.crawler.get_session().set_proxy(args.proxy)
+
     comicbook.crawler.DRIVER_PATH = args.driver_path
     # 加载 session
     if session_path and os.path.exists(session_path):

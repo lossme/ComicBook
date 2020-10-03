@@ -23,6 +23,12 @@ class Session(requests.Session):
             assert isinstance(session, cls)
             return session
 
+    def set_proxy(self, proxy):
+        self.proxies = {
+            'http': proxy,
+            'https': proxy
+        }
+
 
 default_session = Session()
 default_session.headers.update(default_session.DEFAULT_HEADERS)

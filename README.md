@@ -10,6 +10,7 @@
 - [x] 支持登录
 - [x] 支持生成pdf
 - [x] 支持发送到邮箱
+- [x] 支持设置代理
 - [x] 集成api，方便调用 [API-README](API-README.md)
 
 
