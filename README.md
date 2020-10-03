@@ -1,12 +1,12 @@
 # TencentComicBook
 
-腾讯漫画、哔哩哔哩漫画、有妖气漫画爬虫
+腾讯漫画、哔哩哔哩漫画、有妖气漫画、漫画柜爬虫
 
 ## 本项目特点
 
 - [x] 漫画批量下载
 - [x] 分目录按章节保存
-- [x] 支持腾讯漫画、哔哩哔哩漫画、有妖气漫画、快看漫画
+- [x] 支持多个漫画源，易于扩展
 - [x] 支持登录
 - [x] 支持生成pdf
 - [x] 支持发送到邮箱
@@ -31,24 +31,25 @@ python3 -m onepiece --help
 
 ## 常规使用
 
-默认从腾讯漫画下载，注意不同站点的comicid区别
+从腾讯漫画下载：
+- 下载漫画 id=505430 最新一集: `python3 -m onepiece --site=qq --comicid=505430`
+- 下载漫画 id=505430 所有章节: `python3 -m onepiece --site=qq --comicid=505430 --all`
+- 下载漫画 id=505430 第800集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=800`
+- 下载漫画 id=505430 倒数第二集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=-2`
+- 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=1-5,7,9-10`
+- 下载漫画 id=505430 并生成pdf文件: `python3 -m onepiece --site=qq --comicid=505430 --pdf`
+- 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --site=qq --comicid=505430 --pdf --mail`
 
-- 下载海贼王最新一集: `python3 -m onepiece`
-- 下载漫画 id=505430 最新一集: `python3 -m onepiece --comicid=505430`
-- 下载漫画 id=505430 所有章节: `python3 -m onepiece --comicid=505430 --all`
-- 下载漫画 id=505430 第800集: `python3 -m onepiece --comicid=505430 --chapter=800`
-- 下载漫画 id=505430 倒数第二集: `python3 -m onepiece --comicid=505430 --chapter=-2`
-- 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece --comicid=505430 --chapter=1-5,7,9-10`
-- 下载漫画 id=505430 并生成pdf文件: `python3 -m onepiece --comicid=505430 --pdf`
-- 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --comicid=505430 --pdf --mail`
-- 从哔哩哔哩漫画下载: `python3 -m onepiece --site=bilibili --comicid=mc24742 --chapter=1-5`
-- 从有妖气漫画下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=-1`
+从其它站点下载，注意不同站点的comicid区别
+- 从哔哩哔哩漫画下载: `python3 -m onepiece --site=bilibili --comicid=mc24742 --chapter=1`
+- 从有妖气漫画下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=1`
+- 从快看漫画下载: `python3 -m onepiece --site=kuaikan --comicid=1338 --chapter=1`
+- 从漫画柜下载: `python3 -m onepiece --site=manhuagui --comicid=19430 --chapter=1`
 
 若不清楚或不记得comicid，可以使用名字来搜索，按照提示输入comicid
-
-- `python3 -m onepiece --site=qq --name=海贼 --chapter=1-5`
-- `python3 -m onepiece --site=bilibili --name=海贼 --chapter=-1`
-- `python3 -m onepiece --site=u17 --name=雏蜂 --chapter=-1`
+- `python3 -m onepiece --site=qq --name=海贼`
+- `python3 -m onepiece --site=bilibili --name=海贼`
+- `python3 -m onepiece --site=u17 --name=雏蜂`
 
 **注意**: 发送到邮箱需预先配置好信息
 

@@ -39,6 +39,9 @@ class U17Crawler(CrawlerBase):
     CHAPTER_API = "https://www.u17.com/comic/ajax.php?mod=chapter&act=get_chapter_v5&chapter_id={chapter_id}"
     CHAPTER_URL = "https://www.u17.com/chapter/{chapter_id}.html"
 
+    DEFAULT_COMICID = 195
+    DEFAULT_COMIC_NAME = '雏蜂'
+
     def __init__(self, comicid=None):
         super().__init__()
         self.comicid = comicid

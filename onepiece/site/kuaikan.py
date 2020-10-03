@@ -18,6 +18,8 @@ class KuaiKanCrawler(CrawlerBase):
 
     SITE = "kuaikan"
     SOURCE_NAME = "快看漫画"
+    DEFAULT_COMICID = 1338
+    DEFAULT_COMIC_NAME = '海贼王'
 
     def __init__(self, comicid=None):
         try:

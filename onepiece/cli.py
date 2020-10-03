@@ -139,13 +139,6 @@ def main():
 
     image_cache.set_cache_dir(args.cachedir)
 
-    default_comicid = {
-        "qq": "505430",  # 海贼王
-        "u17": "195",    # 雏蜂
-        "bilibili": "mc24742",   # 海贼王
-        "kuaikan": '1338',   # 海贼王
-    }
-    comicid = comicid or default_comicid.get(site)
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
     comicbook.crawler.DRIVER_PATH = args.driver_path
     # 加载 session

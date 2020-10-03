@@ -81,10 +81,10 @@ class ImageCache():
         return os.path.join(self.CACHE_DIR, s[0:2], s[2:4], s[4:6], s)
 
     @retry(times=3, delay=1)
-    def download_image_without_cache(self, image_url, target_path):
+    def download_image_without_cache(self, image_url, target_path, **kwargs):
         try:
             session = self.get_session()
-            response = session.get(image_url, verify=self.VERIFY, timeout=self.TIMEOUT)
+            response = session.get(image_url, verify=self.VERIFY, timeout=self.TIMEOUT, **kwargs)
             if response.status_code != 200:
                 msg = '图片下载失败: status_code={} image_url={}'.format(response.status_code, image_url)
                 raise ImageDownloadError(msg)
@@ -107,10 +107,11 @@ class ImageCache():
         with PIL.Image.open(image_path) as img:
             img.verify()
 
-    def download_image_use_cache(self, image_url, target_path=None):
+    def download_image_use_cache(self, image_url, target_path=None, **kwargs):
         cache_path = self.url_to_path(image_url)
         if not os.path.exists(cache_path):
-            self.download_image_without_cache(image_url=image_url, target_path=cache_path)
+            self.download_image_without_cache(
+                image_url=image_url, target_path=cache_path, **kwargs)
 
         if target_path is None:
             return cache_path
@@ -121,13 +122,15 @@ class ImageCache():
             shutil.copyfile(cache_path, target_path)
             return target_path
 
-    def download_image(self, image_url, target_path):
+    def download_image(self, image_url, target_path, **kwargs):
         if self.IS_USE_CACHE:
-            return self.download_image_use_cache(image_url=image_url, target_path=target_path)
+            return self.download_image_use_cache(
+                image_url=image_url, target_path=target_path, **kwargs)
         else:
-            return self.download_image_without_cache(image_url=image_url, target_path=target_path)
+            return self.download_image_without_cache(
+                image_url=image_url, target_path=target_path, **kwargs)
 
-    def download_images(self, image_urls, output_dir):
+    def download_images(self, image_urls, output_dir, **kwargs):
         """下载出错只打印出警告信息，不抛出异常
         """
         pool = self.get_pool()
@@ -135,7 +138,9 @@ class ImageCache():
         for idx, image_url in enumerate(image_urls, start=1):
             ext = self.find_suffix(image_url)
             target_path = os.path.join(output_dir.rstrip(), "{}.{}".format(idx, ext))
-            future = pool.submit(self.download_image, image_url=image_url, target_path=target_path)
+            future = pool.submit(
+                self.download_image,
+                image_url=image_url, target_path=target_path, **kwargs)
             future_list.append(future)
 
         # 等全部图片下载完成

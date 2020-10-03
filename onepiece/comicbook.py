@@ -4,7 +4,6 @@ import importlib
 import datetime
 
 from .utils import safe_filename
-from .image_cache import image_cache
 from .exceptions import (
     SiteNotSupport,
     ChapterNotFound
@@ -50,16 +49,20 @@ class ComicBook():
         if site not in cls.CRAWLER_CLS_MAP:
             raise SiteNotSupport("site={} 暂不支持".format(site))
         crawler_cls = cls.CRAWLER_CLS_MAP[site]
+        if comicid is None:
+            comicid = crawler_cls.DEFAULT_COMICID
         crawler = crawler_cls(comicid)
         comicbook = cls(comicbook_crawler=crawler)
         return comicbook
 
     @classmethod
-    def search(cls, site, name, limit=None):
+    def search(cls, site, name=None, limit=None):
         if site not in cls.CRAWLER_CLS_MAP:
             raise SiteNotSupport("site={} 暂不支持".format(site))
         crawler_cls = cls.CRAWLER_CLS_MAP[site]
         crawler = crawler_cls()
+        if name is None:
+            name = crawler.DEFAULT_COMIC_NAME
         return crawler.search(name)[:limit]
 
     def to_dict(self):
@@ -83,6 +86,7 @@ class ComicBook():
             citem = self.comicbook_item.citem_dict[chapter_number]
             chapter_item = self.crawler.get_chapter_item(citem)
             self.chapter_cache[chapter_number] = Chapter(
+                crawler=self.crawler,
                 comicbook_item=self.comicbook_item,
                 chapter_item=chapter_item)
         return self.chapter_cache[chapter_number]
@@ -90,7 +94,8 @@ class ComicBook():
 
 class Chapter():
 
-    def __init__(self, comicbook_item, chapter_item):
+    def __init__(self, crawler, comicbook_item, chapter_item):
+        self.crawler = crawler
         self.comicbook_item = comicbook_item
         self.chapter_item = chapter_item
 
@@ -119,7 +124,9 @@ class Chapter():
 
     def save(self, output_dir):
         chapter_dir = self.get_chapter_image_dir(output_dir)
-        image_cache.download_images(image_urls=self.image_urls, output_dir=chapter_dir)
+        headers = self.crawler.get_image_headers()
+        self.crawler.download_images(
+            image_urls=self.image_urls, output_dir=chapter_dir, headers=headers)
         return chapter_dir
 
     def save_as_pdf(self, output_dir):

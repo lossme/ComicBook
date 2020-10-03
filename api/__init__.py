@@ -14,21 +14,18 @@ def create_app():
 
 
 def index():
+    from onepiece.comicbook import ComicBook
+    example = []
+    for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
+        example.append('/api/{site}?name={name}'.format(
+            site=site, name=crawler.DEFAULT_COMIC_NAME))
+        example.append('/api/{site}/{comicid}'.format(
+            site=site, comicid=crawler.DEFAULT_COMICID))
+        example.append('/api/{site}/{comicid}/1'.format(
+            site=site, comicid=crawler.DEFAULT_COMICID))
     return jsonify(
         {
             "api_status": "ok",
-            "example": [
-                "/api/qq?name=海贼王",
-                "/api/qq/505430",
-                "/api/qq/505430/933",
-
-                "/api/u17?name=雏蜂",
-                "/api/u17/195",
-                "/api/u17/195/274",
-
-                "/api/bilibili?name=海贼王",
-                "/api/bilibili/24742",
-                "/api/bilibili/24742/1"
-            ]
+            "example": example
         }
     )

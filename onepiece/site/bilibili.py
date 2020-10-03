@@ -22,6 +22,9 @@ class BilibiliCrawler(CrawlerBase):
     DATA_HOST = "https://i0.hdslb.com"
     COMICBOOK_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=h5&platform=h5"
 
+    DEFAULT_COMICID = 'mc24742'
+    DEFAULT_COMIC_NAME = '海贼王'
+
     def __init__(self, comicid=None):
         super().__init__()
         self.comicid = comicid.replace("mc", "") if comicid else ''

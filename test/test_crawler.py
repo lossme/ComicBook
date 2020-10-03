@@ -5,7 +5,7 @@ from onepiece.comicbook import ComicBook
 logger = logging.getLogger()
 
 
-def crawl_comicbook(site, comicid, chapter_number):
+def _test_crawl_comicbook(site, comicid=None, chapter_number=1):
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
     comicbook.start_crawler()
     chapter = comicbook.Chapter(chapter_number=chapter_number)
@@ -13,40 +13,32 @@ def crawl_comicbook(site, comicid, chapter_number):
 
     logger.info(chapter.to_dict())
     logger.info(comicbook.to_dict())
+
+    result = ComicBook.search(site=site)
+    assert len(result) > 0
     return comicbook, chapter
 
 
 def test_qq():
     # 海贼王  URL: https://ac.qq.com/Comic/ComicInfo/id/505430
-    site = "qq"
-    comicid = "505430"
-    name = "海贼王"
-    chapter_number = -1
-    crawl_comicbook(site=site, comicid=comicid, chapter_number=chapter_number)
-
-    result = ComicBook.search(site=site, name=name)
-    assert len(result) > 0
+    _test_crawl_comicbook(site='qq')
 
 
 def test_u17():
     # 雏蜂 URL: http://www.u17.com/comic/195.html
-    site = "u17"
-    comicid = "195"
-    name = "雏蜂"
-    chapter_number = -1
-    crawl_comicbook(site=site, comicid=comicid, chapter_number=chapter_number)
-
-    result = ComicBook.search(site=site, name=name)
-    assert len(result) > 0
+    _test_crawl_comicbook(site='u17')
 
 
 def test_bilibili():
     # 航海王 URL: https://manga.bilibili.com/detail/mc24742
-    site = "bilibili"
-    comicid = "mc24742"
-    name = "航海王"
-    chapter_number = 1
-    crawl_comicbook(site=site, comicid=comicid, chapter_number=chapter_number)
+    _test_crawl_comicbook(site='bilibili')
 
-    result = ComicBook.search(site=site, name=name)
-    assert len(result) > 0
+
+def test_kuaikan():
+    # 航海王 URL: https://www.kuaikanmanhua.com/web/topic/1338/
+    _test_crawl_comicbook(site='kuaikan')
+
+
+def test_manhuagui():
+    # 鬼灭之刃 URL: https://www.manhuagui.com/comic/19430
+    _test_crawl_comicbook(site='manhuagui')
