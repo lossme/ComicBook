@@ -2,6 +2,7 @@ import os
 import re
 import importlib
 import datetime
+import logging
 
 from .utils import safe_filename
 from .exceptions import (
@@ -9,7 +10,10 @@ from .exceptions import (
     ChapterNotFound
 )
 from .crawlerbase import CrawlerBase
+from .image_cache import image_cache
 HERE = os.path.abspath(os.path.dirname(__file__))
+
+logger = logging.getLogger(__name__)
 
 
 def find_all_crawler():
@@ -28,6 +32,7 @@ class ComicBook():
         # {chapter_number: Chapter}
         self.chapter_cache = {}
         self.crawler_time = None
+        self.comicbook_item = None
 
     def start_crawler(self):
         self.comicbook_item = self.crawler.get_comicbook_item()
@@ -124,8 +129,8 @@ class Chapter():
 
     def save(self, output_dir):
         chapter_dir = self.get_chapter_image_dir(output_dir)
-        headers = self.crawler.get_image_headers()
-        self.crawler.download_images(
+        headers = {'Referer': self.chapter_item.source_url}
+        image_cache.download_images(
             image_urls=self.image_urls, output_dir=chapter_dir, headers=headers)
         return chapter_dir
 

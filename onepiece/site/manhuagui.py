@@ -1,9 +1,10 @@
 import re
 import json
+from urllib.parse import urljoin
+import logging
 
 import execjs
 from bs4 import BeautifulSoup
-import logging
 
 from ..crawlerbase import (
     CrawlerBase,
@@ -19,7 +20,12 @@ logger = logging.getLogger(__name__)
 class ManhuaguiCrawler(CrawlerBase):
 
     SITE = "manhuagui"
+    SITE_INDEX = "https://www.manhuagui.com/"
     SOURCE_NAME = "漫画柜"
+
+    IMAGE_URL_PREFIX = 'https://i.hamreus.com'
+    LOGIN_URL = urljoin(SITE_INDEX, "/user/login")
+
     DEFAULT_COMICID = 19430
     DEFAULT_COMIC_NAME = '鬼灭之刃'
 
@@ -33,7 +39,10 @@ class ManhuaguiCrawler(CrawlerBase):
 
     @property
     def source_url(self):
-        return "https://www.manhuagui.com/comic/{}".format(self.comicid)
+        return self.get_source_url(self.comicid)
+
+    def get_source_url(self, comicid):
+        return urljoin(self.SITE_INDEX, "/comic/{}".format(comicid))
 
     def get_comicbook_item(self):
         html = self.get_html(self.source_url)
@@ -56,7 +65,7 @@ class ManhuaguiCrawler(CrawlerBase):
         for idx, li_soup in enumerate(sorted(c_list, key=_sort_func), start=1):
             href = li_soup.a.get('href')
             title = li_soup.a.get('title')
-            full_url = "https://www.manhuagui.com" + href
+            full_url = urljoin(self.SITE_INDEX, href)
             citem_dict[idx] = Citem(
                 chapter_number=idx,
                 title=title,
@@ -76,14 +85,13 @@ class ManhuaguiCrawler(CrawlerBase):
         html = self.get_html(url)
         data = self.extract_mhg_js(html)
         image_urls = []
-        prefix = 'https://i.hamreus.com'
         for i in data['files']:
-            url = prefix + data['path'] + i + '?e=%(e)s&m=%(m)s' % (data['sl'])
+            url = self.IMAGE_URL_PREFIX + data['path'] + i + '?e=%(e)s&m=%(m)s' % (data['sl'])
             image_urls.append(url)
         return ChapterItem(chapter_number=citem.chapter_number,
                            title=citem.title,
                            image_urls=image_urls,
-                           source_url=url)
+                           source_url=citem.url)
 
     def extract_mhg_js(self, html):
         js = '(function' + re.findall('function(.*?)</script>', html)[0]
@@ -266,15 +274,8 @@ class ManhuaguiCrawler(CrawlerBase):
         imgData = re.findall(r"SMH\.imgData\((.*?)\)\.preInit\(\)\;", comic)[0]
         return json.loads(imgData)
 
-    def get_image_headers(self):
-        headers = {
-            'referer': 'https://www.manhuagui.com/',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36'
-        }
-        return headers
-
     def search(self, name):
-        url = 'https://www.manhuagui.com/s/{}.html'.format(name)
+        url = urljoin(self.SITE_INDEX, '/s/{}.html'.format(name))
         html = self.get_html(url)
         soup = BeautifulSoup(html, 'html.parser')
         li_list = soup.find_all('li', {'class': 'cf'})
@@ -284,7 +285,7 @@ class ManhuaguiCrawler(CrawlerBase):
             cover_image_url = li_soup.find('div', {'class': 'book-cover'}).a.img.get('src')
             href = li_soup.find('div', {'class': 'book-cover'}).a.get('href')
             comicid = href.split('/')[2]
-            source_url = 'https://www.manhuagui.com' + href
+            source_url = self.get_source_url(comicid)
             search_result_item = SearchResultItem(site=self.SITE,
                                                   comicid=comicid,
                                                   name=name,
@@ -294,8 +295,7 @@ class ManhuaguiCrawler(CrawlerBase):
         return rv
 
     def login(self):
-        login_url = "https://www.manhuagui.com/user/login"
-        self.selenium_login(login_url=login_url,
+        self.selenium_login(login_url=self.LOGIN_URL,
                             check_login_status_func=self.check_login_status)
 
     def check_login_status(self):

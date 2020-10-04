@@ -15,6 +15,7 @@ class U17Crawler(CrawlerBase):
 
     SOURCE_NAME = "有妖气"
     SITE = "u17"
+    SITE_INDEX = 'https://www.u17.com/'
 
     COMIC_NAME_PATTERN = re.compile(r'<h1 class="fl".*?>(.*?)</h1>', re.S)
     DESC_ALL_PATTERN = re.compile(r'<div class="textbox" id="words_all".*?>.*?<p class="ti2">(.*?)</p>', re.S)
@@ -38,6 +39,7 @@ class U17Crawler(CrawlerBase):
     COMIC_BOOK_API = "https://www.u17.com/comic/ajax.php?mod=chapter&act=get_chapter_list&comic_id={comicid}"
     CHAPTER_API = "https://www.u17.com/comic/ajax.php?mod=chapter&act=get_chapter_v5&chapter_id={chapter_id}"
     CHAPTER_URL = "https://www.u17.com/chapter/{chapter_id}.html"
+    LOGIN_URL = "https://passport.u17.com/member_v2/login.php?url=https://www.u17.com/"
 
     DEFAULT_COMICID = 195
     DEFAULT_COMIC_NAME = '雏蜂'
@@ -48,7 +50,10 @@ class U17Crawler(CrawlerBase):
 
     @property
     def source_url(self):
-        return "http://www.u17.com/comic/{}.html".format(self.comicid)
+        return self.get_source_url(self.comicid)
+
+    def get_source_url(self, comicid):
+        return "https://www.u17.com/comic/{}.html".format(comicid)
 
     def get_comicbook_item(self):
         response = self.send_request("GET", self.source_url)
@@ -117,8 +122,7 @@ class U17Crawler(CrawlerBase):
         for li_tag in self.SEARCH_LI_TAG_PATTERN.findall(ul_tag):
             cover_image_url = self.SEARCH_COVER_IMAGE_URL_PATTERN.search(li_tag).group(1)
             comicid, name = self.SEARCH_DATA_PATTERN.search(li_tag).groups()
-            source_url = "http://www.u17.com/comic/{}.html".format(comicid)
-
+            source_url = self.get_source_url(comicid)
             item = SearchResultItem(site=self.SITE,
                                     comicid=comicid,
                                     name=name,
@@ -128,8 +132,8 @@ class U17Crawler(CrawlerBase):
         return rv
 
     def login(self):
-        login_url = "http://passport.u17.com/member_v2/login.php?url=http://www.u17.com/"
-        self.selenium_login(login_url=login_url, check_login_status_func=self.check_login_status)
+        self.selenium_login(
+            login_url=self.LOGIN_URL, check_login_status_func=self.check_login_status)
 
     def check_login_status(self):
         session = self.get_session()

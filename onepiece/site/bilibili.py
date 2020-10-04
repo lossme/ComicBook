@@ -4,7 +4,8 @@ import json
 import os
 import zipfile
 import re
-import urllib.parse
+import logging
+from urllib.parse import urljoin
 
 from ..crawlerbase import (
     CrawlerBase,
@@ -14,13 +15,22 @@ from ..crawlerbase import (
     SearchResultItem)
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
+logger = logging.getLogger(__name__)
+
 
 class BilibiliCrawler(CrawlerBase):
 
     SITE = "bilibili"
+    SITE_INDEX = 'https://manga.bilibili.com/'
+
     SOURCE_NAME = "哔哩哔哩漫画"
-    DATA_HOST = "https://i0.hdslb.com"
+    DATA_HOST = "https://i0.hdslb.com/"
+
     COMICBOOK_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=h5&platform=h5"
+    CHAPTER_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/Index?device=h5&platform=h5"
+    IMAGE_TOKEN_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
+    SEARCH_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/Search?device=pc&platform=web"
+    LOGIN_URL = SITE_INDEX
 
     DEFAULT_COMICID = 'mc24742'
     DEFAULT_COMIC_NAME = '海贼王'
@@ -31,7 +41,10 @@ class BilibiliCrawler(CrawlerBase):
 
     @property
     def source_url(self):
-        return "https://manga.bilibili.com/m/detail/mc{}".format(self.comicid)
+        return self.get_source_url(self.comicid)
+
+    def get_source_url(self, comicid):
+        return urljoin(self.SITE_INDEX, "/m/detail/mc{}".format(comicid))
 
     @classmethod
     def unzip(cls, file, target_dir):
@@ -62,11 +75,11 @@ class BilibiliCrawler(CrawlerBase):
         return bytes(indexData)
 
     def get_chapter_api_data(self, cid):
-        url = "https://manga.bilibili.com/twirp/comic.v1.Comic/Index?device=h5&platform=h5"
+        url = self.CHAPTER_API
         response = self.send_request("POST", url, data={"ep_id": cid})
 
-        data = self.DATA_HOST + response.json()["data"]
-        url = urllib.parse.urljoin(self.DATA_HOST, data)
+        data = response.json()["data"]
+        url = urljoin(self.DATA_HOST, data)
         response = self.send_request("GET", url)
         indexData = response.content
         hashKey = self.generateHashKey(seasonId=self.comicid, episodeId=cid)
@@ -120,11 +133,12 @@ class BilibiliCrawler(CrawlerBase):
                              citem_dict=citem_dict)
 
     def get_chapter_soure_url(self, cid):
-        return "https://manga.bilibili.com/m/mc{}/{}".format(self.comicid, cid)
+        return urljoin(
+            self.SITE_INDEX, "/m/mc{}/{}".format(self.comicid, cid))
 
     def get_chapter_item(self, citem):
         chapter_api_data = self.get_chapter_api_data(cid=citem.cid)
-        token_url = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
+        token_url = self.IMAGE_TOKEN_API
         response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
         data = response.json()
         image_urls = ["{}?token={}".format(i["url"], i["token"]) for i in data["data"]]
@@ -135,7 +149,7 @@ class BilibiliCrawler(CrawlerBase):
                            source_url=source_url)
 
     def search(self, name):
-        url = "https://manga.bilibili.com/twirp/comic.v1.Comic/Search?device=pc&platform=web"
+        url = self.SEARCH_API
         response = self.send_request(
             "POST", url, data={"key_word": name, "page_num": 1, "page_size": 20})
         data = response.json()
@@ -147,7 +161,7 @@ class BilibiliCrawler(CrawlerBase):
 
             # or square_cover or vertical_cover
             cover_image_url = result["horizontal_cover"]
-            source_url = 'http://manga.bilibili.com/detail/mc{}'.format(comicid)
+            source_url = self.get_source_url(comicid)
             search_result_item = SearchResultItem(site=self.SITE,
                                                   comicid=comicid,
                                                   name=name,
@@ -157,8 +171,7 @@ class BilibiliCrawler(CrawlerBase):
         return rv
 
     def login(self):
-        login_url = "https://manga.bilibili.com/"
-        self.selenium_login(login_url=login_url,
+        self.selenium_login(login_url=self.LOGIN_URL,
                             check_login_status_func=self.check_login_status)
 
     def check_login_status(self):

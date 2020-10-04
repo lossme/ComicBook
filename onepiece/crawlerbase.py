@@ -7,8 +7,6 @@ from .session import (
     Session,
     default_session
 )
-from .image_cache import image_cache
-
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +14,6 @@ logger = logging.getLogger(__name__)
 class ComicBookItem():
     FIELDS = ["name", "desc", "tag", "cover_image_url", "author",
               "source_url", "source_name", "crawl_time", "chapters"]
-    DEFAULT_COMICID = None
-    DEFAULT_COMIC_NAME = None
 
     def __init__(self, name=None, desc=None, tag=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
@@ -83,12 +79,18 @@ class CrawlerBase():
 
     SOURCE_NAME = "未知"
     SITE = ""
+    SITE_INDEX = ""
+
+    DEFAULT_COMICID = None
+    DEFAULT_COMIC_NAME = None
 
     DRIVER_PATH = None
     DRIVER_TYPE = None
     DEFAULT_DRIVER_TYPE = "Chrome"
     SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
-    _session = None
+
+    def __init__(self):
+        self._session = None
 
     def set_session(self, session):
         self._session = session
@@ -108,7 +110,7 @@ class CrawlerBase():
 
     def send_request(self, method, url, **kwargs):
         session = self.get_session()
-        kwargs.setdefault('headers', session.DEFAULT_HEADERS)
+        kwargs.setdefault('headers', {'Referer': self.SITE_INDEX})
         kwargs.setdefault('timeout', session.TIMEOUT)
         try:
             return session.request(method=method, url=url, **kwargs)
@@ -177,10 +179,3 @@ class CrawlerBase():
         from selenium import webdriver
         driver_cls = getattr(webdriver, driver_type)
         return driver_cls(self.DRIVER_PATH)
-
-    def download_images(self, image_urls, output_dir, **kwargs):
-        return image_cache.download_images(
-            image_urls=image_urls, output_dir=output_dir, **kwargs)
-
-    def get_image_headers(self):
-        return default_session.DEFAULT_HEADERS

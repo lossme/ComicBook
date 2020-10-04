@@ -1,7 +1,7 @@
 import re
 import base64
 import json
-from urllib import parse
+from urllib.parse import urljoin
 
 from ..crawlerbase import (
     CrawlerBase,
@@ -15,8 +15,10 @@ from ..exceptions import ComicbookNotFound
 
 class QQCrawler(CrawlerBase):
 
-    QQ_COMIC_HOST = 'https://ac.qq.com'
     SITE = "qq"
+    SITE_INDEX = 'https://ac.qq.com/'
+    LOGIN_URL = SITE_INDEX
+
     SOURCE_NAME = '腾讯漫画'
 
     COMIC_NAME_PATTERN = re.compile(r"""<h2 class="works-intro-title ui-left"><strong>(.*?)</strong></h2>""")
@@ -45,7 +47,10 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
     @property
     def source_url(self):
-        return 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(self.comicid)
+        return self.get_source_url(self.comicid)
+
+    def get_source_url(self, comicid):
+        return 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(comicid)
 
     def get_index_page(self):
         if self.index_page is None:
@@ -78,7 +83,7 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
             if chapter_number in citem_dict:
                 continue
 
-            chapter_page_url = parse.urljoin(self.QQ_COMIC_HOST, url)
+            chapter_page_url = urljoin(self.SITE_INDEX, url)
 
             citem_dict[chapter_number] = Citem(
                 chapter_number=chapter_number,
@@ -136,7 +141,7 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
             comicid = r.group("comicid")
             name = r.group("name")
             cover_image_url = r.group("cover_image_url")
-            source_url = 'https://ac.qq.com/Comic/ComicInfo/id/{}'.format(comicid)
+            source_url = self.get_source_url(comicid)
             search_result_item = SearchResultItem(site=self.SITE,
                                                   comicid=comicid,
                                                   name=name,
@@ -146,9 +151,8 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
         return rv
 
     def login(self):
-        login_url = "https://ac.qq.com/"
         self.selenium_login(
-            login_url=login_url,
+            login_url=self.LOGIN_URL,
             check_login_status_func=self.check_login_status)
 
     def check_login_status(self):

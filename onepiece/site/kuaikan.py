@@ -1,8 +1,8 @@
 import re
+import logging
+from urllib.parse import urljoin
 
 import execjs
-
-import logging
 
 from ..crawlerbase import (
     CrawlerBase,
@@ -14,10 +14,14 @@ from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 logger = logging.getLogger(__name__)
 
+
 class KuaiKanCrawler(CrawlerBase):
 
     SITE = "kuaikan"
+    SITE_INDEX = 'https://www.kuaikanmanhua.com/'
     SOURCE_NAME = "快看漫画"
+
+    LOGIN_URL = urljoin(SITE_INDEX, "/webs/loginh?redirect={}".format(SITE_INDEX))
     DEFAULT_COMICID = 1338
     DEFAULT_COMIC_NAME = '海贼王'
 
@@ -31,7 +35,10 @@ class KuaiKanCrawler(CrawlerBase):
 
     @property
     def source_url(self):
-        return "https://www.kuaikanmanhua.com/web/topic/{}/".format(self.comicid)
+        return self.get_source_url(self.comicid)
+
+    def get_source_url(self, comicid):
+        return urljoin(self.SITE_INDEX, "/web/topic/{}/".format(comicid))
 
     def parse_api_data_from_page(self, html):
         r = re.search('<script>window.__NUXT__=(.*?);</script>', html, re.S)
@@ -74,7 +81,7 @@ class KuaiKanCrawler(CrawlerBase):
                              citem_dict=citem_dict)
 
     def get_chapter_soure_url(self, cid):
-        return 'https://www.kuaikanmanhua.com/web/comic/{}/'.format(cid)
+        return urljoin(self.SITE_INDEX, "/web/comic/{}/".format(cid))
 
     def get_chapter_item(self, citem):
         url = self.get_chapter_soure_url(citem.cid)
@@ -93,7 +100,7 @@ class KuaiKanCrawler(CrawlerBase):
                            source_url=source_url)
 
     def search(self, name):
-        url = 'https://www.kuaikanmanhua.com/s/result/{}'.format(name)
+        url = urljoin(self.SITE_INDEX, "/s/result/{}/".format(name))
         html = self.get_html(url)
         data = self.parse_api_data_from_page(html)
         rv = []
@@ -101,7 +108,7 @@ class KuaiKanCrawler(CrawlerBase):
             comicid = i['url'].split('/')[-1]
             name = i['title']
             cover_image_url = i['image_url']
-            source_url = 'https://www.kuaikanmanhua.com' + i['url']
+            source_url = self.get_source_url(comicid)
             search_result_item = SearchResultItem(site=self.SITE,
                                                   comicid=comicid,
                                                   name=name,
@@ -111,8 +118,7 @@ class KuaiKanCrawler(CrawlerBase):
         return rv
 
     def login(self):
-        login_url = "https://www.kuaikanmanhua.com/webs/loginh?redirect=https%3A%2F%2Fwww.kuaikanmanhua.com%2F"
-        self.selenium_login(login_url=login_url,
+        self.selenium_login(login_url=self.LOGIN_URL,
                             check_login_status_func=self.check_login_status)
 
     def check_login_status(self):
