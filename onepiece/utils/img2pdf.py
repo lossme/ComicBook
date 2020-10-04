@@ -41,7 +41,7 @@ def image_dir_to_pdf(img_dir, target_path, sort_by=None):
     :param func sort_by: 排序依据，如按文件名数字大小排序 sort_by=lambda x: int(x.split('.')[0])
     :return str target_path: 输出文件路径
     """
-    allow_image_suffix = ('jpg', 'jpeg', 'png', 'gif')
+    allow_image_suffix = ('jpg', 'jpeg', 'png', 'gif', 'webp')
     img_path_list = sorted(os.listdir(img_dir), key=sort_by)
     img_path_list = list(filter(lambda x: x.lower() not in allow_image_suffix, img_path_list))
     img_path_list = [os.path.join(img_dir, i)for i in img_path_list]
