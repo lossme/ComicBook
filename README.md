@@ -40,6 +40,7 @@ python3 -m onepiece --help
 - 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=1-5,7,9-10`
 - 下载漫画 id=505430 并生成pdf文件: `python3 -m onepiece --site=qq --comicid=505430 --pdf`
 - 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --site=qq --comicid=505430 --pdf --mail`
+- 下载漫画 id=505430 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
 
 从其它站点下载，注意不同站点的comicid区别
 - 从哔哩哔哩漫画下载: `python3 -m onepiece --site=bilibili --comicid=mc24742 --chapter=1`

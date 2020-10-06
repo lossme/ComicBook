@@ -12,7 +12,6 @@ from ..crawlerbase import (
     ComicBookItem,
     Citem,
     SearchResultItem)
-from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +24,12 @@ class ManhuaguiCrawler(CrawlerBase):
 
     IMAGE_URL_PREFIX = 'https://i.hamreus.com'
     LOGIN_URL = urljoin(SITE_INDEX, "/user/login")
+    REQUIRE_JAVASCRIPT = True
 
     DEFAULT_COMICID = 19430
     DEFAULT_COMIC_NAME = '鬼灭之刃'
 
     def __init__(self, comicid=None):
-        try:
-            execjs.get()
-        except Exception:
-            raise RuntimeError('请先安装nodejs。 https://nodejs.org/zh-cn/')
         super().__init__()
         self.comicid = comicid
 

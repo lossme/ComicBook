@@ -2,7 +2,6 @@ import re
 import logging
 from urllib.parse import urljoin
 
-import execjs
 from bs4 import BeautifulSoup
 
 from ..crawlerbase import (
@@ -11,7 +10,6 @@ from ..crawlerbase import (
     ComicBookItem,
     Citem,
     SearchResultItem)
-from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 logger = logging.getLogger(__name__)
 

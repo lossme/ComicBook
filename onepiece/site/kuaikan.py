@@ -26,10 +26,6 @@ class KuaiKanCrawler(CrawlerBase):
     DEFAULT_COMIC_NAME = '海贼王'
 
     def __init__(self, comicid=None):
-        try:
-            execjs.get()
-        except Exception:
-            raise RuntimeError('请先安装nodejs。 https://nodejs.org/zh-cn/')
         super().__init__()
         self.comicid = comicid
 

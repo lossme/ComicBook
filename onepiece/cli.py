@@ -90,7 +90,7 @@ def parse_args():
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
 
     parser.add_argument('--proxy', type=str,
-                        help='设置代理，如 --proxy "socks5://127.0.0.1:1080"')
+                        help='设置代理，如 --proxy "socks5://user:pass@host:port"')
 
     parser.add_argument('-V', '--version', action='version', version=VERSION)
     parser.add_argument('--debug', action='store_true', help="debug")

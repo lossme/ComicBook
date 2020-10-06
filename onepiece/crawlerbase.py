@@ -2,6 +2,9 @@ import datetime
 import time
 import logging
 
+import execjs
+from bs4 import BeautifulSoup
+
 from .exceptions import URLException
 from .session import (
     Session,
@@ -97,9 +100,15 @@ class CrawlerBase():
     DRIVER_TYPE = None
     DEFAULT_DRIVER_TYPE = "Chrome"
     SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
+    REQUIRE_JAVASCRIPT = False
 
     def __init__(self):
         self._session = None
+        if self.REQUIRE_JAVASCRIPT:
+            try:
+                execjs.get()
+            except Exception:
+                raise RuntimeError('请先安装nodejs。 https://nodejs.org/zh-cn/')
 
     def set_session(self, session):
         self._session = session
@@ -130,6 +139,10 @@ class CrawlerBase():
     def get_html(self, url):
         response = self.send_request("GET", url)
         return response.text
+
+    def get_soup(self, url):
+        html = self.get_html(url)
+        return BeautifulSoup(html, 'html.parser')
 
     def get_json(self, url):
         response = self.send_request("GET", url)
