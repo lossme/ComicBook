@@ -34,10 +34,12 @@ curl "http://127.0.0.1:8000/api/bilibili/24742"
     "chapters": [
         {
             "chapter_number": 1,
+            "source_url": "https://manga.bilibili.com/m/mc24742/218087",
             "title": "ROMANCE DAWN冒险的序幕"
         },
         {
             "chapter_number": 2,
+            "source_url": "https://manga.bilibili.com/m/mc24742/218093",
             "title": "戴草帽的路飞"
         }
     ],
@@ -89,12 +91,12 @@ curl "http://127.0.0.1:8000/api/bilibili/24742/1?force_refresh=true"
 
 ### 1.3 搜索接口
 
-`GET /api/<site>?name={name}&limit={limit}`
+`GET /api/<site>?name={name}&page={page}`
 
 请求示例
 
 ```sh
-curl "http://127.0.0.1:8000/api/qq?name=海贼&limit=2"
+curl "http://127.0.0.1:8000/api/qq?name=海贼&page=1"
 ```
 
 ```json

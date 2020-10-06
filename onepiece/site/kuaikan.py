@@ -66,9 +66,10 @@ class KuaiKanCrawler(CrawlerBase):
             chapter_number = idx
             title = c['title']
             cid = c['id']
+            url = self.get_chapter_soure_url(cid)
             citem_dict[chapter_number] = Citem(
                 chapter_number=chapter_number,
-                cid=cid,
+                source_url=url,
                 title=title)
 
         return ComicBookItem(name=name,
@@ -84,8 +85,7 @@ class KuaiKanCrawler(CrawlerBase):
         return urljoin(self.SITE_INDEX, "/web/comic/{}/".format(cid))
 
     def get_chapter_item(self, citem):
-        url = self.get_chapter_soure_url(citem.cid)
-        html = self.get_html(url)
+        html = self.get_html(citem.source_url)
         data = self.parse_api_data_from_page(html)
         if not data:
             raise ChapterNotFound.from_template(site=self.SITE,
@@ -93,13 +93,14 @@ class KuaiKanCrawler(CrawlerBase):
                                                 chapter_number=citem.chapter_number,
                                                 source_url=self.source_url)
         image_urls = [i['url'] for i in data['comicInfo']['comicImages']]
-        source_url = self.get_chapter_soure_url(cid=citem.cid)
         return ChapterItem(chapter_number=citem.chapter_number,
                            title=citem.title,
                            image_urls=image_urls,
-                           source_url=source_url)
+                           source_url=citem.source_url)
 
-    def search(self, name):
+    def search(self, name, page=1, size=None):
+        if page != 1:
+            return []
         url = urljoin(self.SITE_INDEX, "/s/result/{}/".format(name))
         html = self.get_html(url)
         data = self.parse_api_data_from_page(html)

@@ -69,7 +69,7 @@ class ManhuaguiCrawler(CrawlerBase):
             citem_dict[idx] = Citem(
                 chapter_number=idx,
                 title=title,
-                url=full_url)
+                source_url=full_url)
 
         return ComicBookItem(name=name,
                              desc=desc,
@@ -81,8 +81,7 @@ class ManhuaguiCrawler(CrawlerBase):
                              citem_dict=citem_dict)
 
     def get_chapter_item(self, citem):
-        url = citem.url
-        html = self.get_html(url)
+        html = self.get_html(citem.source_url)
         data = self.extract_mhg_js(html)
         image_urls = []
         for i in data['files']:
@@ -274,8 +273,8 @@ class ManhuaguiCrawler(CrawlerBase):
         imgData = re.findall(r"SMH\.imgData\((.*?)\)\.preInit\(\)\;", comic)[0]
         return json.loads(imgData)
 
-    def search(self, name):
-        url = urljoin(self.SITE_INDEX, '/s/{}.html'.format(name))
+    def search(self, name, page=1, size=None):
+        url = urljoin(self.SITE_INDEX, '/s/{}_p{}.html'.format(name, page))
         html = self.get_html(url)
         soup = BeautifulSoup(html, 'html.parser')
         li_list = soup.find_all('li', {'class': 'cf'})

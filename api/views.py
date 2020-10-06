@@ -55,11 +55,12 @@ def comicbook_update_check(comicbook, cache_time=CACHE_TIME, force_refresh=False
 @app.route("/<site>")
 def search(site):
     name = request.args.get('name')
-    limit = request.args.get('limit', default=20, type=int)
+    page = request.args.get('page', default=1, type=int)
+    limit = request.args.get('limit', default=None, type=int)
     if not name:
         abort(400)
     comicbook = get_comicbook_from_cache(site, comicid=None)
-    search_result_item_list = comicbook.search(site=site, name=name, limit=limit)
+    search_result_item_list = comicbook.search(site=site, name=name, page=page, limit=limit)
     return jsonify(
         {
             "search_result": [item.to_dict() for item in search_result_item_list]

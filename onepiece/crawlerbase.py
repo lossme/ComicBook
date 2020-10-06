@@ -32,7 +32,11 @@ class ComicBookItem():
         self.chapters = []
         for citem in sorted(citem_dict.values(), key=lambda x: x.chapter_number):
             self.chapters.append(
-                {"title": citem.title, "chapter_number": citem.chapter_number}
+                {
+                    "title": citem.title,
+                    "chapter_number": citem.chapter_number,
+                    "source_url": citem.source_url,
+                }
             )
 
     def to_dict(self):
@@ -41,11 +45,16 @@ class ComicBookItem():
 
 class Citem():
 
-    def __init__(self, chapter_number, title, **kwargs):
-        self.chapter_number = chapter_number
-        self.title = title
+    def __init__(self, chapter_number, title, source_url, **kwargs):
+        self._kwargs = kwargs
+        self._kwargs['chapter_number'] = chapter_number
+        self._kwargs['title'] = title
+        self._kwargs['source_url'] = source_url
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+    def to_dict(self):
+        return self._kwargs
 
 
 class ChapterItem():
@@ -138,7 +147,7 @@ class CrawlerBase():
         """
         raise NotImplementedError
 
-    def search(self, name):
+    def search(self, name, page=1, size=None):
         """
         :return SearchResultItem list:
         """

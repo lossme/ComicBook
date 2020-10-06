@@ -1,7 +1,10 @@
+import logging
+
 from flask import Flask, jsonify
 
 
 def create_app():
+    init_logger()
     app = Flask(__name__)
     app.config['JSON_AS_ASCII'] = False
     app.url_map.strict_slashes = False
@@ -9,8 +12,21 @@ def create_app():
     from .views import app as main_app
     app.register_blueprint(main_app)
     app.add_url_rule('/', 'index', index)
-
     return app
+
+
+def init_logger(level=None):
+    level = level or logging.INFO
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        "%(asctime)s %(name)s [%(levelname)s] %(message)s",
+        datefmt='%Y/%m/%d %H:%M:%S'
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(level)
+    return logger
 
 
 def index():

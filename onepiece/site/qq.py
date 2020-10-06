@@ -88,7 +88,7 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
             citem_dict[chapter_number] = Citem(
                 chapter_number=chapter_number,
                 title=title,
-                chapter_page_url=chapter_page_url)
+                source_url=chapter_page_url)
         comicbook_item = ComicBookItem(name=name,
                                        desc=desc,
                                        tag=tag,
@@ -100,9 +100,8 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
         return comicbook_item
 
     def get_chapter_item(self, citem):
-        chapter_page_url = citem.chapter_page_url
-        chapter_page_html = self.get_html(chapter_page_url)
-        chapter_item = self.parser_chapter_page(chapter_page_html, source_url=chapter_page_url)
+        chapter_page_html = self.get_html(citem.source_url)
+        chapter_item = self.parser_chapter_page(chapter_page_html, source_url=citem.source_url)
         return chapter_item
 
     @classmethod
@@ -128,12 +127,12 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
                            image_urls=image_urls,
                            source_url=source_url)
 
-    def search(self, name):
-        url = "https://ac.qq.com/Comic/searchList/search/{}".format(name)
+    def search(self, name, page=1, size=None):
+        url = "https://ac.qq.com/Comic/searchList/search/{}/page/{}"\
+            .format(name, page)
         html = self.get_html(url)
         if self.SEARCH_NOT_FOUNT_PATTERN.search(html):
             return []
-
         rv = []
         ul_tag = self.SEARCH_UL_PATTERN.search(html).group(1)
         for li_tag in self.SEARCH_LI_PATTERN.findall(ul_tag):

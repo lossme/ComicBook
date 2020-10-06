@@ -117,10 +117,13 @@ class BilibiliCrawler(CrawlerBase):
         citem_dict = {}
         for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
             chapter_number = idx
+            cid = item['id']
             title = item['title'].strip() or str(chapter_number)
+            url = self.get_chapter_soure_url(cid)
             citem_dict[chapter_number] = Citem(
                 chapter_number=chapter_number,
-                cid=item["id"],
+                source_url=url,
+                cid=cid,
                 title=title)
 
         return ComicBookItem(name=name,
@@ -142,16 +145,18 @@ class BilibiliCrawler(CrawlerBase):
         response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
         data = response.json()
         image_urls = ["{}?token={}".format(i["url"], i["token"]) for i in data["data"]]
-        source_url = self.get_chapter_soure_url(cid=citem.cid)
         return ChapterItem(chapter_number=citem.chapter_number,
                            title=citem.title,
                            image_urls=image_urls,
-                           source_url=source_url)
+                           source_url=citem.source_url)
 
-    def search(self, name):
+    def search(self, name, page=1, size=None):
+        size = size or 20
+        if page > 50:
+            return []
         url = self.SEARCH_API
         response = self.send_request(
-            "POST", url, data={"key_word": name, "page_num": 1, "page_size": 20})
+            "POST", url, data={"key_word": name, "page_num": page, "page_size": size})
         data = response.json()
         rv = []
         for result in data["data"]["list"]:

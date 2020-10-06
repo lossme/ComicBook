@@ -89,7 +89,7 @@ class U17Crawler(CrawlerBase):
             citem_dict[chapter_number] = Citem(
                 chapter_number=chapter_number,
                 title=title,
-                chapter_url=chapter_url,
+                source_url=chapter_url,
                 chapter_id=chapter_id)
         return ComicBookItem(name=name,
                              desc=desc,
@@ -102,7 +102,6 @@ class U17Crawler(CrawlerBase):
 
     def get_chapter_item(self, citem):
         chapter_id = citem.chapter_id
-        chapter_url = citem.chapter_url
         chapter_api_url = self.CHAPTER_API.format(chapter_id=chapter_id)
         data = self.get_json(chapter_api_url)
         title = data["chapter"]["name"]
@@ -112,10 +111,11 @@ class U17Crawler(CrawlerBase):
         return ChapterItem(chapter_number=citem.chapter_number,
                            title=title,
                            image_urls=image_urls,
-                           source_url=chapter_url)
+                           source_url=citem.source_url)
 
-    def search(self, name):
-        url = "http://so.u17.com/all/{}/m0_p1.html".format(urllib.parse.quote(name))
+    def search(self, name, page=1, size=None):
+        url = "http://so.u17.com/all/{}/m0_p{}.html"\
+            .format(urllib.parse.quote(name), page)
         html = self.get_html(url)
         ul_tag = self.SEARCH_UL_PATTERN.search(html).group(1)
         rv = []
