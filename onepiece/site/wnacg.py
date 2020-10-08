@@ -22,7 +22,7 @@ class WnacgCrawler(CrawlerBase):
     LOGIN_URL = SITE_INDEX
 
     DEFAULT_COMICID = 106789
-    DEFAULT_COMIC_NAME = '[过期米线线喵] 兔子女僕'
+    DEFAULT_SEARCH_NAME = '过期米线线喵'
     REQUIRE_JAVASCRIPT = True
 
     def __init__(self, comicid=None):

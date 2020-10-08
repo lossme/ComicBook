@@ -27,7 +27,7 @@ class ManhuaguiCrawler(CrawlerBase):
     REQUIRE_JAVASCRIPT = True
 
     DEFAULT_COMICID = 19430
-    DEFAULT_COMIC_NAME = '鬼灭之刃'
+    DEFAULT_SEARCH_NAME = '鬼灭之刃'
 
     def __init__(self, comicid=None):
         super().__init__()

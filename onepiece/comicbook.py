@@ -67,7 +67,7 @@ class ComicBook():
         crawler_cls = cls.CRAWLER_CLS_MAP[site]
         crawler = crawler_cls()
         if name is None:
-            name = crawler.DEFAULT_COMIC_NAME
+            name = crawler.DEFAULT_SEARCH_NAME
         return crawler.search(name, page=page, size=limit)
 
     def to_dict(self):

@@ -33,7 +33,7 @@ class BilibiliCrawler(CrawlerBase):
     LOGIN_URL = SITE_INDEX
 
     DEFAULT_COMICID = 'mc24742'
-    DEFAULT_COMIC_NAME = '海贼王'
+    DEFAULT_SEARCH_NAME = '海贼王'
 
     def __init__(self, comicid=None):
         super().__init__()

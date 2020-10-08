@@ -42,7 +42,7 @@ class U17Crawler(CrawlerBase):
     LOGIN_URL = "https://passport.u17.com/member_v2/login.php?url=https://www.u17.com/"
 
     DEFAULT_COMICID = 195
-    DEFAULT_COMIC_NAME = '雏蜂'
+    DEFAULT_SEARCH_NAME = '雏蜂'
 
     def __init__(self, comicid=None):
         super().__init__()

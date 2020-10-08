@@ -22,7 +22,7 @@ class C18comicCrawler(CrawlerBase):
     LOGIN_URL = SITE_INDEX
 
     DEFAULT_COMICID = 201118
-    DEFAULT_COMIC_NAME = '騎馬的女孩好想被她騎!'
+    DEFAULT_SEARCH_NAME = '騎馬的女孩好想被她騎'
 
     def __init__(self, comicid=None):
         self.comicid = comicid

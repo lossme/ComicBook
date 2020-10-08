@@ -34,7 +34,7 @@ def index():
     example = []
     for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
         example.append('/api/{site}?name={name}'.format(
-            site=site, name=crawler.DEFAULT_COMIC_NAME))
+            site=site, name=crawler.DEFAULT_SEARCH_NAME))
         example.append('/api/{site}/{comicid}'.format(
             site=site, comicid=crawler.DEFAULT_COMICID))
         example.append('/api/{site}/{comicid}/1'.format(

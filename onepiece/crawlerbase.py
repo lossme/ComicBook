@@ -94,7 +94,7 @@ class CrawlerBase():
     SITE_INDEX = ""
 
     DEFAULT_COMICID = None
-    DEFAULT_COMIC_NAME = None
+    DEFAULT_SEARCH_NAME = ''
 
     DRIVER_PATH = None
     DRIVER_TYPE = None

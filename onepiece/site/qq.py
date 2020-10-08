@@ -39,7 +39,7 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
 
     CHAPTER_JSON_STR_PATTERN = re.compile(r'("chapter":{.*)')
     DEFAULT_COMICID = 505430
-    DEFAULT_COMIC_NAME = '海贼王'
+    DEFAULT_SEARCH_NAME = '海贼王'
 
     def __init__(self, comicid=None):
         super().__init__()

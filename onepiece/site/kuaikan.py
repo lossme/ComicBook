@@ -23,7 +23,7 @@ class KuaiKanCrawler(CrawlerBase):
 
     LOGIN_URL = urljoin(SITE_INDEX, "/webs/loginh?redirect={}".format(SITE_INDEX))
     DEFAULT_COMICID = 1338
-    DEFAULT_COMIC_NAME = '海贼王'
+    DEFAULT_SEARCH_NAME = '海贼王'
 
     def __init__(self, comicid=None):
         super().__init__()
