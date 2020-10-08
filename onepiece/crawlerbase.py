@@ -179,17 +179,23 @@ class CrawlerBase():
         driver.get(login_url)
         while True:
             logger.info("等待登录")
-            for cookie in driver.get_cookies():
+            time.sleep(3)
+            try:
+                cookies = driver.get_cookies()
+            except Exception:
+                logger.exception('unknow error. driver quit.')
+                driver.quit()
+                return
+            for cookie in cookies:
                 self.get_session().cookies.set(name=cookie["name"],
                                                value=cookie["value"],
                                                path=cookie["path"],
                                                domain=cookie["domain"],
                                                secure=cookie["secure"])
             if check_login_status_func():
-                driver.close()
                 logger.info("登录成功")
+                driver.quit()
                 break
-            time.sleep(5)
 
     def create_driver(self):
         assert self.DRIVER_PATH, "必须设置 DRIVER_PATH"
