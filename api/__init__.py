@@ -33,14 +33,15 @@ def index():
     from onepiece.comicbook import ComicBook
     examples = defaultdict(list)
     for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
-        examples[site].append('/api/{site}?name={name}&page={page}'.format(
+        examples[site].append('/api/{site}/search?name={name}&page={page}'.format(
             site=site, name=crawler.DEFAULT_SEARCH_NAME, page=1))
 
-        examples[site].append('/api/{site}/{comicid}'.format(
+        examples[site].append('/api/{site}/comic/{comicid}'.format(
             site=site, comicid=crawler.DEFAULT_COMICID))
 
-        examples[site].append('/api/{site}/{comicid}/1'.format(
+        examples[site].append('/api/{site}/comic/{comicid}/1'.format(
             site=site, comicid=crawler.DEFAULT_COMICID))
+
     return jsonify(
         {
             "api_status": "ok",

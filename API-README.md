@@ -25,7 +25,7 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
 请求示例
 ```sh
-curl "http://127.0.0.1:8000/api/bilibili/24742"
+curl "http://127.0.0.1:8000/api/comic/bilibili/comic/24742"
 ```
 
 ```json
@@ -55,18 +55,18 @@ curl "http://127.0.0.1:8000/api/bilibili/24742"
 
 刷新漫画数据（漫画数据默认缓存10分钟）
 ```sh
-curl "http://127.0.0.1:8000/api/bilibili/24742?force_refresh=true"
+curl "http://127.0.0.1:8000/api/bilibili/comic/24742?force_refresh=true"
 ```
 
 ------
 
 ### 1.2 获取章节详情
 
-`GET /api/<site>/<comicid>/<chapter_number>`
+`GET /api/<site>/comic/<comicid>/<chapter_number>`
 
 请求示例
 ```sh
-curl "http://127.0.0.1:8000/api/bilibili/24742/1"
+curl "http://127.0.0.1:8000/api/bilibili/comic/24742/1"
 ```
 
 ```json
@@ -84,19 +84,19 @@ curl "http://127.0.0.1:8000/api/bilibili/24742/1"
 
 获取章节图片，并刷新图片链接
 ```sh
-curl "http://127.0.0.1:8000/api/bilibili/24742/1?force_refresh=true"
+curl "http://127.0.0.1:8000/api/bilibili/comic/24742/1?force_refresh=true"
 ```
 
 ------
 
 ### 1.3 搜索接口
 
-`GET /api/<site>?name={name}&page={page}`
+`GET /api/<site>/search?name={name}&page={page}`
 
 请求示例
 
 ```sh
-curl "http://127.0.0.1:8000/api/qq?name=海贼&page=1"
+curl "http://127.0.0.1:8000/api/qq/search?name=海贼&page=1"
 ```
 
 ```json

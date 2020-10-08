@@ -52,7 +52,7 @@ def comicbook_update_check(comicbook, cache_time=CACHE_TIME, force_refresh=False
     return comicbook
 
 
-@app.route("/<site>")
+@app.route("/<site>/search")
 def search(site):
     name = request.args.get('name')
     page = request.args.get('page', default=1, type=int)
@@ -68,7 +68,7 @@ def search(site):
     )
 
 
-@app.route("/<site>/<comicid>")
+@app.route("/<site>/comic/<comicid>")
 def get_comicbook_info(site, comicid):
     force_refresh = request.args.get('force_refresh') or ''
     force_refresh = force_refresh.lower() == 'true'
@@ -77,7 +77,7 @@ def get_comicbook_info(site, comicid):
     return jsonify(comicbook.to_dict())
 
 
-@app.route("/<site>/<comicid>/<int:chapter_number>")
+@app.route("/<site>/comic/<comicid>/<int:chapter_number>")
 def get_chapter_info(site, comicid, chapter_number):
     force_refresh = request.args.get('force_refresh') or ''
     force_refresh = force_refresh.lower() == 'true'
