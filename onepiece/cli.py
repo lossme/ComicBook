@@ -153,9 +153,9 @@ def main():
         comicbook.crawler.load_session(session_path)
 
     if args.name:
-        result = comicbook.search(site=args.site, name=args.name, limit=10)
+        result = comicbook.search(name=args.name, limit=10)
         for item in result:
-            print("name={}\tcomicid={}\tsource_url={}".format(item.name, item.comicid, item.source_url))
+            print("comicid={}\tname={}\tsource_url={}".format(item.comicid, item.name, item.source_url))
         comicid = input("请输入要下载的comicid: ")
         comicbook.crawler.comicid = comicid
 

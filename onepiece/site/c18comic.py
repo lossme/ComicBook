@@ -2,8 +2,6 @@ import re
 import logging
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
-
 from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
@@ -36,8 +34,7 @@ class C18comicCrawler(CrawlerBase):
         return urljoin(self.SITE_INDEX, "/album/{}/".format(comicid))
 
     def get_comicbook_item(self):
-        html = self.get_html(self.source_url)
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = self.get_soup(self.source_url)
         name = soup.find('div', {'itemprop': 'name'}).text.strip()
         author = ''
         desc = ''
@@ -82,8 +79,7 @@ class C18comicCrawler(CrawlerBase):
                              citem_dict=citem_dict)
 
     def get_chapter_item(self, citem):
-        html = self.get_html(citem.source_url)
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = self.get_soup(citem.source_url)
         img_list = soup.find('div', 'row thumb-overlay-albums')\
             .find_all('img', {'id': re.compile(r'album_photo_\d+')})
         image_urls = []
@@ -102,10 +98,26 @@ class C18comicCrawler(CrawlerBase):
             self.SITE_INDEX,
             '/search/photos?search_query={}&page={}'.format(name, page)
         )
-        html = self.get_html(url)
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = self.get_soup(url)
         rv = []
         for div in soup.find_all('div', {'class': 'thumb-overlay'}):
+            comicid = div.a.get('id').split('_')[-1]
+            name = div.img.get('alt')
+            cover_image_url = div.img.get('data-original')
+            source_url = self.get_source_url(comicid)
+            search_result_item = SearchResultItem(site=self.SITE,
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
+            rv.append(search_result_item)
+        return rv
+
+    def latest(self, page=1):
+        url = 'https://18comic.org/albums?o=mr&page=%s' % page
+        soup = self.get_soup(url)
+        rv = []
+        for div in soup.find_all('div', {'class': 'thumb-overlay-albums'}):
             comicid = div.a.get('id').split('_')[-1]
             name = div.img.get('alt')
             cover_image_url = div.img.get('data-original')

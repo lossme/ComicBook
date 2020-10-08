@@ -166,6 +166,12 @@ class CrawlerBase():
         """
         return []
 
+    def latest(self, page=1):
+        """
+        :return SearchResultItem list:
+        """
+        return []
+
     def login(self):
         pass
 

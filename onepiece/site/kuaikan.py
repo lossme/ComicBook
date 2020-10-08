@@ -114,6 +114,24 @@ class KuaiKanCrawler(CrawlerBase):
             rv.append(search_result_item)
         return rv
 
+    def latest(self, page=1):
+        pos = page - 1
+        url = 'https://www.kuaikanmanhua.com/v2/pweb/daily/topics?pos=%s' % pos
+        data = self.get_json(url)
+        rv = []
+        for i in data['data']['topics']:
+            comicid = i['id']
+            name = i['title']
+            cover_image_url = i['cover_image_url']
+            source_url = self.get_source_url(comicid)
+            search_result_item = SearchResultItem(site=self.SITE,
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
+            rv.append(search_result_item)
+        return rv
+
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,
                             check_login_status_func=self.check_login_status)

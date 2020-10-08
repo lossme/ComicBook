@@ -149,6 +149,24 @@ target="_blank">.*?data-original=\'(?P<cover_image_url>.*?)\'""", re.S)
             rv.append(search_result_item)
         return rv
 
+    def latest(self, page=1):
+        url = 'https://ac.qq.com/Comic/all/search/time/page/%s' % page
+        soup = self.get_soup(url)
+        rv = []
+        for li in soup.find_all('li', {'class': 'ret-search-item clearfix'}):
+            href = li.a.get('href')
+            comicid = href.strip('/').split('/')[-1]
+            name = li.a.get('title')
+            cover_image_url = li.a.img.get('data-original')
+            source_url = self.get_source_url(comicid)
+            search_result_item = SearchResultItem(site=self.SITE,
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
+            rv.append(search_result_item)
+        return rv
+
     def login(self):
         self.selenium_login(
             login_url=self.LOGIN_URL,

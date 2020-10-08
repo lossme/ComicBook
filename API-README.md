@@ -18,14 +18,15 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 - [1.1 获取概要信息](#11)
 - [1.2 获取章节详情](#12)
 - [1.3 搜索接口](#13)
+- [1.4 获取最近更新](#14)
 
 ### 1.1 获取概要信息
 
-`GET /api/<site>/<comicid>`
+`GET /api/<site>/comic/<comicid>`
 
 请求示例
 ```sh
-curl "http://127.0.0.1:8000/api/comic/bilibili/comic/24742"
+curl "http://127.0.0.1:8000/api/bilibili/comic/24742"
 ```
 
 ```json
@@ -102,6 +103,40 @@ curl "http://127.0.0.1:8000/api/qq/search?name=海贼&page=1"
 ```json
 {
     "search_result":[
+        {
+            "comicid":"505430",
+            "cover_image_url":"https://manhua.qpic.cn/vertical/0/17_16_48_0e28c8aabf48e91d395689b5f6a7689f.jpg/420",
+            "name":"航海王",
+            "site":"qq",
+            "source_url":"https://ac.qq.com/Comic/ComicInfo/id/505430"
+        },
+        {
+            "comicid":"531616",
+            "cover_image_url":"https://manhua.qpic.cn/vertical/0/17_17_06_cb4ba7f7af603a3380bb1e5ed415804b.jpg/420",
+            "name":"航海王（番外篇）",
+            "site":"qq",
+            "source_url":"https://ac.qq.com/Comic/ComicInfo/id/531616"
+        }
+    ]
+}
+```
+
+------
+
+### 1.4 获取最近更新
+
+
+`GET /api/<site>/latest?page={page}`
+
+请求示例
+
+```sh
+curl "http://127.0.0.1:8000/api/qq/latest?page=1"
+```
+
+```json
+{
+    "latest":[
         {
             "comicid":"505430",
             "cover_image_url":"https://manhua.qpic.cn/vertical/0/17_16_48_0e28c8aabf48e91d395689b5f6a7689f.jpg/420",

@@ -60,15 +60,11 @@ class ComicBook():
         comicbook = cls(comicbook_crawler=crawler)
         return comicbook
 
-    @classmethod
-    def search(cls, site, name=None, page=1, limit=None):
-        if site not in cls.CRAWLER_CLS_MAP:
-            raise SiteNotSupport("site={} 暂不支持".format(site))
-        crawler_cls = cls.CRAWLER_CLS_MAP[site]
-        crawler = crawler_cls()
-        if name is None:
-            name = crawler.DEFAULT_SEARCH_NAME
-        return crawler.search(name, page=page, size=limit)
+    def search(self, name=None, page=1, limit=None):
+        return self.crawler.search(name, page=page, size=limit)
+
+    def latest(self, page=1):
+        return self.crawler.latest(page=page)
 
     def to_dict(self):
         return self.comicbook_item.to_dict()

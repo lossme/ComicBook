@@ -1,5 +1,6 @@
 import re
 import urllib.parse
+import logging
 
 from ..crawlerbase import (
     CrawlerBase,
@@ -9,6 +10,8 @@ from ..crawlerbase import (
     SearchResultItem
 )
 from ..exceptions import ComicbookNotFound
+
+logger = logging.getLogger(__name__)
 
 
 class U17Crawler(CrawlerBase):
@@ -122,6 +125,36 @@ class U17Crawler(CrawlerBase):
         for li_tag in self.SEARCH_LI_TAG_PATTERN.findall(ul_tag):
             cover_image_url = self.SEARCH_COVER_IMAGE_URL_PATTERN.search(li_tag).group(1)
             comicid, name = self.SEARCH_DATA_PATTERN.search(li_tag).groups()
+            source_url = self.get_source_url(comicid)
+            item = SearchResultItem(site=self.SITE,
+                                    comicid=comicid,
+                                    name=name,
+                                    cover_image_url=cover_image_url,
+                                    source_url=source_url)
+            rv.append(item)
+        return rv
+
+    def latest(self, page=1):
+        url = 'https://www.u17.com/comic/ajax.php?mod=comic_list&act=comic_list_new_fun&a=get_comic_list'
+        params = {
+            'data[order]': 1,
+            'data[page_num]': page,
+            'data[group_id]': 'no',
+            'data[theme_id]': 'no',
+            'data[is_vip]': 'no',
+            'data[accredit]': 'no',
+            'data[color]': 'no',
+            'data[comic_type]': 'no',
+            'data[series_status]': 'no',
+            'data[read_mode]': 'no'
+        }
+        response = self.send_request('POST', url, data=params)
+        data = response.json()
+        rv = []
+        for i in data['comic_list']:
+            cover_image_url = i['cover']
+            comicid = i['comic_id']
+            name = i['name']
             source_url = self.get_source_url(comicid)
             item = SearchResultItem(site=self.SITE,
                                     comicid=comicid,

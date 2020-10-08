@@ -105,6 +105,25 @@ class WnacgCrawler(CrawlerBase):
             rv.append(search_result_item)
         return rv
 
+    def latest(self, page=1):
+        url = 'http://www.wnacg.org/albums-index-page-%s.html' % page
+        soup = self.get_soup(url)
+        rv = []
+        for li in soup.find('ul', {'class': 'cc'}).find_all('li'):
+            href = li.a.get('href')
+            name = li.a.get('title')
+            name = re.sub(r'<[^>]+>', '', name, re.S)
+            comicid = href.rsplit('.', 1)[0].split('-')[-1]
+            cover_image_url = 'http:' + li.img.get('data-original')
+            source_url = self.get_source_url(comicid)
+            search_result_item = SearchResultItem(site=self.SITE,
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
+            rv.append(search_result_item)
+        return rv
+
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,
                             check_login_status_func=self.check_login_status)

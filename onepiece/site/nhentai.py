@@ -92,6 +92,24 @@ class NhentaiCrawler(CrawlerBase):
             rv.append(search_result_item)
         return rv
 
+    def latest(self, page=1):
+        url = urljoin(self.SITE_INDEX, '/?page=%s' % (page))
+        soup = self.get_soup(url)
+        rv = []
+        for div in soup.find_all('div', {'class': 'gallery'}):
+            href = div.a.get('href')
+            name = div.find('div', {'class': 'caption'}).text
+            comicid = href.strip('/').split('/')[-1]
+            cover_image_url = div.img.get('data-src')
+            source_url = self.get_source_url(comicid)
+            search_result_item = SearchResultItem(site=self.SITE,
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
+            rv.append(search_result_item)
+        return rv
+
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,
                             check_login_status_func=self.check_login_status)

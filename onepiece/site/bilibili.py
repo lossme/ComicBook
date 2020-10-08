@@ -5,7 +5,10 @@ import os
 import zipfile
 import re
 import logging
+import datetime
+import math
 from urllib.parse import urljoin
+
 
 from ..crawlerbase import (
     CrawlerBase,
@@ -166,6 +169,47 @@ class BilibiliCrawler(CrawlerBase):
 
             # or square_cover or vertical_cover
             cover_image_url = result["horizontal_cover"]
+            source_url = self.get_source_url(comicid)
+            search_result_item = SearchResultItem(site=self.SITE,
+                                                  comicid=comicid,
+                                                  name=name,
+                                                  cover_image_url=cover_image_url,
+                                                  source_url=source_url)
+            rv.append(search_result_item)
+        return rv
+
+    def latest(self, page=1):
+        url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/GetDailyPush?device=pc&platform=web'
+        today = datetime.date.today()
+        date = (today - datetime.timedelta(page)).strftime('%Y-%m-%d')
+        page_size = 10
+        page_num = 1
+        params = {
+            'date': date,
+            'page_num': page_num,
+            'page_size': page_size
+        }
+        response = self.send_request("POST", url, data=params)
+        data = response.json()
+        total = data['data']['total']
+        total_page = math.ceil(total / page_size)
+        data_list = data["data"]["list"]
+        for page_num in range(2, total_page + 1):
+            params = {
+                'date': date,
+                'page_num': page_num,
+                'page_size': page_size
+            }
+            response = self.send_request("POST", url, data=params)
+            data = response.json()
+            data_list.extend(data["data"]["list"])
+        rv = []
+        for result in data_list:
+            comicid = result["comic_id"]
+            title = result["title"]
+            name = re.sub(r'<[^>]+>', '', title, re.S)
+            # or square_cover or vertical_cover
+            cover_image_url = result["vertical_cover"]
             source_url = self.get_source_url(comicid)
             search_result_item = SearchResultItem(site=self.SITE,
                                                   comicid=comicid,

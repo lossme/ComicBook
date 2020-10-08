@@ -52,22 +52,6 @@ def comicbook_update_check(comicbook, cache_time=CACHE_TIME, force_refresh=False
     return comicbook
 
 
-@app.route("/<site>/search")
-def search(site):
-    name = request.args.get('name')
-    page = request.args.get('page', default=1, type=int)
-    limit = request.args.get('limit', default=None, type=int)
-    if not name:
-        abort(400)
-    comicbook = get_comicbook_from_cache(site, comicid=None)
-    search_result_item_list = comicbook.search(site=site, name=name, page=page, limit=limit)
-    return jsonify(
-        {
-            "search_result": [item.to_dict() for item in search_result_item_list]
-        }
-    )
-
-
 @app.route("/<site>/comic/<comicid>")
 def get_comicbook_info(site, comicid):
     force_refresh = request.args.get('force_refresh') or ''
@@ -85,3 +69,31 @@ def get_chapter_info(site, comicid, chapter_number):
     comicbook_update_check(comicbook, force_refresh=force_refresh)
     chapter = comicbook.Chapter(chapter_number, force_refresh=force_refresh)
     return jsonify(chapter.to_dict())
+
+
+@app.route("/<site>/search")
+def search(site):
+    name = request.args.get('name')
+    page = request.args.get('page', default=1, type=int)
+    limit = request.args.get('limit', default=None, type=int)
+    if not name:
+        abort(400)
+    comicbook = get_comicbook_from_cache(site, comicid=None)
+    search_result_item_list = comicbook.search(name=name, page=page, limit=limit)
+    return jsonify(
+        {
+            "search_result": [item.to_dict() for item in search_result_item_list]
+        }
+    )
+
+
+@app.route("/<site>/latest")
+def latest(site):
+    page = request.args.get('page', default=1, type=int)
+    comicbook = get_comicbook_from_cache(site, comicid=None)
+    latest = comicbook.latest(page=page)
+    return jsonify(
+        {
+            "latest": [item.to_dict() for item in latest]
+        }
+    )

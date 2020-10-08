@@ -289,6 +289,25 @@ class ManhuaguiCrawler(CrawlerBase):
             rv.append(search_result_item)
         return rv
 
+    def latest(self, page=1):
+        rv = []
+        url = 'https://www.manhuagui.com/update/'
+        soup = self.get_soup(url)
+        for div in soup.find_all('div', {'class': 'latest-list'})[page - 1:page]:
+            for li in div.find_all('li'):
+                name = li.img.get('alt')
+                cover_image_url = li.img.get('src')
+                href = li.a.get('href')
+                comicid = href.split('/')[2]
+                source_url = self.get_source_url(comicid)
+                search_result_item = SearchResultItem(site=self.SITE,
+                                                      comicid=comicid,
+                                                      name=name,
+                                                      cover_image_url=cover_image_url,
+                                                      source_url=source_url)
+                rv.append(search_result_item)
+        return rv
+
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,
                             check_login_status_func=self.check_login_status)
