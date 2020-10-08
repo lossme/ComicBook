@@ -1,5 +1,5 @@
 import logging
-
+from collections import defaultdict
 from flask import Flask, jsonify
 
 
@@ -31,17 +31,19 @@ def init_logger(level=None):
 
 def index():
     from onepiece.comicbook import ComicBook
-    example = []
+    examples = defaultdict(list)
     for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
-        example.append('/api/{site}?name={name}'.format(
-            site=site, name=crawler.DEFAULT_SEARCH_NAME))
-        example.append('/api/{site}/{comicid}'.format(
+        examples[site].append('/api/{site}?name={name}&page={page}'.format(
+            site=site, name=crawler.DEFAULT_SEARCH_NAME, page=1))
+
+        examples[site].append('/api/{site}/{comicid}'.format(
             site=site, comicid=crawler.DEFAULT_COMICID))
-        example.append('/api/{site}/{comicid}/1'.format(
+
+        examples[site].append('/api/{site}/{comicid}/1'.format(
             site=site, comicid=crawler.DEFAULT_COMICID))
     return jsonify(
         {
             "api_status": "ok",
-            "example": example
+            "examples": examples
         }
     )
