@@ -86,7 +86,7 @@ class ManhuaguiCrawler(CrawlerBase):
         return ChapterItem(chapter_number=citem.chapter_number,
                            title=citem.title,
                            image_urls=image_urls,
-                           source_url=citem.url)
+                           source_url=citem.source_url)
 
     def extract_mhg_js(self, html):
         js = '(function' + re.findall('function(.*?)</script>', html)[0]

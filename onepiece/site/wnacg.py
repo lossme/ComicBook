@@ -43,7 +43,7 @@ class WnacgCrawler(CrawlerBase):
         desc = soup.find('div', {'class': 'asTBcell uwconn'}).p.text
         tag = ''.join([i.text for i in
                        soup.find('div', {'class': 'addtags'}).find_all('a', {'class': 'tagshow'})])
-        cover_image_url = "https:" + soup.find('div', {'class': 'asTBcell uwthumb'}).img.get('src')
+        cover_image_url = "https:" + soup.find('div', {'class': 'asTBcell uwthumb'}).img.get('data-original')
         citem_dict = {}
         chapter_number = 1
         url = urljoin(self.SITE_INDEX, '/photos-slide-aid-{}.html'.format(self.comicid))
