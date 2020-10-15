@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 
 class ComicBookItem():
     FIELDS = ["name", "desc", "tag", "cover_image_url", "author",
-              "source_url", "source_name", "crawl_time", "chapters"]
+              "source_url", "source_name", "crawl_time", "chapters", "ext_chapters", "volumes"]
 
     def __init__(self, name=None, desc=None, tag=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
-                 crawl_time=None, citem_dict=None):
+                 crawl_time=None):
         self.name = name or ""
         self.desc = desc or ""
         self.tag = tag or ""
@@ -31,28 +31,54 @@ class ComicBookItem():
         self.crawl_time = crawl_time or datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # {1: Citem(chapter_number=1, title="xx", cid="xxx"}
-        self.citem_dict = citem_dict or {}
-        self.chapters = []
-        for citem in sorted(citem_dict.values(), key=lambda x: x.chapter_number):
-            self.chapters.append(
+        self.citems = {}
+        self.ext_citems = {}
+        self.volume_citems = {}
+
+    def to_dict(self):
+        return {field: getattr(self, field) for field in self.FIELDS}
+
+    def add_chapter(self, chapter_number, title, source_url, **kwargs):
+        self.citems[chapter_number] = Citem(
+            chapter_number=chapter_number, title=title, source_url=source_url, **kwargs)
+
+    def add_ext_chapter(self, chapter_number, title, source_url, **kwargs):
+        self.ext_citems[chapter_number] = Citem(
+            chapter_number=chapter_number, title=title, source_url=source_url, **kwargs)
+
+    def add_volume(self, chapter_number, title, source_url, **kwargs):
+        self.volume_citems[chapter_number] = Citem(
+            chapter_number=chapter_number, title=title, source_url=source_url, **kwargs)
+
+    def citems_to_list(self, citems):
+        rv = []
+        for citem in sorted(citems.values(), key=lambda x: x.chapter_number):
+            rv.append(
                 {
                     "title": citem.title,
                     "chapter_number": citem.chapter_number,
                     "source_url": citem.source_url,
                 }
             )
+        return rv
 
-    def to_dict(self):
-        return {field: getattr(self, field) for field in self.FIELDS}
+    @property
+    def chapters(self):
+        return self.citems_to_list(self.citems)
+
+    @property
+    def ext_chapters(self):
+        return self.citems_to_list(self.ext_citems)
+
+    @property
+    def volumes(self):
+        return self.citems_to_list(self.volume_citems)
 
 
 class Citem():
 
-    def __init__(self, chapter_number, title, source_url, **kwargs):
+    def __init__(self, **kwargs):
         self._kwargs = kwargs
-        self._kwargs['chapter_number'] = chapter_number
-        self._kwargs['title'] = title
-        self._kwargs['source_url'] = source_url
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -76,15 +102,22 @@ class ChapterItem():
 class SearchResultItem():
     FIELDS = ["site", "comicid", "name", "cover_image_url", "source_url"]
 
-    def __init__(self, site=None, comicid=None, name=None, cover_image_url=None, source_url=None):
+    def __init__(self, site=None):
         self.site = site or ""
-        self.comicid = comicid or ""
-        self.name = name or ""
-        self.cover_image_url = cover_image_url or ""
-        self.source_url = source_url or ""
+        self._result = []
+
+    def add_result(self, comicid, name, cover_image_url, source_url, site=None):
+        if site is None:
+            site = self.site
+        item = Citem(site=self.site, comicid=comicid, name=name,
+                     cover_image_url=cover_image_url, source_url=source_url)
+        self._result.append(item)
+
+    def __iter__(self):
+        return iter(self._result)
 
     def to_dict(self):
-        return {field: getattr(self, field) for field in self.FIELDS}
+        return [i.to_dict() for i in self._result]
 
 
 class CrawlerBase():
@@ -162,15 +195,15 @@ class CrawlerBase():
 
     def search(self, name, page=1, size=None):
         """
-        :return SearchResultItem list:
+        :return SearchResultItem:
         """
-        return []
+        raise NotImplementedError
 
     def latest(self, page=1):
         """
-        :return SearchResultItem list:
+        :return SearchResultItem:
         """
-        return []
+        raise NotImplementedError
 
     def login(self):
         pass

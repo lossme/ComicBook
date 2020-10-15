@@ -8,7 +8,6 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    Citem,
     SearchResultItem)
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
@@ -56,26 +55,21 @@ class KuaiKanCrawler(CrawlerBase):
         desc = data['topicInfo']['description']
         tag = ",".join(data['topicInfo']['tags'])
         cover_image_url = data['topicInfo']['cover_image_url']
-        citem_dict = {}
+        book = ComicBookItem(name=name,
+                             desc=desc,
+                             tag=tag,
+                             cover_image_url=cover_image_url,
+                             author=author,
+                             source_url=self.source_url,
+                             source_name=self.SOURCE_NAME)
         comics = sorted(data['comics'], key=lambda x: x['id'])
         for idx, c in enumerate(comics, start=1):
             chapter_number = idx
             title = c['title']
             cid = c['id']
             url = self.get_chapter_soure_url(cid)
-            citem_dict[chapter_number] = Citem(
-                chapter_number=chapter_number,
-                source_url=url,
-                title=title)
-
-        return ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             citem_dict=citem_dict)
+            book.add_chapter(chapter_number=chapter_number, source_url=url, title=title)
+        return book
 
     def get_chapter_soure_url(self, cid):
         return urljoin(self.SITE_INDEX, "/web/comic/{}/".format(cid))
@@ -100,37 +94,33 @@ class KuaiKanCrawler(CrawlerBase):
         url = urljoin(self.SITE_INDEX, "/s/result/{}/".format(name))
         html = self.get_html(url)
         data = self.parse_api_data_from_page(html)
-        rv = []
+        result = SearchResultItem(site=self.SITE)
         for i in data['resultList']:
             comicid = i['url'].split('/')[-1]
             name = i['title']
             cover_image_url = i['image_url']
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def latest(self, page=1):
         pos = page - 1
         url = 'https://www.kuaikanmanhua.com/v2/pweb/daily/topics?pos=%s' % pos
         data = self.get_json(url)
-        rv = []
+        result = SearchResultItem(site=self.SITE)
         for i in data['data']['topics']:
             comicid = i['id']
             name = i['title']
             cover_image_url = i['cover_image_url']
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,

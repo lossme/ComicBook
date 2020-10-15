@@ -14,8 +14,8 @@ def _test_crawl_comicbook(site, comicid=None, chapter_number=1):
     logger.info(chapter.to_dict())
     logger.info(comicbook.to_dict())
 
-    result = ComicBook.search(site=site)
-    assert len(result) > 0
+    result = comicbook.search(name=comicbook.crawler.DEFAULT_SEARCH_NAME)
+    assert len(result.to_dict()) > 0
     return comicbook, chapter
 
 

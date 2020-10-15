@@ -40,8 +40,8 @@ class ComicBook():
         for field in self.comicbook_item.FIELDS:
             setattr(self, field, getattr(self.comicbook_item, field))
 
-        if self.comicbook_item.citem_dict:
-            last_chapter = max(self.comicbook_item.citem_dict.values(),
+        if self.comicbook_item.citems:
+            last_chapter = max(self.comicbook_item.citems.values(),
                                key=lambda x: x.chapter_number)
             self.last_chapter_number = last_chapter.chapter_number
             self.last_chapter_title = last_chapter.title
@@ -76,7 +76,7 @@ class ComicBook():
         if chapter_number < 0:
             chapter_number = self.last_chapter_number + chapter_number + 1
 
-        if chapter_number not in self.comicbook_item.citem_dict:
+        if chapter_number not in self.comicbook_item.citems:
             msg = ChapterNotFound.TEMPLATE.format(site=self.crawler.SITE,
                                                   comicid=self.crawler.comicid,
                                                   chapter_number=chapter_number,
@@ -84,7 +84,7 @@ class ComicBook():
             raise ChapterNotFound(msg)
 
         if force_refresh or chapter_number not in self.chapter_cache:
-            citem = self.comicbook_item.citem_dict[chapter_number]
+            citem = self.comicbook_item.citems[chapter_number]
             chapter_item = self.crawler.get_chapter_item(citem)
             self.chapter_cache[chapter_number] = Chapter(
                 crawler=self.crawler,

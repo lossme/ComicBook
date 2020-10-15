@@ -10,7 +10,6 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    Citem,
     SearchResultItem)
 
 logger = logging.getLogger(__name__)
@@ -52,27 +51,35 @@ class ManhuaguiCrawler(CrawlerBase):
         author_soup = li_list[1].find_all('strong')[1]
         author = author_soup.previous_element.a.get('title')
         cover_image_url = soup.find('div', attrs={'class': 'book-cover fl'}).p.img.get('src')
-        citem_dict = {}
-
-        idx = 1
-        for ul in soup.find('div', {'class': 'chapter-list'}).find_all('ul'):
-            for li in reversed(ul.find_all('li')):
-                href = li.a.get('href')
-                title = li.a.get('title')
-                full_url = urljoin(self.SITE_INDEX, href)
-                citem_dict[idx] = Citem(
-                    chapter_number=idx,
-                    title=title,
-                    source_url=full_url)
-                idx += 1
-        return ComicBookItem(name=name,
+        book = ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
                              cover_image_url=cover_image_url,
                              author=author,
                              source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             citem_dict=citem_dict)
+                             source_name=self.SOURCE_NAME)
+        chapter_soup = soup.find('div', {'class': 'chapter'})
+        h4_list = chapter_soup.find_all('h4')
+        div_list = chapter_soup.find_all('div', {'class': 'chapter-list'})
+        idx = 1
+        ext_idx = 1
+        volume_idx = 1
+        for h4, div in zip(h4_list, div_list):
+            for ul in div.find_all('ul'):
+                for li in reversed(ul.find_all('li')):
+                    href = li.a.get('href')
+                    title = li.a.get('title')
+                    full_url = urljoin(self.SITE_INDEX, href)
+                    if h4.text.strip() == '单行本':
+                        book.add_volume(chapter_number=volume_idx, title=title, source_url=full_url)
+                        volume_idx += 1
+                    elif h4.text.strip() == '番外篇':
+                        book.add_ext_chapter(chapter_number=ext_idx, title=title, source_url=full_url)
+                        ext_idx += 1
+                    elif h4.text.strip() == '单话':
+                        book.add_chapter(chapter_number=idx, title=title, source_url=full_url)
+                        idx += 1
+        return book
 
     def get_chapter_item(self, citem):
         html = self.get_html(citem.source_url)
@@ -272,25 +279,23 @@ class ManhuaguiCrawler(CrawlerBase):
         html = self.get_html(url)
         soup = BeautifulSoup(html, 'html.parser')
         li_list = soup.find_all('li', {'class': 'cf'})
-        rv = []
+        result = SearchResultItem(site=self.SITE)
         for li_soup in li_list:
             name = li_soup.find('div', {'class': 'book-cover'}).a.get('title')
             cover_image_url = li_soup.find('div', {'class': 'book-cover'}).a.img.get('src')
             href = li_soup.find('div', {'class': 'book-cover'}).a.get('href')
             comicid = href.split('/')[2]
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def latest(self, page=1):
-        rv = []
         url = 'https://www.manhuagui.com/update/'
         soup = self.get_soup(url)
+        result = SearchResultItem(site=self.SITE)
         for div in soup.find_all('div', {'class': 'latest-list'})[page - 1:page]:
             for li in div.find_all('li'):
                 name = li.img.get('alt')
@@ -298,13 +303,11 @@ class ManhuaguiCrawler(CrawlerBase):
                 href = li.a.get('href')
                 comicid = href.split('/')[2]
                 source_url = self.get_source_url(comicid)
-                search_result_item = SearchResultItem(site=self.SITE,
-                                                      comicid=comicid,
-                                                      name=name,
-                                                      cover_image_url=cover_image_url,
-                                                      source_url=source_url)
-                rv.append(search_result_item)
-        return rv
+                result.add_result(comicid=comicid,
+                                  name=name,
+                                  cover_image_url=cover_image_url,
+                                  source_url=source_url)
+        return result
 
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,

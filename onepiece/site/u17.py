@@ -6,7 +6,6 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    Citem,
     SearchResultItem
 )
 from ..exceptions import ComicbookNotFound
@@ -80,8 +79,13 @@ class U17Crawler(CrawlerBase):
         author = self.AUTHOR_PATTERN.search(html).group(1)
         tag_html = self.TAG_HTLM_PATTERN.search(html).group(1)
         tag = ','.join(self.TAG_PATTERN.findall(tag_html)[:-1])
-
-        citem_dict = {}
+        book = ComicBookItem(name=name,
+                             desc=desc,
+                             tag=tag,
+                             cover_image_url=cover_image_url,
+                             author=author,
+                             source_url=self.source_url,
+                             source_name=self.SOURCE_NAME)
         url = self.COMIC_BOOK_API.format(comicid=self.comicid)
         api_data = self.get_json(url)
         for idx, item in enumerate(api_data['chapter_list'], start=1):
@@ -89,19 +93,8 @@ class U17Crawler(CrawlerBase):
             chapter_id = item['chapter_id']
             title = item['name']
             chapter_url = self.CHAPTER_URL.format(chapter_id=chapter_id)
-            citem_dict[chapter_number] = Citem(
-                chapter_number=chapter_number,
-                title=title,
-                source_url=chapter_url,
-                chapter_id=chapter_id)
-        return ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             citem_dict=citem_dict)
+            book.add_chapter(chapter_number=chapter_number, title=title, source_url=chapter_url, chapter_id=chapter_id)
+        return book
 
     def get_chapter_item(self, citem):
         chapter_id = citem.chapter_id
@@ -117,22 +110,19 @@ class U17Crawler(CrawlerBase):
                            source_url=citem.source_url)
 
     def search(self, name, page=1, size=None):
-        url = "http://so.u17.com/all/{}/m0_p{}.html"\
-            .format(urllib.parse.quote(name), page)
+        url = "http://so.u17.com/all/{}/m0_p{}.html".format(urllib.parse.quote(name), page)
         html = self.get_html(url)
         ul_tag = self.SEARCH_UL_PATTERN.search(html).group(1)
-        rv = []
+        result = SearchResultItem(site=self.SITE)
         for li_tag in self.SEARCH_LI_TAG_PATTERN.findall(ul_tag):
             cover_image_url = self.SEARCH_COVER_IMAGE_URL_PATTERN.search(li_tag).group(1)
             comicid, name = self.SEARCH_DATA_PATTERN.search(li_tag).groups()
             source_url = self.get_source_url(comicid)
-            item = SearchResultItem(site=self.SITE,
-                                    comicid=comicid,
-                                    name=name,
-                                    cover_image_url=cover_image_url,
-                                    source_url=source_url)
-            rv.append(item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def latest(self, page=1):
         url = 'https://www.u17.com/comic/ajax.php?mod=comic_list&act=comic_list_new_fun&a=get_comic_list'
@@ -150,19 +140,17 @@ class U17Crawler(CrawlerBase):
         }
         response = self.send_request('POST', url, data=params)
         data = response.json()
-        rv = []
+        result = SearchResultItem(site=self.SITE)
         for i in data['comic_list']:
             cover_image_url = i['cover']
             comicid = i['comic_id']
             name = i['name']
             source_url = self.get_source_url(comicid)
-            item = SearchResultItem(site=self.SITE,
-                                    comicid=comicid,
-                                    name=name,
-                                    cover_image_url=cover_image_url,
-                                    source_url=source_url)
-            rv.append(item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def login(self):
         self.selenium_login(

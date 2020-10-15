@@ -79,10 +79,10 @@ def search(site):
     if not name:
         abort(400)
     comicbook = get_comicbook_from_cache(site, comicid=None)
-    search_result_item_list = comicbook.search(name=name, page=page, limit=limit)
+    result = comicbook.search(name=name, page=page, limit=limit)
     return jsonify(
         {
-            "search_result": [item.to_dict() for item in search_result_item_list]
+            "search_result": result.to_dict()
         }
     )
 

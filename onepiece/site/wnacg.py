@@ -8,7 +8,6 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    Citem,
     SearchResultItem)
 
 logger = logging.getLogger(__name__)
@@ -44,22 +43,17 @@ class WnacgCrawler(CrawlerBase):
         tag = ''.join([i.text for i in
                        soup.find('div', {'class': 'addtags'}).find_all('a', {'class': 'tagshow'})])
         cover_image_url = "https:" + soup.find('div', {'class': 'asTBcell uwthumb'}).img.get('data-original')
-        citem_dict = {}
-        chapter_number = 1
-        url = urljoin(self.SITE_INDEX, '/photos-slide-aid-{}.html'.format(self.comicid))
-        citem_dict[chapter_number] = Citem(
-            chapter_number=chapter_number,
-            cid=self.comicid,
-            source_url=url,
-            title=str(chapter_number))
-        return ComicBookItem(name=name,
+        book = ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
                              cover_image_url=cover_image_url,
                              author=author,
                              source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             citem_dict=citem_dict)
+                             source_name=self.SOURCE_NAME)
+        chapter_number = 1
+        url = urljoin(self.SITE_INDEX, '/photos-slide-aid-{}.html'.format(self.comicid))
+        book.add_chapter(chapter_number=chapter_number, cid=self.comicid, source_url=url, title=str(chapter_number))
+        return book
 
     def get_chapter_item(self, citem):
         api_url = urljoin(self.SITE_INDEX, "/photos-gallery-aid-{}.html".format(citem.cid))
@@ -89,7 +83,7 @@ class WnacgCrawler(CrawlerBase):
             '/search/index.php?q={}&m=&f=_all&s=create_time_DESC&p={}'.format(name, page)
         )
         soup = self.get_soup(url)
-        rv = []
+        result = SearchResultItem(self.SITE)
         for li in soup.find('ul', {'class': 'cc'}).find_all('li'):
             href = li.a.get('href')
             name = li.a.get('title')
@@ -97,18 +91,16 @@ class WnacgCrawler(CrawlerBase):
             comicid = href.rsplit('.', 1)[0].split('-')[-1]
             cover_image_url = 'http:' + li.img.get('data-original')
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def latest(self, page=1):
         url = 'http://www.wnacg.org/albums-index-page-%s.html' % page
         soup = self.get_soup(url)
-        rv = []
+        result = SearchResultItem(self.SITE)
         for li in soup.find('ul', {'class': 'cc'}).find_all('li'):
             href = li.a.get('href')
             name = li.a.get('title')
@@ -116,13 +108,11 @@ class WnacgCrawler(CrawlerBase):
             comicid = href.rsplit('.', 1)[0].split('-')[-1]
             cover_image_url = 'http:' + li.img.get('data-original')
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,

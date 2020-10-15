@@ -6,7 +6,6 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    Citem,
     SearchResultItem)
 
 logger = logging.getLogger(__name__)
@@ -46,15 +45,18 @@ class C18comicCrawler(CrawlerBase):
                 author = i.text.strip().replace('\n', '').replace('作者：', '', 1)
         tag = ",".join([i.text for i in soup.find('span', {'itemprop': 'genre'}).find_all('a')])
         cover_image_url = soup.find('img', {'itemprop': 'image'}).get('src')
-        citem_dict = {}
         res = soup.find('div', {'class': 'episode'})
+        book = ComicBookItem(name=name,
+                             desc=desc,
+                             tag=tag,
+                             cover_image_url=cover_image_url,
+                             author=author,
+                             source_url=self.source_url,
+                             source_name=self.SOURCE_NAME)
         if not res:
             chapter_number = 1
             url = urljoin(self.SITE_INDEX, '/photo/{}/'.format(self.comicid))
-            citem_dict[chapter_number] = Citem(
-                chapter_number=chapter_number,
-                source_url=url,
-                title=str(chapter_number))
+            book.add_chapter(chapter_number=chapter_number, source_url=url, title=str(chapter_number))
         else:
             a_list = res.find_all('a')
             for idx, a_soup in enumerate(a_list, start=1):
@@ -64,19 +66,8 @@ class C18comicCrawler(CrawlerBase):
                 title = a_soup.text.strip().replace('\n', ' ')
                 url = a_soup.get('href')
                 full_url = urljoin(self.SITE_INDEX, url)
-                citem_dict[chapter_number] = Citem(
-                    chapter_number=chapter_number,
-                    source_url=full_url,
-                    title=title)
-
-        return ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             citem_dict=citem_dict)
+                book.add_chapter(chapter_number=chapter_number, source_url=full_url, title=title)
+        return book
 
     def get_chapter_item(self, citem):
         soup = self.get_soup(citem.source_url)
@@ -99,36 +90,32 @@ class C18comicCrawler(CrawlerBase):
             '/search/photos?search_query={}&page={}'.format(name, page)
         )
         soup = self.get_soup(url)
-        rv = []
+        result = SearchResultItem(site=self.SITE)
         for div in soup.find_all('div', {'class': 'thumb-overlay'}):
             comicid = div.a.get('id').split('_')[-1]
             name = div.img.get('alt')
             cover_image_url = div.img.get('data-original')
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def latest(self, page=1):
         url = 'https://18comic.org/albums?o=mr&page=%s' % page
         soup = self.get_soup(url)
-        rv = []
+        result = SearchResultItem(self.SITE)
         for div in soup.find_all('div', {'class': 'thumb-overlay-albums'}):
             comicid = div.a.get('id').split('_')[-1]
             name = div.img.get('alt')
             cover_image_url = div.img.get('data-original')
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,

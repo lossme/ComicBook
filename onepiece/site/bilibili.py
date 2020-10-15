@@ -14,7 +14,6 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    Citem,
     SearchResultItem)
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
@@ -116,27 +115,20 @@ class BilibiliCrawler(CrawlerBase):
         tag = ",".join(api_data['data']['styles'])
         author = " ".join(api_data['data']['author_name'])
         cover_image_url = api_data['data']['vertical_cover']
-
-        citem_dict = {}
-        for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
-            chapter_number = idx
-            cid = item['id']
-            title = item['title'].strip() or str(chapter_number)
-            url = self.get_chapter_soure_url(cid)
-            citem_dict[chapter_number] = Citem(
-                chapter_number=chapter_number,
-                source_url=url,
-                cid=cid,
-                title=title)
-
-        return ComicBookItem(name=name,
+        book = ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
                              cover_image_url=cover_image_url,
                              author=author,
                              source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             citem_dict=citem_dict)
+                             source_name=self.SOURCE_NAME)
+        for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
+            chapter_number = idx
+            cid = item['id']
+            title = item['title'].strip() or str(chapter_number)
+            url = self.get_chapter_soure_url(cid)
+            book.add_chapter(chapter_number=chapter_number, source_url=url, cid=cid, title=title)
+        return book
 
     def get_chapter_soure_url(self, cid):
         return urljoin(
@@ -161,22 +153,20 @@ class BilibiliCrawler(CrawlerBase):
         response = self.send_request(
             "POST", url, data={"key_word": name, "page_num": page, "page_size": size})
         data = response.json()
-        rv = []
-        for result in data["data"]["list"]:
-            comicid = result["id"]
-            title = result["title"]
+        result = SearchResultItem(site=self.SITE)
+        for i in data["data"]["list"]:
+            comicid = i["id"]
+            title = i["title"]
             name = re.sub(r'<[^>]+>', '', title, re.S)
 
             # or square_cover or vertical_cover
-            cover_image_url = result["horizontal_cover"]
+            cover_image_url = i["horizontal_cover"]
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def latest(self, page=1):
         url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/GetDailyPush?device=pc&platform=web'
@@ -203,21 +193,19 @@ class BilibiliCrawler(CrawlerBase):
             response = self.send_request("POST", url, data=params)
             data = response.json()
             data_list.extend(data["data"]["list"])
-        rv = []
-        for result in data_list:
-            comicid = result["comic_id"]
-            title = result["title"]
+        result = SearchResultItem(self.SITE)
+        for i in data_list:
+            comicid = i["comic_id"]
+            title = i["title"]
             name = re.sub(r'<[^>]+>', '', title, re.S)
             # or square_cover or vertical_cover
-            cover_image_url = result["vertical_cover"]
+            cover_image_url = i["vertical_cover"]
             source_url = self.get_source_url(comicid)
-            search_result_item = SearchResultItem(site=self.SITE,
-                                                  comicid=comicid,
-                                                  name=name,
-                                                  cover_image_url=cover_image_url,
-                                                  source_url=source_url)
-            rv.append(search_result_item)
-        return rv
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
 
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,
