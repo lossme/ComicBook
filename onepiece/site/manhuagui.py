@@ -54,19 +54,17 @@ class ManhuaguiCrawler(CrawlerBase):
         cover_image_url = soup.find('div', attrs={'class': 'book-cover fl'}).p.img.get('src')
         citem_dict = {}
 
-        def _sort_func(s):
-            href = s.a.get('href')
-            return href.split('.')[0].split('/')[-1]
-        c_list = soup.find('div', {'class': 'chapter-list'}).find_all('li')
-        for idx, li_soup in enumerate(sorted(c_list, key=_sort_func), start=1):
-            href = li_soup.a.get('href')
-            title = li_soup.a.get('title')
-            full_url = urljoin(self.SITE_INDEX, href)
-            citem_dict[idx] = Citem(
-                chapter_number=idx,
-                title=title,
-                source_url=full_url)
-
+        idx = 1
+        for ul in soup.find('div', {'class': 'chapter-list'}).find_all('ul'):
+            for li in reversed(ul.find_all('li')):
+                href = li.a.get('href')
+                title = li.a.get('title')
+                full_url = urljoin(self.SITE_INDEX, href)
+                citem_dict[idx] = Citem(
+                    chapter_number=idx,
+                    title=title,
+                    source_url=full_url)
+                idx += 1
         return ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
