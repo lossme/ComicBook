@@ -49,6 +49,17 @@ def index():
         examples[site].append('/api/{site}/latest?page={page}'.format(
             site=site, page=1))
 
+        # 查看所有tags
+        examples[site].append('/api/{site}/tags'.format(site=site))
+
+        # 根据tag查询
+        if crawler.TAGS:
+            tag = crawler.TAGS[0]['name']
+        else:
+            tag = ''
+        examples[site].append('/api/{site}/list?tag={tag}&page={page}'.format(
+            site=site, tag=tag, page=1))
+
     return jsonify(
         {
             "examples": examples

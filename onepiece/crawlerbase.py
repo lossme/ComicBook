@@ -134,6 +134,7 @@ class CrawlerBase():
     DEFAULT_DRIVER_TYPE = "Chrome"
     SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
     REQUIRE_JAVASCRIPT = False
+    TAGS = tuple()
 
     def __init__(self):
         self._session = None
@@ -197,13 +198,27 @@ class CrawlerBase():
         """
         :return SearchResultItem:
         """
-        raise NotImplementedError
+        return SearchResultItem(site=self.SITE)
 
     def latest(self, page=1):
         """
         :return SearchResultItem:
         """
-        raise NotImplementedError
+        return SearchResultItem(site=self.SITE)
+
+    def fuzz_get_tag(self, zh_tag_or_en_tag):
+        for i in self.TAGS:
+            if zh_tag_or_en_tag == i['name']:
+                return i['tag']
+            if zh_tag_or_en_tag == i['tag']:
+                return i['tag']
+        return
+
+    def get_tag_result(self, tag, page=1):
+        """
+        :return SearchResultItem:
+        """
+        return SearchResultItem(site=self.SITE)
 
     def login(self):
         pass

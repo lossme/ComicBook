@@ -82,7 +82,30 @@ def search(site):
     result = comicbook.search(name=name, page=page, limit=limit)
     return jsonify(
         {
-            "search_result": result.to_dict()
+            "list": result.to_dict()
+        }
+    )
+
+
+@app.route("/<site>/tags")
+def tags(site):
+    comicbook = get_comicbook_from_cache(site, comicid=None)
+    return jsonify(
+        {
+            "tags": [i['name'] for i in comicbook.tags]
+        }
+    )
+
+
+@app.route("/<site>/list")
+def tag_list(site):
+    tag = request.args.get('tag')
+    page = request.args.get('page', default=1, type=int)
+    comicbook = get_comicbook_from_cache(site, comicid=None)
+    result = comicbook.get_tag_result(tag=tag, page=page)
+    return jsonify(
+        {
+            "list": result.to_dict()
         }
     )
 
@@ -94,6 +117,6 @@ def latest(site):
     latest = comicbook.latest(page=page)
     return jsonify(
         {
-            "latest": [item.to_dict() for item in latest]
+            "list": [item.to_dict() for item in latest]
         }
     )

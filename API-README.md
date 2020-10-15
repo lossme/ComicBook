@@ -102,7 +102,7 @@ curl "http://127.0.0.1:8000/api/qq/search?name=海贼&page=1"
 
 ```json
 {
-    "search_result":[
+    "list":[
         {
             "comicid":"505430",
             "cover_image_url":"https://manhua.qpic.cn/vertical/0/17_16_48_0e28c8aabf48e91d395689b5f6a7689f.jpg/420",
@@ -136,7 +136,7 @@ curl "http://127.0.0.1:8000/api/qq/latest?page=1"
 
 ```json
 {
-    "latest":[
+    "list":[
         {
             "comicid":"505430",
             "cover_image_url":"https://manhua.qpic.cn/vertical/0/17_16_48_0e28c8aabf48e91d395689b5f6a7689f.jpg/420",

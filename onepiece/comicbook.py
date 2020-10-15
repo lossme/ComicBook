@@ -50,7 +50,7 @@ class ComicBook():
             self.last_chapter_title = ""
 
     @classmethod
-    def create_comicbook(cls, site, comicid):
+    def create_comicbook(cls, site, comicid=None):
         if site not in cls.CRAWLER_CLS_MAP:
             raise SiteNotSupport("site={} 暂不支持".format(site))
         crawler_cls = cls.CRAWLER_CLS_MAP[site]
@@ -65,6 +65,13 @@ class ComicBook():
 
     def latest(self, page=1):
         return self.crawler.latest(page=page)
+
+    @property
+    def tags(self):
+        return self.crawler.TAGS
+
+    def get_tag_result(self, tag, page=1):
+        return self.crawler.get_tag_result(tag=tag, page=page)
 
     def to_dict(self):
         return self.comicbook_item.to_dict()

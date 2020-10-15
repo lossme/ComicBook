@@ -27,6 +27,10 @@ class ManhuaguiCrawler(CrawlerBase):
 
     DEFAULT_COMICID = 19430
     DEFAULT_SEARCH_NAME = '鬼灭之刃'
+    TAGS = [
+        dict(name='连载漫画', tag='lianzai'),
+        dict(name='完结漫画', tag='wanjie'),
+    ]
 
     def __init__(self, comicid=None):
         super().__init__()
@@ -307,6 +311,27 @@ class ManhuaguiCrawler(CrawlerBase):
                                   name=name,
                                   cover_image_url=cover_image_url,
                                   source_url=source_url)
+        return result
+
+    def get_tag_result(self, tag, page=1):
+        result = SearchResultItem(site=self.SITE)
+        tag = self.fuzz_get_tag(tag)
+        if not tag:
+            return result
+        url = "https://www.manhuagui.com/list/%s/index_p%s.html" % (tag, page)
+        soup = self.get_soup(url)
+
+        ul = soup.find('ul', {'id': 'contList'})
+        for li in ul.find_all('li'):
+            name = li.img.get('alt')
+            cover_image_url = li.img.get('src')
+            href = li.a.get('href')
+            comicid = href.split('/')[2]
+            source_url = self.get_source_url(comicid)
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
         return result
 
     def login(self):
