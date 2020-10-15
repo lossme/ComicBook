@@ -82,7 +82,7 @@ def search(site):
     result = comicbook.search(name=name, page=page, limit=limit)
     return jsonify(
         {
-            "list": result.to_dict()
+            "search_result": result.to_dict()
         }
     )
 
@@ -117,6 +117,6 @@ def latest(site):
     latest = comicbook.latest(page=page)
     return jsonify(
         {
-            "list": [item.to_dict() for item in latest]
+            "latest": [item.to_dict() for item in latest]
         }
     )
