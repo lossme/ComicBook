@@ -113,7 +113,7 @@ class NhentaiCrawler(CrawlerBase):
 
     def get_tag_result(self, tag, page=1):
         if not tag:
-            return self.latest()
+            return self.latest(page=page)
         elif '_' in tag:
             name, tag = tag.split('_', 1)
             url = 'https://nhentai.net/%s/%s/popular' % (name, tag)
