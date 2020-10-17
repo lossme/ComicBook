@@ -131,7 +131,6 @@ class KuaiKanCrawler(CrawlerBase):
         data = self.parse_api_data_from_page(html)
         tags = TagsItem()
         for i in data['res']['data']['tags']:
-            logger.info('i=%s', i)
             category = '题材'
             name = i['title']
             tag_id = i['tag_id']

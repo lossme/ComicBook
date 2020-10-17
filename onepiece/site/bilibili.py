@@ -160,7 +160,6 @@ class BilibiliCrawler(CrawlerBase):
         data = response.json()
         result = SearchResultItem(site=self.SITE)
         for i in data["data"]["list"]:
-            logger.info('i=%s', i)
             comicid = i["id"]
             title = i["title"]
             name = re.sub(r'<[^>]+>', '', title, re.S)

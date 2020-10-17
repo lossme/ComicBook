@@ -117,7 +117,6 @@ class NhentaiCrawler(CrawlerBase):
             url = 'https://nhentai.net/%s/%s/popular' % (name, tag)
         else:
             url = 'https://nhentai.net/tag/%s/popular' % tag
-        logger.info('url=%s', url)
         params = {'page': page}
         soup = self.get_soup(url, params=params)
         result = SearchResultItem(site=self.SITE)

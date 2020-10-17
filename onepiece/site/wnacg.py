@@ -138,7 +138,6 @@ class WnacgCrawler(CrawlerBase):
 
     def get_tag_result(self, tag, page=1):
         url = 'http://www.wnacg.org/albums-index-page-%s-cate-%s.html' % (page, tag)
-        logger.info('url=%s', url)
         soup = self.get_soup(url)
         result = SearchResultItem(self.SITE)
         for li in soup.find('ul', {'class': 'cc'}).find_all('li'):

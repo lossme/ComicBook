@@ -126,7 +126,6 @@ class C18comicCrawler(CrawlerBase):
 
         div_list = soup.find('div', {'id': 'wrapper'}).find('div', {'class': 'container'})\
             .find_all('div', {'class': 'row'})
-        logger.info('div_list=%s', div_list)
         tags = TagsItem()
         for div in div_list:
             h4 = div.h4
