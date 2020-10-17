@@ -3,6 +3,18 @@ class Config(object):
     JSON_AS_ASCII = False
     LOG_LEVEL = 'INFO'
 
+
+class ProductionConfig(Config):
+    DEBUG = False
+    LOG_LEVEL = 'DEBUG'
+    URL_PREFIX = "http://127.0.0.1:8000"
+    DEFAULT_PROXY = 'socks5://127.0.0.1:1080'
+    CRAWLER_PROXY = {}
+
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+    LOG_LEVEL = 'DEBUG'
     URL_PREFIX = "http://127.0.0.1:5000"
     DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
 
@@ -12,13 +24,3 @@ class Config(object):
         'nhentai': DEFAULT_PROXY,
         'wnacg': DEFAULT_PROXY,
     }
-
-
-class ProductionConfig(Config):
-    DEBUG = False
-    LOG_LEVEL = 'DEBUG'
-
-
-class DevelopmentConfig(Config):
-    DEBUG = True
-    LOG_LEVEL = 'DEBUG'
