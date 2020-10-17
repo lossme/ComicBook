@@ -4,7 +4,6 @@ import logging
 
 from .comicbook import ComicBook
 from .crawlerbase import CrawlerBase
-from .image_cache import image_cache
 from .utils import parser_chapter_str
 from .utils.mail import Mail
 from . import VERSION
@@ -69,12 +68,6 @@ def parse_args():
     parser.add_argument('--site', type=str, default='qq', choices=support_site,
                         help="数据源网站：支持{}".format(','.join(sorted(support_site))))
 
-    parser.add_argument('--cachedir', type=str, default='./.cache',
-                        help="图片缓存目录，默认为当前目录下.cache")
-
-    parser.add_argument('--nocache', action='store_true',
-                        help="禁用图片缓存")
-
     parser.add_argument('--noverify', action='store_true',
                         help="noverify")
 
@@ -126,28 +119,21 @@ def main():
     session_path = None
     if args.session_path:
         session_path = os.path.abspath(args.session_path)
-    if args.proxy:
-        image_cache.get_session().set_proxy(args.proxy)
 
     loglevel = logging.DEBUG if args.debug else logging.INFO
     init_logger(level=loglevel)
 
     if args.mail:
-        Mail.init(args.config)
-    if args.noverify:
-        image_cache.set_verify(verify=False)
-
-    image_cache.DEFAULT_POOL_SIZE = args.worker
-    if args.nocache:
-        image_cache.IS_USE_CACHE = False
-
-    image_cache.set_cache_dir(args.cachedir)
+        mail = Mail.init(args.config)
 
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
     if args.proxy:
-        comicbook.crawler.get_session().set_proxy(args.proxy)
+        comicbook.set_proxy(args.proxy)
+    if args.noverify:
+        comicbook.set_verify(verify=False)
+    comicbook.set_worker(worker=args.worker)
+    comicbook.set_driver_path(driver_path=args.driver_path)
 
-    comicbook.crawler.DRIVER_PATH = args.driver_path
     # 加载 session
     if session_path and os.path.exists(session_path):
         comicbook.crawler.load_session(session_path)
@@ -185,7 +171,7 @@ def main():
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
                 if is_send_mail:
-                    Mail.send(subject=os.path.basename(pdf_path),
+                    mail.send(subject=os.path.basename(pdf_path),
                               content=None,
                               file_list=[pdf_path, ])
                 logger.info("下载成功 %s", pdf_path)
@@ -200,8 +186,6 @@ def main():
         os.makedirs(os.path.dirname(session_path), exist_ok=True)
         comicbook.crawler.export_session(session_path)
         logger.info("session保存在: {}".format(session_path))
-
-    image_cache.auto_clean()
 
 
 if __name__ == '__main__':

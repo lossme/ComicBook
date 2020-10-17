@@ -29,6 +29,8 @@ class Session(requests.Session):
             'https': proxy
         }
 
-
-default_session = Session()
-default_session.headers.update(default_session.DEFAULT_HEADERS)
+    @classmethod
+    def create_session(cls):
+        session = cls()
+        session.headers.update(session.DEFAULT_HEADERS)
+        return session

@@ -12,11 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 class Mail():
-    sender = None
-    sender_passwd = None
-    receivers = None
-    smtp_server = None
-    smtp_port = None
+
+    def __init__(self, sender, sender_passwd, smtp_server, smtp_port, receivers=None):
+        self.sender = sender
+        self.sender_passwd = sender_passwd
+        self.smtp_server = smtp_server
+        self.smtp_port = smtp_port
+        self.receivers = receivers
 
     @classmethod
     def init(cls, filepath):
@@ -25,27 +27,31 @@ class Mail():
         section = 'mail'
         parser = configparser.ConfigParser()
         parser.read(filepath)
-        cls.sender = parser.get(section, 'sender')
-        cls.sender_passwd = parser.get(section, 'sender_passwd')
-        cls.receivers = parser.get(section, 'receivers').split(',')
-        cls.smtp_server = parser.get(section, 'smtp_server')
-        cls.smtp_port = parser.get(section, 'smtp_port')
+        sender = parser.get(section, 'sender')
+        sender_passwd = parser.get(section, 'sender_passwd')
+        receivers = parser.get(section, 'receivers').split(',')
+        smtp_server = parser.get(section, 'smtp_server')
+        smtp_port = parser.get(section, 'smtp_port')
+        return cls(sender=sender,
+                   sender_passwd=sender_passwd,
+                   smtp_server=smtp_server,
+                   smtp_port=smtp_port,
+                   receivers=receivers)
 
-    @classmethod
-    def send(cls, subject, content=None, file_list=None, debug=None,
+    def send(self, subject, content=None, file_list=None, debug=None,
              sender=None, sender_passwd=None, receivers=None):
         """"发送邮件
         :param str subject: 邮件主题/标题
         :param str content: 正文内容
         :param list file_list: 附件的路径列表
         """
-        receivers = receivers or cls.receivers
-        sender = sender or cls.sender
-        sender_passwd = sender_passwd or cls.sender_passwd
+        receivers = receivers or self.receivers
+        sender = sender or self.sender
+        sender_passwd = sender_passwd or self.sender_passwd
 
         msg = MIMEMultipart()
         msg['Subject'] = subject
-        msg['From'] = cls.sender
+        msg['From'] = sender
         msg['To'] = ';'.join(receivers)
 
         if content is not None:
@@ -53,10 +59,10 @@ class Mail():
 
         if file_list is not None:
             for file in file_list:
-                msg.attach(cls.built_attach(file))
+                msg.attach(self.built_attach(file))
 
         try:
-            s = SMTP_SSL(cls.smtp_server, cls.smtp_port)
+            s = SMTP_SSL(self.smtp_server, self.smtp_port)
             if debug:
                 s.set_debuglevel(1)
             s.login(sender, sender_passwd)

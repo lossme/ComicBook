@@ -10,7 +10,7 @@ from .exceptions import (
     ChapterNotFound
 )
 from .crawlerbase import CrawlerBase
-from .image_cache import image_cache
+from .image import ImageDownloader
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 logger = logging.getLogger(__name__)
@@ -28,12 +28,26 @@ class ComicBook():
 
     def __init__(self, comicbook_crawler):
         self.crawler = comicbook_crawler
+        self.image_downloader = ImageDownloader()
 
         # {chapter_number: Chapter}
         self.chapter_cache = {}
         self.crawler_time = None
         self.comicbook_item = None
         self.tags = None
+
+    def set_proxy(self, proxy):
+        self.crawler.get_session().set_proxy(proxy)
+        self.image_downloader.get_session().set_proxy(proxy)
+
+    def set_worker(self, worker):
+        self.image_downloader.set_worker(worker=worker)
+
+    def set_verify(self, verify):
+        self.image_downloader.set_verify(verify)
+
+    def set_driver_path(self, driver_path):
+        self.crawler.DRIVER_PATH = driver_path
 
     def start_crawler(self):
         self.comicbook_item = self.crawler.get_comicbook_item()
@@ -101,17 +115,15 @@ class ComicBook():
             citem = self.comicbook_item.citems[chapter_number]
             chapter_item = self.crawler.get_chapter_item(citem)
             self.chapter_cache[chapter_number] = Chapter(
-                crawler=self.crawler,
-                comicbook_item=self.comicbook_item,
+                comicbook=self,
                 chapter_item=chapter_item)
         return self.chapter_cache[chapter_number]
 
 
 class Chapter():
 
-    def __init__(self, crawler, comicbook_item, chapter_item):
-        self.crawler = crawler
-        self.comicbook_item = comicbook_item
+    def __init__(self, comicbook, chapter_item):
+        self.comicbook = comicbook
         self.chapter_item = chapter_item
 
         for field in self.chapter_item.FIELDS:
@@ -124,15 +136,15 @@ class Chapter():
         return "<Chapter>: {}".format(self.to_dict())
 
     def get_chapter_image_dir(self, output_dir):
-        first_dir = safe_filename(self.comicbook_item.source_name)
-        second_dir = safe_filename(self.comicbook_item.name)
+        first_dir = safe_filename(self.comicbook.source_name)
+        second_dir = safe_filename(self.comicbook.name)
         third_dir = safe_filename("{:>03} {}".format(self.chapter_item.chapter_number, self.chapter_item.title))
         chapter_dir = os.path.join(output_dir, first_dir, second_dir, third_dir)
         return chapter_dir
 
     def get_chapter_pdf_path(self, output_dir):
-        first_dir = safe_filename(self.comicbook_item.source_name)
-        second_dir = safe_filename(self.comicbook_item.name)
+        first_dir = safe_filename(self.comicbook.source_name)
+        second_dir = safe_filename(self.comicbook.name)
         filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".pdf"
         pdf_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return pdf_path
@@ -140,7 +152,7 @@ class Chapter():
     def save(self, output_dir):
         chapter_dir = self.get_chapter_image_dir(output_dir)
         headers = {'Referer': self.chapter_item.source_url}
-        image_cache.download_images(
+        self.comicbook.image_downloader.download_images(
             image_urls=self.image_urls, output_dir=chapter_dir, headers=headers)
         return chapter_dir
 

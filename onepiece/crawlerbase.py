@@ -5,10 +5,7 @@ import execjs
 from bs4 import BeautifulSoup
 
 from .exceptions import URLException
-from .session import (
-    Session,
-    default_session
-)
+from .session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +170,7 @@ class CrawlerBase():
 
     def get_session(self):
         if self._session is None:
-            self._session = default_session
+            self._session = Session.create_session()
         return self._session
 
     def export_session(self, path):
