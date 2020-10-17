@@ -1,6 +1,5 @@
 import re
 import os
-import hashlib
 import time
 import warnings
 import PIL.Image

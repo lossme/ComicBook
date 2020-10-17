@@ -18,6 +18,8 @@ from onepiece.exceptions import (
 
 logger = logging.getLogger(__name__)
 app = Blueprint("api", __name__, url_prefix='/api')
+aggregate_app = Blueprint("aggregate", __name__, url_prefix='/aggregate')
+
 CACHE_TIME = 600
 
 
@@ -41,7 +43,7 @@ def handle_404(error):
 
 
 @cachetools.func.ttl_cache(maxsize=1024, ttl=CACHE_TIME, typed=False)
-def get_comicbook_from_cache(site, comicid):
+def get_comicbook_from_cache(site, comicid=None):
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
     proxy_config = current_app.config.get('CRAWLER_PROXY', {})
     proxy = proxy_config.get(site)
@@ -67,11 +69,10 @@ def get_chapter_info(site, comicid, chapter_number):
 def search(site):
     name = request.args.get('name')
     page = request.args.get('page', default=1, type=int)
-    limit = request.args.get('limit', default=None, type=int)
     if not name:
         abort(400)
     comicbook = get_comicbook_from_cache(site, comicid=None)
-    result = comicbook.search(name=name, page=page, limit=limit)
+    result = comicbook.search(name=name, page=page)
     return jsonify(
         {
             "search_result": result.to_dict()
@@ -107,9 +108,35 @@ def tag_list(site):
 def latest(site):
     page = request.args.get('page', default=1, type=int)
     comicbook = get_comicbook_from_cache(site, comicid=None)
-    latest = comicbook.latest(page=page)
+    result = comicbook.latest(page=page)
     return jsonify(
         {
-            "latest": [item.to_dict() for item in latest]
+            "latest": result.to_dict()
+        }
+    )
+
+
+@aggregate_app.route("/search")
+def aggregate_search():
+    site = request.args.get('site')
+    name = request.args.get('name')
+    if site:
+        sites = []
+        for s in set(site.split(',')):
+            if s in ComicBook.CRAWLER_CLS_MAP:
+                sites.append(s)
+    else:
+        sites = list(ComicBook.CRAWLER_CLS_MAP.keys())
+    if not name:
+        abort(400)
+
+    ret = []
+    for site in sites:
+        comicbook = get_comicbook_from_cache(site=site)
+        for i in comicbook.search(name):
+            ret.append(i.to_dict())
+    return jsonify(
+        {
+            "list": ret
         }
     )

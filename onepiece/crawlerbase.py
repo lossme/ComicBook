@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 class ComicBookItem():
     FIELDS = ["name", "desc", "tag", "cover_image_url", "author",
               "source_url", "source_name", "crawl_time", "chapters", "ext_chapters", "volumes",
-              "status", 'tags']
+              "status", 'tags', "site"]
 
     def __init__(self, name=None, desc=None, tag=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
-                 crawl_time=None, status=None):
+                 crawl_time=None, status=None, site=None):
         self.name = name or ""
         self.desc = desc or ""
         self.tag = tag or ""
@@ -27,6 +27,7 @@ class ComicBookItem():
         self.source_name = source_name or ""
         self.crawl_time = crawl_time or datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.status = status or ""
+        self.site = site or ""
 
         # {1: Citem(chapter_number=1, title="xx", cid="xxx"}
         self.citems = {}
@@ -89,31 +90,33 @@ class Citem():
 
 
 class ChapterItem():
-    FIELDS = ["chapter_number", "title", "image_urls", "source_url"]
+    FIELDS = ["chapter_number", "title", "image_urls", "source_url", "site", "source_name"]
 
-    def __init__(self, chapter_number, title, image_urls, source_url=None):
+    def __init__(self, chapter_number, title, image_urls, source_url=None, site=None, source_name=None):
         self.chapter_number = chapter_number
         self.title = title or ""
         self.image_urls = image_urls or []
         self.source_url = source_url or ""
+        self.site = site or ""
+        self.source_name = source_name or ""
 
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}
 
 
 class SearchResultItem():
-    FIELDS = ["site", "comicid", "name", "cover_image_url", "source_url", "status"]
+    FIELDS = ["comicid", "name", "cover_image_url", "source_url", "status", "site", "source_name"]
 
-    def __init__(self, site=None):
-        self.site = site or ""
+    def __init__(self, site=None, source_name=None):
         self._result = []
+        self.site = site or ""
+        self.source_name = source_name or ""
 
-    def add_result(self, comicid, name, cover_image_url, source_url, status=None, site=None):
-        if site is None:
-            site = self.site
+    def add_result(self, comicid, name, cover_image_url, source_url, status=None):
         status = status or ""
-        item = Citem(site=self.site, comicid=comicid, name=name,
-                     cover_image_url=cover_image_url, source_url=source_url, status=status)
+        item = Citem(comicid=comicid, name=name,
+                     cover_image_url=cover_image_url, source_url=source_url,
+                     status=status, site=self.site, source_name=self.source_name)
         self._result.append(item)
 
     def __iter__(self):
@@ -215,26 +218,38 @@ class CrawlerBase():
         """
         raise NotImplementedError
 
+    def new_comicbook_item(self, **kwargs):
+        return ComicBookItem(site=self.SITE, source_name=self.SOURCE_NAME, **kwargs)
+
+    def new_chapter_item(self, **kwargs):
+        return ChapterItem(site=self.SITE, source_name=self.SOURCE_NAME, **kwargs)
+
+    def new_search_result_item(self, **kwargs):
+        return SearchResultItem(site=self.SITE, source_name=self.SOURCE_NAME, **kwargs)
+
+    def new_tags_item(self, **kwargs):
+        return TagsItem(**kwargs)
+
     def search(self, name, page=1, size=None):
         """
         :return SearchResultItem:
         """
-        return SearchResultItem(site=self.SITE)
+        return self.new_search_result_item()
 
     def latest(self, page=1):
         """
         :return SearchResultItem:
         """
-        return SearchResultItem(site=self.SITE)
+        return self.new_search_result_item()
 
     def get_tags(self):
-        return TagsItem()
+        return self.new_tags_item()
 
     def get_tag_result(self, tag, page=1):
         """
         :return SearchResultItem:
         """
-        return SearchResultItem(site=self.SITE)
+        return self.new_search_result_item()
 
     def login(self):
         pass

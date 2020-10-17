@@ -4,13 +4,7 @@ from urllib.parse import urljoin
 
 import execjs
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem,
-    TagsItem
-)
+from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
 
@@ -46,13 +40,12 @@ class WnacgCrawler(CrawlerBase):
         tag = ''.join([i.text for i in
                        soup.find('div', {'class': 'addtags'}).find_all('a', {'class': 'tagshow'})])
         cover_image_url = "https:" + soup.find('div', {'class': 'asTBcell uwthumb'}).img.get('data-original')
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url)
         chapter_number = 1
         url = urljoin(self.SITE_INDEX, '/photos-slide-aid-{}.html'.format(self.comicid))
         book.add_chapter(chapter_number=chapter_number, cid=self.comicid, source_url=url, title=str(chapter_number))
@@ -75,10 +68,10 @@ class WnacgCrawler(CrawlerBase):
             else:
                 image_urls.append(url)
 
-        return ChapterItem(chapter_number=citem.chapter_number,
-                           title=citem.title,
-                           image_urls=image_urls,
-                           source_url=citem.source_url)
+        return self.new_chapter_item(chapter_number=citem.chapter_number,
+                                     title=citem.title,
+                                     image_urls=image_urls,
+                                     source_url=citem.source_url)
 
     def search(self, name, page=1, size=None):
         url = urljoin(
@@ -86,7 +79,7 @@ class WnacgCrawler(CrawlerBase):
             '/search/index.php?q={}&m=&f=_all&s=create_time_DESC&p={}'.format(name, page)
         )
         soup = self.get_soup(url)
-        result = SearchResultItem(self.SITE)
+        result = self.new_search_result_item()
         for li in soup.find('ul', {'class': 'cc'}).find_all('li'):
             href = li.a.get('href')
             name = li.a.get('title')
@@ -103,7 +96,7 @@ class WnacgCrawler(CrawlerBase):
     def latest(self, page=1):
         url = 'http://www.wnacg.org/albums-index-page-%s.html' % page
         soup = self.get_soup(url)
-        result = SearchResultItem(self.SITE)
+        result = self.new_search_result_item()
         for li in soup.find('ul', {'class': 'cc'}).find_all('li'):
             href = li.a.get('href')
             name = li.a.get('title')
@@ -129,7 +122,7 @@ class WnacgCrawler(CrawlerBase):
     ]
 
     def get_tags(self):
-        tags = TagsItem()
+        tags = self.new_tags_item()
         for i in self.TAGS:
             category, name = i['name'].split('-', 1)
             tag_id = i['tag_id']
@@ -142,7 +135,7 @@ class WnacgCrawler(CrawlerBase):
         else:
             url = "http://www.wnacg.org/albums.html"
         soup = self.get_soup(url)
-        result = SearchResultItem(self.SITE)
+        result = self.new_search_result_item()
         for li in soup.find('ul', {'class': 'cc'}).find_all('li'):
             href = li.a.get('href')
             name = li.a.get('title')

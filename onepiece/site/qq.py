@@ -6,14 +6,7 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem,
-    TagsItem
-)
-
+from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
 
@@ -57,13 +50,12 @@ class QQCrawler(CrawlerBase):
         tag = re.search(r"的标签：(.*?)", description, re.S).group(1).strip()
         cover_image_url = soup.find('div', {'class': 'works-cover ui-left'}).img.get('src')
         author = soup.find('span', {'class': 'first'}).em.text.strip()
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url)
         ol = soup.find('ol', {'class': 'works-chapter-list'})
         for idx, a in enumerate(ol.find_all('a'), start=1):
             title = a.get('title')
@@ -78,8 +70,7 @@ class QQCrawler(CrawlerBase):
         chapter_item = self.parser_chapter_page(chapter_page_html, source_url=citem.source_url)
         return chapter_item
 
-    @classmethod
-    def parser_chapter_page(cls, chapter_page_html, source_url=None):
+    def parser_chapter_page(self, chapter_page_html, source_url=None):
         # 该方法只能解出部分数据，会缺失前面的一部分json字符串
         bs64_data = re.search(r"var DATA\s*=\s*'(.*?)'", chapter_page_html).group(1)
         for i in range(len(bs64_data)):
@@ -91,20 +82,20 @@ class QQCrawler(CrawlerBase):
         else:
             raise
 
-        json_str = "{" + cls.CHAPTER_JSON_STR_PATTERN.search(json_str_part).group(1)
+        json_str = "{" + self.CHAPTER_JSON_STR_PATTERN.search(json_str_part).group(1)
         data = json.loads(json_str)
         title = data["chapter"]["cTitle"]
         chapter_number = data["chapter"]["cSeq"]
         image_urls = [item['url'] for item in data["picture"]]
-        return ChapterItem(chapter_number=chapter_number,
-                           title=title,
-                           image_urls=image_urls,
-                           source_url=source_url)
+        return self.new_chapter_item(chapter_number=chapter_number,
+                                     title=title,
+                                     image_urls=image_urls,
+                                     source_url=source_url)
 
     def search(self, name, page=1, size=None):
         url = "https://ac.qq.com/Comic/searchList/search/{}/page/{}".format(name, page)
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         ul = soup.find('ul', {'class': 'mod_book_list mod_all_works_list mod_of'})
         for li in ul.find_all('li'):
             href = li.a.get('href')
@@ -121,7 +112,7 @@ class QQCrawler(CrawlerBase):
     def latest(self, page=1):
         url = 'https://ac.qq.com/Comic/all/search/time/page/%s' % page
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for li in soup.find_all('li', {'class': 'ret-search-item clearfix'}):
             href = li.a.get('href')
             comicid = href.strip('/').split('/')[-1]
@@ -135,7 +126,7 @@ class QQCrawler(CrawlerBase):
         return result
 
     def get_tags(self):
-        tags = TagsItem()
+        tags = self.new_tags_item()
         url = 'https://ac.qq.com/Comic/all/search/hot/page/1'
         html = self.get_html(url)
         soup = BeautifulSoup(html, 'html.parser')
@@ -172,7 +163,7 @@ class QQCrawler(CrawlerBase):
                 url += "/vip/%s" % params['vip']
             url += "/page/%s" % page
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for li in soup.find_all('li', {'class': 'ret-search-item clearfix'}):
             href = li.a.get('href')
             comicid = href.strip('/').split('/')[-1]

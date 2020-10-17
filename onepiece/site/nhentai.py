@@ -1,12 +1,7 @@
 import logging
 from urllib.parse import urljoin
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem
-)
+from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
 
@@ -45,13 +40,12 @@ class NhentaiCrawler(CrawlerBase):
         chapter_number = 1
         image_urls = []
         div_list = soup.find('div', {'id': 'thumbnail-container'}).find_all('div', {'class': 'thumb-container'})
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url)
         for div in soup.find('section', {'id': 'tags'}).find_all('div', {'class': 'tag-container'}):
             for a in div.find('span', {'class': 'tags'}).find_all('a'):
                 href = a.get('href')
@@ -71,10 +65,10 @@ class NhentaiCrawler(CrawlerBase):
         return book
 
     def get_chapter_item(self, citem):
-        return ChapterItem(chapter_number=citem.chapter_number,
-                           title=citem.title,
-                           image_urls=citem.image_urls,
-                           source_url=citem.source_url)
+        return self.new_chapter_item(chapter_number=citem.chapter_number,
+                                     title=citem.title,
+                                     image_urls=citem.image_urls,
+                                     source_url=citem.source_url)
 
     def search(self, name, page=1, size=None):
         url = urljoin(
@@ -82,7 +76,7 @@ class NhentaiCrawler(CrawlerBase):
             '/search/?q=%s&page=%s' % (name, page)
         )
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for div in soup.find_all('div', {'class': 'gallery'}):
             href = div.a.get('href')
             name = div.find('div', {'class': 'caption'}).text
@@ -98,7 +92,7 @@ class NhentaiCrawler(CrawlerBase):
     def latest(self, page=1):
         url = urljoin(self.SITE_INDEX, '/?page=%s' % (page))
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for div in soup.find_all('div', {'class': 'gallery'}):
             href = div.a.get('href')
             name = div.find('div', {'class': 'caption'}).text
@@ -122,7 +116,7 @@ class NhentaiCrawler(CrawlerBase):
 
         params = {'page': page}
         soup = self.get_soup(url, params=params)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for div in soup.find_all('div', {'class': 'gallery'}):
             href = div.a.get('href')
             name = div.find('div', {'class': 'caption'}).text

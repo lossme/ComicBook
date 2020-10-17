@@ -4,13 +4,7 @@ from urllib.parse import urljoin
 
 import execjs
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem,
-    TagsItem
-)
+from ..crawlerbase import CrawlerBase
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 logger = logging.getLogger(__name__)
@@ -58,13 +52,12 @@ class KuaiKanCrawler(CrawlerBase):
         desc = data['topicInfo']['description']
         tag = ",".join(data['topicInfo']['tags'])
         cover_image_url = data['topicInfo']['cover_image_url']
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url)
         comics = sorted(data['comics'], key=lambda x: x['id'])
         for idx, c in enumerate(comics, start=1):
             chapter_number = idx
@@ -86,10 +79,10 @@ class KuaiKanCrawler(CrawlerBase):
                                                 chapter_number=citem.chapter_number,
                                                 source_url=self.source_url)
         image_urls = [i['url'] for i in data['comicInfo']['comicImages']]
-        return ChapterItem(chapter_number=citem.chapter_number,
-                           title=citem.title,
-                           image_urls=image_urls,
-                           source_url=citem.source_url)
+        return self.new_chapter_item(chapter_number=citem.chapter_number,
+                                     title=citem.title,
+                                     image_urls=image_urls,
+                                     source_url=citem.source_url)
 
     def search(self, name, page=1, size=None):
         if page != 1:
@@ -97,7 +90,7 @@ class KuaiKanCrawler(CrawlerBase):
         url = urljoin(self.SITE_INDEX, "/s/result/{}/".format(name))
         html = self.get_html(url)
         data = self.parse_api_data_from_page(html)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for i in data['resultList']:
             comicid = i['url'].split('/')[-1]
             name = i['title']
@@ -113,7 +106,7 @@ class KuaiKanCrawler(CrawlerBase):
         pos = page - 1
         url = 'https://www.kuaikanmanhua.com/v2/pweb/daily/topics?pos=%s' % pos
         data = self.get_json(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for i in data['data']['topics']:
             comicid = i['id']
             name = i['title']
@@ -129,7 +122,7 @@ class KuaiKanCrawler(CrawlerBase):
         url = "https://www.kuaikanmanhua.com/tag/0?state=1&sort=1&page=1"
         html = self.get_html(url)
         data = self.parse_api_data_from_page(html)
-        tags = TagsItem()
+        tags = self.new_tags_item()
         for i in data['res']['data']['tags']:
             category = '题材'
             name = i['title']
@@ -154,7 +147,7 @@ class KuaiKanCrawler(CrawlerBase):
         url = 'https://www.kuaikanmanhua.com/tag/%s' % tag_id
         html = self.get_html(url, params=params)
         data = self.parse_api_data_from_page(html)
-        result = SearchResultItem(self.SITE)
+        result = self.new_search_result_item()
         for i in data['res']['data']['topics']:
             comicid = i['id']
             name = i['title']

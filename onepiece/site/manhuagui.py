@@ -6,13 +6,7 @@ import logging
 import execjs
 from bs4 import BeautifulSoup
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem,
-    TagsItem
-)
+from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
 
@@ -58,14 +52,13 @@ class ManhuaguiCrawler(CrawlerBase):
         author = author_soup.previous_element.a.get('title')
         cover_image_url = soup.find('div', attrs={'class': 'book-cover fl'}).p.img.get('src')
         status = soup.find('li', {'class': 'status'}).span.span.text
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             status=status)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url,
+                                       status=status)
         for a in tag_soup.previous_element.find_all('a'):
             name = a.get('title')
             href = a.get('href')
@@ -102,10 +95,10 @@ class ManhuaguiCrawler(CrawlerBase):
         for i in data['files']:
             url = self.IMAGE_URL_PREFIX + data['path'] + i + '?e=%(e)s&m=%(m)s' % (data['sl'])
             image_urls.append(url)
-        return ChapterItem(chapter_number=citem.chapter_number,
-                           title=citem.title,
-                           image_urls=image_urls,
-                           source_url=citem.source_url)
+        return self.new_chapter_item(chapter_number=citem.chapter_number,
+                                     title=citem.title,
+                                     image_urls=image_urls,
+                                     source_url=citem.source_url)
 
     def extract_mhg_js(self, html):
         js = '(function' + re.findall('function(.*?)</script>', html)[0]
@@ -293,7 +286,7 @@ class ManhuaguiCrawler(CrawlerBase):
         html = self.get_html(url)
         soup = BeautifulSoup(html, 'html.parser')
         li_list = soup.find_all('li', {'class': 'cf'})
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for li_soup in li_list:
             name = li_soup.find('div', {'class': 'book-cover'}).a.get('title')
             cover_image_url = li_soup.find('div', {'class': 'book-cover'}).a.img.get('src')
@@ -311,7 +304,7 @@ class ManhuaguiCrawler(CrawlerBase):
     def latest(self, page=1):
         url = 'https://www.manhuagui.com/update/'
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for div in soup.find_all('div', {'class': 'latest-list'})[page - 1:page]:
             for li in div.find_all('li'):
                 name = li.img.get('alt')
@@ -328,7 +321,7 @@ class ManhuaguiCrawler(CrawlerBase):
         return result
 
     def get_tags(self):
-        item = TagsItem()
+        item = self.new_tags_item()
         url = 'https://www.manhuagui.com/list/'
         soup = self.get_soup(url)
         div_list = soup.find('div', {'class': 'filter-nav'}).find_all('div', {'class': 'filter'})
@@ -343,7 +336,7 @@ class ManhuaguiCrawler(CrawlerBase):
         return item
 
     def get_tag_result(self, tag, page=1):
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         if tag:
             params = {}
             for i in tag.split(','):

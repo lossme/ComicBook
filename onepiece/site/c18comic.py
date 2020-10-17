@@ -2,13 +2,7 @@ import re
 import logging
 from urllib.parse import urljoin
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem,
-    TagsItem
-)
+from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
 
@@ -49,13 +43,12 @@ class C18comicCrawler(CrawlerBase):
         tag = ",".join([i.text for i in soup.find('span', {'itemprop': 'genre'}).find_all('a')])
         cover_image_url = soup.find('img', {'itemprop': 'image'}).get('src')
         res = soup.find('div', {'class': 'episode'})
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url)
         if not res:
             chapter_number = 1
             url = urljoin(self.SITE_INDEX, '/photo/{}/'.format(self.comicid))
@@ -82,10 +75,10 @@ class C18comicCrawler(CrawlerBase):
             if not url:
                 url = img_soup.get('src')
             image_urls.append(url)
-        return ChapterItem(chapter_number=citem.chapter_number,
-                           title=citem.title,
-                           image_urls=image_urls,
-                           source_url=citem.source_url)
+        return self.new_chapter_item(chapter_number=citem.chapter_number,
+                                     title=citem.title,
+                                     image_urls=image_urls,
+                                     source_url=citem.source_url)
 
     def search(self, name, page=1, size=None):
         url = urljoin(
@@ -93,7 +86,7 @@ class C18comicCrawler(CrawlerBase):
             '/search/photos?search_query={}&page={}'.format(name, page)
         )
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for div in soup.find_all('div', {'class': 'thumb-overlay'}):
             comicid = div.a.get('id').split('_')[-1]
             name = div.img.get('alt')
@@ -108,7 +101,7 @@ class C18comicCrawler(CrawlerBase):
     def latest(self, page=1):
         url = 'https://18comic.org/albums?o=mr&page=%s' % page
         soup = self.get_soup(url)
-        result = SearchResultItem(self.SITE)
+        result = self.new_search_result_item()
         for div in soup.find_all('div', {'class': 'thumb-overlay-albums'}):
             comicid = div.a.get('id').split('_')[-1]
             name = div.img.get('alt')
@@ -126,7 +119,7 @@ class C18comicCrawler(CrawlerBase):
 
         div_list = soup.find('div', {'id': 'wrapper'}).find('div', {'class': 'container'})\
             .find_all('div', {'class': 'row'})
-        tags = TagsItem()
+        tags = self.new_tags_item()
         for div in div_list:
             h4 = div.h4
             if not h4:

@@ -10,13 +10,7 @@ import math
 from urllib.parse import urljoin
 
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem,
-    TagsItem
-)
+from ..crawlerbase import CrawlerBase
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 logger = logging.getLogger(__name__)
@@ -119,14 +113,13 @@ class BilibiliCrawler(CrawlerBase):
         author = " ".join(api_data['data']['author_name'])
         cover_image_url = api_data['data']['vertical_cover']
         status = "完结" if api_data['data']['is_finish'] == 1 else "连载"
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             status=status)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url,
+                                       status=status)
         for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
             chapter_number = idx
             cid = item['id']
@@ -145,10 +138,10 @@ class BilibiliCrawler(CrawlerBase):
         response = self.send_request("POST", token_url, data={"urls": json.dumps(chapter_api_data["pics"])})
         data = response.json()
         image_urls = ["{}?token={}".format(i["url"], i["token"]) for i in data["data"]]
-        return ChapterItem(chapter_number=citem.chapter_number,
-                           title=citem.title,
-                           image_urls=image_urls,
-                           source_url=citem.source_url)
+        return self.new_chapter_item(chapter_number=citem.chapter_number,
+                                     title=citem.title,
+                                     image_urls=image_urls,
+                                     source_url=citem.source_url)
 
     def search(self, name, page=1, size=None):
         size = size or 20
@@ -158,7 +151,7 @@ class BilibiliCrawler(CrawlerBase):
         response = self.send_request(
             "POST", url, data={"key_word": name, "page_num": page, "page_size": size})
         data = response.json()
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for i in data["data"]["list"]:
             comicid = i["id"]
             title = i["title"]
@@ -200,7 +193,7 @@ class BilibiliCrawler(CrawlerBase):
             response = self.send_request("POST", url, data=params)
             data = response.json()
             data_list.extend(data["data"]["list"])
-        result = SearchResultItem(self.SITE)
+        result = self.new_search_result_item()
         for i in data_list:
             comicid = i["comic_id"]
             title = i["title"]
@@ -218,7 +211,7 @@ class BilibiliCrawler(CrawlerBase):
         url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/AllLabel?device=pc&platform=web'
         response = self.send_request("POST", url, data={})
         data = response.json()
-        tags_item = TagsItem()
+        tags_item = self.new_tags_item()
         for (key, category, param_key) in [('styles', '题材', 'style_id'),
                                            ('areas', '地区', 'area_id'),
                                            ('status', '进度', 'is_finish'),
@@ -249,7 +242,7 @@ class BilibiliCrawler(CrawlerBase):
         response = self.send_request("POST", url, data=params)
         data = response.json()
 
-        result = SearchResultItem(self.SITE)
+        result = self.new_search_result_item()
         for i in data['data']:
             comicid = i["season_id"]
             name = i["title"]

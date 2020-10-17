@@ -1,14 +1,7 @@
-import re
 import urllib.parse
 import logging
 
-from ..crawlerbase import (
-    CrawlerBase,
-    ChapterItem,
-    ComicBookItem,
-    SearchResultItem,
-    TagsItem
-)
+from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
 
@@ -55,14 +48,13 @@ class U17Crawler(CrawlerBase):
         tag = ''
         author = api_data['comic_info']['author_name']
         status = self.STATUS_MAP.get(api_data['comic_info']['series_status'], "")
-        book = ComicBookItem(name=name,
-                             desc=desc,
-                             tag=tag,
-                             cover_image_url=cover_image_url,
-                             author=author,
-                             source_url=self.source_url,
-                             source_name=self.SOURCE_NAME,
-                             status=status)
+        book = self.new_comicbook_item(name=name,
+                                       desc=desc,
+                                       tag=tag,
+                                       cover_image_url=cover_image_url,
+                                       author=author,
+                                       source_url=self.source_url,
+                                       status=status)
         for idx, item in enumerate(api_data['chapter_list'], start=1):
             chapter_number = idx
             chapter_id = item['chapter_id']
@@ -80,15 +72,15 @@ class U17Crawler(CrawlerBase):
         image_urls = []
         for item in data["image_list"]:
             image_urls.append(item['src'])
-        return ChapterItem(chapter_number=citem.chapter_number,
-                           title=title,
-                           image_urls=image_urls,
-                           source_url=citem.source_url)
+        return self.new_chapter_item(chapter_number=citem.chapter_number,
+                                     title=title,
+                                     image_urls=image_urls,
+                                     source_url=citem.source_url)
 
     def search(self, name, page=1, size=None):
         url = "http://so.u17.com/all/{}/m0_p{}.html".format(urllib.parse.quote(name), page)
         soup = self.get_soup(url)
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for li in soup.find('div', {'class': 'comiclist'}).find_all('li'):
             cover_image_url = li.find('div', {'class': 'cover'}).img.get('src')
             name = li.find('div', {'class': 'info'}).h3.strong.a.text.strip()
@@ -117,7 +109,7 @@ class U17Crawler(CrawlerBase):
         }
         response = self.send_request('POST', url, data=params)
         data = response.json()
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for i in data['comic_list']:
             cover_image_url = i['cover']
             comicid = i['comic_id']
@@ -132,7 +124,7 @@ class U17Crawler(CrawlerBase):
     def get_tags(self):
         url = "https://www.u17.com/comic_list/th99_gr99_ca99_ss99_ob0_ac0_as0_wm0_co99_ct99_p1.html?order=2"
         soup = self.get_soup(url)
-        tags = TagsItem()
+        tags = self.new_tags_item()
         for div in soup.find_all('div', {'class': 'categray_box'}):
             category = div.h2.text
             for li in div.find_all('li'):
@@ -174,7 +166,7 @@ class U17Crawler(CrawlerBase):
                     params['data[read_mode]'] = value
         response = self.send_request('POST', url, data=params)
         data = response.json()
-        result = SearchResultItem(site=self.SITE)
+        result = self.new_search_result_item()
         for i in data['comic_list']:
             cover_image_url = i['cover']
             comicid = i['comic_id']

@@ -15,7 +15,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEBUG = True
     LOG_LEVEL = 'DEBUG'
-    URL_PREFIX = "http://127.0.0.1:5000"
+    URL_PREFIX = "http://127.0.0.1:8000"
     DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
 
     CRAWLER_PROXY = {
