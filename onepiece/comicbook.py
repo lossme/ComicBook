@@ -76,12 +76,17 @@ class ComicBook():
         return self.crawler.get_tag_result(tag=tag, page=page)
 
     def to_dict(self):
+        if self.comicbook_item is None:
+            self.start_crawler()
         return self.comicbook_item.to_dict()
 
     def __repr__(self):
         return "<ComicBook>: {}".format(self.to_dict())
 
-    def Chapter(self, chapter_number, force_refresh=False):
+    def Chapter(self, chapter_number):
+        if self.comicbook_item is None:
+            self.start_crawler()
+
         if chapter_number < 0:
             chapter_number = self.last_chapter_number + chapter_number + 1
 
@@ -92,7 +97,7 @@ class ComicBook():
                                                   source_url=self.crawler.source_url)
             raise ChapterNotFound(msg)
 
-        if force_refresh or chapter_number not in self.chapter_cache:
+        if self.crawler.SITE == 'bilibili' or chapter_number not in self.chapter_cache:
             citem = self.comicbook_item.citems[chapter_number]
             chapter_item = self.crawler.get_chapter_item(citem)
             self.chapter_cache[chapter_number] = Chapter(

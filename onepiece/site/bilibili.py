@@ -241,9 +241,10 @@ class BilibiliCrawler(CrawlerBase):
             'page_size': 20,
             'style_id': -1,
         }
-        for i in tag.split(','):
-            key, _id = i.rsplit('_', 1)
-            params[key] = int(_id)
+        if tag:
+            for i in tag.split(','):
+                key, _id = i.rsplit('_', 1)
+                params[key] = int(_id)
         url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ClassPage?device=pc&platform=web'
         response = self.send_request("POST", url, data=params)
         data = response.json()

@@ -9,7 +9,6 @@ from ..crawlerbase import (
     SearchResultItem,
     TagsItem
 )
-from ..exceptions import ComicbookNotFound
 
 logger = logging.getLogger(__name__)
 

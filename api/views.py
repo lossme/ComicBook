@@ -1,4 +1,3 @@
-import datetime
 import logging
 from flask import (
     Blueprint,
@@ -51,30 +50,16 @@ def get_comicbook_from_cache(site, comicid):
     return comicbook
 
 
-def comicbook_update_check(comicbook, cache_time=CACHE_TIME, force_refresh=False):
-    if force_refresh \
-            or not comicbook.crawler_time \
-            or (datetime.datetime.now() - comicbook.crawler_time).total_seconds() > cache_time:
-        comicbook.start_crawler()
-    return comicbook
-
-
 @app.route("/<site>/comic/<comicid>")
 def get_comicbook_info(site, comicid):
-    force_refresh = request.args.get('force_refresh') or ''
-    force_refresh = force_refresh.lower() == 'true'
     comicbook = get_comicbook_from_cache(site=site, comicid=comicid)
-    comicbook_update_check(comicbook, force_refresh=force_refresh)
     return jsonify(comicbook.to_dict())
 
 
 @app.route("/<site>/comic/<comicid>/<int:chapter_number>")
 def get_chapter_info(site, comicid, chapter_number):
-    force_refresh = request.args.get('force_refresh') or ''
-    force_refresh = force_refresh.lower() == 'true'
     comicbook = get_comicbook_from_cache(site, comicid)
-    comicbook_update_check(comicbook, force_refresh=force_refresh)
-    chapter = comicbook.Chapter(chapter_number, force_refresh=force_refresh)
+    chapter = comicbook.Chapter(chapter_number)
     return jsonify(chapter.to_dict())
 
 

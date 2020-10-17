@@ -112,11 +112,14 @@ class NhentaiCrawler(CrawlerBase):
         return result
 
     def get_tag_result(self, tag, page=1):
-        if '_' in tag:
+        if not tag:
+            return self.latest()
+        elif '_' in tag:
             name, tag = tag.split('_', 1)
             url = 'https://nhentai.net/%s/%s/popular' % (name, tag)
         else:
             url = 'https://nhentai.net/tag/%s/popular' % tag
+
         params = {'page': page}
         soup = self.get_soup(url, params=params)
         result = SearchResultItem(site=self.SITE)
