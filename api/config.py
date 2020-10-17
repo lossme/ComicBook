@@ -3,6 +3,7 @@ class Config(object):
     JSON_AS_ASCII = False
     LOG_LEVEL = 'INFO'
     CRAWLER_PROXY = {}
+    POOL_SIZE = 8
 
 
 class ProductionConfig(Config):

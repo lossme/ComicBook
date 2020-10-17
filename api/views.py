@@ -7,6 +7,7 @@ from flask import (
     current_app
 )
 import cachetools.func
+from concurrent.futures import ThreadPoolExecutor
 
 from onepiece.comicbook import ComicBook
 from onepiece.exceptions import (
@@ -21,6 +22,16 @@ app = Blueprint("api", __name__, url_prefix='/api')
 aggregate_app = Blueprint("aggregate", __name__, url_prefix='/aggregate')
 
 CACHE_TIME = 600
+THREAD_POOL = None
+POOL_SIZE = 4
+
+
+def get_pool():
+    global THREAD_POOL
+    if THREAD_POOL is None:
+        pool_size = current_app.config['POOL_SIZE']
+        THREAD_POOL = ThreadPoolExecutor(max_workers=pool_size)
+    return THREAD_POOL
 
 
 @app.errorhandler(ComicbookException)
@@ -129,12 +140,19 @@ def aggregate_search():
         sites = list(ComicBook.CRAWLER_CLS_MAP.keys())
     if not name:
         abort(400)
-
     ret = []
+    pool = get_pool()
+    future_list = []
     for site in sites:
         comicbook = get_comicbook_from_cache(site=site)
-        for i in comicbook.search(name):
-            ret.append(i.to_dict())
+        future = pool.submit(comicbook.search, name=name)
+        future_list.append(future)
+    for future in future_list:
+        try:
+            for i in future.result():
+                ret.append(i.to_dict())
+        except Exception:
+            logger.exception('task error. future=%s future._exception=%s', future, future._exception)
     return jsonify(
         {
             "list": ret
