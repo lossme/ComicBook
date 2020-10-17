@@ -1,15 +1,22 @@
 import re
 import base64
 import json
+import logging
 from urllib.parse import urljoin
+
+from bs4 import BeautifulSoup
 
 from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    SearchResultItem
+    SearchResultItem,
+    TagsItem
 )
 from ..exceptions import ComicbookNotFound
+
+
+logger = logging.getLogger(__name__)
 
 
 class QQCrawler(CrawlerBase):
@@ -23,6 +30,7 @@ class QQCrawler(CrawlerBase):
     CHAPTER_JSON_STR_PATTERN = re.compile(r'("chapter":{.*)')
     DEFAULT_COMICID = 505430
     DEFAULT_SEARCH_NAME = '海贼王'
+    DEFAULT_TAG = 'theme_105'
 
     def __init__(self, comicid=None):
         super().__init__()
@@ -113,6 +121,57 @@ class QQCrawler(CrawlerBase):
 
     def latest(self, page=1):
         url = 'https://ac.qq.com/Comic/all/search/time/page/%s' % page
+        soup = self.get_soup(url)
+        result = SearchResultItem(site=self.SITE)
+        for li in soup.find_all('li', {'class': 'ret-search-item clearfix'}):
+            href = li.a.get('href')
+            comicid = href.strip('/').split('/')[-1]
+            name = li.a.get('title')
+            cover_image_url = li.a.img.get('data-original')
+            source_url = self.get_source_url(comicid)
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
+
+    def get_tags(self):
+        tags = TagsItem()
+        url = 'https://ac.qq.com/Comic/all/search/hot/page/1'
+        html = self.get_html(url)
+        soup = BeautifulSoup(html, 'html.parser')
+        for div in soup.find_all('div', {'class': 'ret-tags-type'}):
+            category = div.h3.text
+            if category == '标签':
+                continue
+            for a in div.find_all('a'):
+                name = a.get('title')
+                tag_id = a.get('id', '')
+                tags.add_tag(category=category, name=name, tag=tag_id)
+        tag_str = re.search(r'var tagList = "(.*?)"', html).group(1)
+        for i in tag_str.split('|'):
+            tag_id, name = i.split('#')
+            tags.add_tag(category='标签', name=name, tag='theme_%s' % tag_id)
+        return tags
+
+    def get_tag_result(self, tag, page=1):
+        if not tag:
+            url = 'https://ac.qq.com/Comic/all/search/hot/page/%s' % page
+        else:
+            # url = "https://ac.qq.com/Comic/all/theme/%s/finish/%s/search/hot/vip/%s/page/%s"
+            url = "https://ac.qq.com/Comic/all"
+            params = {}
+            for i in tag.split(','):
+                key, tag_id = i.split('_', 1)
+                params[key] = tag_id
+            if 'theme' in params:
+                url += "/theme/%s" % params['theme']
+            if 'finish' in params:
+                url += "/finish/%s" % params['finish']
+            url += "/search/hot"
+            if 'vip' in params:
+                url += "/vip/%s" % params['vip']
+            url += "/page/%s" % page
         soup = self.get_soup(url)
         result = SearchResultItem(site=self.SITE)
         for li in soup.find_all('li', {'class': 'ret-search-item clearfix'}):

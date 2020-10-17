@@ -14,7 +14,9 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    SearchResultItem)
+    SearchResultItem,
+    TagsItem
+)
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 logger = logging.getLogger(__name__)
@@ -36,6 +38,7 @@ class BilibiliCrawler(CrawlerBase):
 
     DEFAULT_COMICID = 'mc24742'
     DEFAULT_SEARCH_NAME = '海贼王'
+    DEFAULT_TAG = 'is_finish_0'
 
     def __init__(self, comicid=None):
         super().__init__()
@@ -115,13 +118,15 @@ class BilibiliCrawler(CrawlerBase):
         tag = ",".join(api_data['data']['styles'])
         author = " ".join(api_data['data']['author_name'])
         cover_image_url = api_data['data']['vertical_cover']
+        status = "完结" if api_data['data']['is_finish'] == 1 else "连载"
         book = ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
                              cover_image_url=cover_image_url,
                              author=author,
                              source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+                             source_name=self.SOURCE_NAME,
+                             status=status)
         for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
             chapter_number = idx
             cid = item['id']
@@ -155,9 +160,11 @@ class BilibiliCrawler(CrawlerBase):
         data = response.json()
         result = SearchResultItem(site=self.SITE)
         for i in data["data"]["list"]:
+            logger.info('i=%s', i)
             comicid = i["id"]
             title = i["title"]
             name = re.sub(r'<[^>]+>', '', title, re.S)
+            status = "完结" if i['is_finish'] == 1 else "连载"
 
             # or square_cover or vertical_cover
             cover_image_url = i["horizontal_cover"]
@@ -165,7 +172,8 @@ class BilibiliCrawler(CrawlerBase):
             result.add_result(comicid=comicid,
                               name=name,
                               cover_image_url=cover_image_url,
-                              source_url=source_url)
+                              source_url=source_url,
+                              status=status)
         return result
 
     def latest(self, page=1):
@@ -205,6 +213,54 @@ class BilibiliCrawler(CrawlerBase):
                               name=name,
                               cover_image_url=cover_image_url,
                               source_url=source_url)
+        return result
+
+    def get_tags(self):
+        url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/AllLabel?device=pc&platform=web'
+        response = self.send_request("POST", url, data={})
+        data = response.json()
+        tags_item = TagsItem()
+        for (key, category, param_key) in [('styles', '题材', 'style_id'),
+                                           ('areas', '地区', 'area_id'),
+                                           ('status', '进度', 'is_finish'),
+                                           ('prices', '收费', 'is_free'),
+                                           ('orders', '排序', 'order')]:
+            for i in data['data'][key]:
+                name = i['name']
+                id = i['id']
+                tag = '%s_%s' % (param_key, id)
+                tags_item.add_tag(category=category, name=name, tag=tag)
+        return tags_item
+
+    def get_tag_result(self, tag, page=1):
+        params = {
+            'area_id': -1,
+            'is_finish': -1,
+            'is_free': -1,
+            'order': 0,
+            'page_num': page,
+            'page_size': 20,
+            'style_id': -1,
+        }
+        for i in tag.split(','):
+            key, _id = i.rsplit('_', 1)
+            params[key] = int(_id)
+        url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ClassPage?device=pc&platform=web'
+        response = self.send_request("POST", url, data=params)
+        data = response.json()
+
+        result = SearchResultItem(self.SITE)
+        for i in data['data']:
+            comicid = i["season_id"]
+            name = i["title"]
+            cover_image_url = i["horizontal_cover"]
+            source_url = self.get_source_url(comicid)
+            status = "完结" if i['is_finish'] == 1 else "连载"
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url,
+                              status=status)
         return result
 
     def login(self):

@@ -1,7 +1,6 @@
 import datetime
 import time
 import logging
-
 import execjs
 from bs4 import BeautifulSoup
 
@@ -16,11 +15,12 @@ logger = logging.getLogger(__name__)
 
 class ComicBookItem():
     FIELDS = ["name", "desc", "tag", "cover_image_url", "author",
-              "source_url", "source_name", "crawl_time", "chapters", "ext_chapters", "volumes"]
+              "source_url", "source_name", "crawl_time", "chapters", "ext_chapters", "volumes",
+              "status", 'tags']
 
     def __init__(self, name=None, desc=None, tag=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
-                 crawl_time=None):
+                 crawl_time=None, status=None):
         self.name = name or ""
         self.desc = desc or ""
         self.tag = tag or ""
@@ -29,14 +29,19 @@ class ComicBookItem():
         self.source_url = source_url or ""
         self.source_name = source_name or ""
         self.crawl_time = crawl_time or datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.status = status or ""
 
         # {1: Citem(chapter_number=1, title="xx", cid="xxx"}
         self.citems = {}
         self.ext_citems = {}
         self.volume_citems = {}
+        self.tags = []
 
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}
+
+    def add_tag(self, name, tag):
+        self.tags.append(dict(name=name, tag=tag))
 
     def add_chapter(self, chapter_number, title, source_url, **kwargs):
         self.citems[chapter_number] = Citem(
@@ -100,17 +105,18 @@ class ChapterItem():
 
 
 class SearchResultItem():
-    FIELDS = ["site", "comicid", "name", "cover_image_url", "source_url"]
+    FIELDS = ["site", "comicid", "name", "cover_image_url", "source_url", "status"]
 
     def __init__(self, site=None):
         self.site = site or ""
         self._result = []
 
-    def add_result(self, comicid, name, cover_image_url, source_url, site=None):
+    def add_result(self, comicid, name, cover_image_url, source_url, status=None, site=None):
         if site is None:
             site = self.site
+        status = status or ""
         item = Citem(site=self.site, comicid=comicid, name=name,
-                     cover_image_url=cover_image_url, source_url=source_url)
+                     cover_image_url=cover_image_url, source_url=source_url, status=status)
         self._result.append(item)
 
     def __iter__(self):
@@ -118,6 +124,23 @@ class SearchResultItem():
 
     def to_dict(self):
         return [i.to_dict() for i in self._result]
+
+
+class TagsItem():
+
+    def __init__(self):
+        self.tags = []
+
+    def add_tag(self, category, name, tag):
+        for item in self.tags:
+            if item['category'] == category:
+                item['tags'].append(dict(name=name, tag=tag))
+                return
+        self.tags.append(dict(category=category, tags=[]))
+        self.tags[-1]['tags'].append(dict(name=name, tag=tag))
+
+    def to_dict(self):
+        return self.tags
 
 
 class CrawlerBase():
@@ -128,13 +151,14 @@ class CrawlerBase():
 
     DEFAULT_COMICID = None
     DEFAULT_SEARCH_NAME = ''
+    DEFAULT_TAG = ''
 
     DRIVER_PATH = None
     DRIVER_TYPE = None
     DEFAULT_DRIVER_TYPE = "Chrome"
     SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
     REQUIRE_JAVASCRIPT = False
-    TAGS = tuple()
+    TAGS = None
 
     def __init__(self):
         self._session = None
@@ -170,16 +194,16 @@ class CrawlerBase():
             msg = "URL链接访问异常！ url={}".format(url)
             raise URLException(msg) from e
 
-    def get_html(self, url):
-        response = self.send_request("GET", url)
+    def get_html(self, url, **kwargs):
+        response = self.send_request("GET", url, **kwargs)
         return response.text
 
-    def get_soup(self, url):
-        html = self.get_html(url)
+    def get_soup(self, url, **kwargs):
+        html = self.get_html(url, **kwargs)
         return BeautifulSoup(html, 'html.parser')
 
-    def get_json(self, url):
-        response = self.send_request("GET", url)
+    def get_json(self, url, **kwargs):
+        response = self.send_request("GET", url, **kwargs)
         return response.json()
 
     def get_comicbook_item(self):
@@ -206,13 +230,8 @@ class CrawlerBase():
         """
         return SearchResultItem(site=self.SITE)
 
-    def fuzz_get_tag(self, zh_tag_or_en_tag):
-        for i in self.TAGS:
-            if zh_tag_or_en_tag == i['name']:
-                return i['tag']
-            if zh_tag_or_en_tag == i['tag']:
-                return i['tag']
-        return
+    def get_tags(self):
+        return TagsItem()
 
     def get_tag_result(self, tag, page=1):
         """

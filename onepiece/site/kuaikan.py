@@ -8,7 +8,9 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    SearchResultItem)
+    SearchResultItem,
+    TagsItem
+)
 from ..exceptions import ChapterNotFound, ComicbookNotFound
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,7 @@ class KuaiKanCrawler(CrawlerBase):
     LOGIN_URL = urljoin(SITE_INDEX, "/webs/loginh?redirect={}".format(SITE_INDEX))
     DEFAULT_COMICID = 1338
     DEFAULT_SEARCH_NAME = '海贼王'
+    DEFAULT_TAG = 'tag_0'
 
     def __init__(self, comicid=None):
         super().__init__()
@@ -112,6 +115,48 @@ class KuaiKanCrawler(CrawlerBase):
         data = self.get_json(url)
         result = SearchResultItem(site=self.SITE)
         for i in data['data']['topics']:
+            comicid = i['id']
+            name = i['title']
+            cover_image_url = i['cover_image_url']
+            source_url = self.get_source_url(comicid)
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
+
+    def get_tags(self):
+        url = "https://www.kuaikanmanhua.com/tag/0?state=1&sort=1&page=1"
+        html = self.get_html(url)
+        data = self.parse_api_data_from_page(html)
+        tags = TagsItem()
+        for i in data['res']['data']['tags']:
+            logger.info('i=%s', i)
+            category = '题材'
+            name = i['title']
+            tag_id = i['tag_id']
+            tag = 'tag_id_%s' % tag_id
+            tags.add_tag(category=category, name=name, tag=tag)
+        for i in data['res']['data']['update_status']:
+            category = '进度'
+            name = i['description']
+            code = i['code']
+            tag = 'state_%s' % code
+            tags.add_tag(category=category, name=name, tag=tag)
+        return tags
+
+    def get_tag_result(self, tag, page=1):
+        params = {'page': page}
+        if tag:
+            for i in tag.split(','):
+                key, value = i.rsplit('_', 1)
+                params[key] = value
+        tag_id = params.pop('tag_id', 0)
+        url = 'https://www.kuaikanmanhua.com/tag/%s' % tag_id
+        html = self.get_html(url, params=params)
+        data = self.parse_api_data_from_page(html)
+        result = SearchResultItem(self.SITE)
+        for i in data['res']['data']['topics']:
             comicid = i['id']
             name = i['title']
             cover_image_url = i['cover_image_url']

@@ -33,6 +33,7 @@ class ComicBook():
         self.chapter_cache = {}
         self.crawler_time = None
         self.comicbook_item = None
+        self.tags = None
 
     def start_crawler(self):
         self.comicbook_item = self.crawler.get_comicbook_item()
@@ -66,9 +67,10 @@ class ComicBook():
     def latest(self, page=1):
         return self.crawler.latest(page=page)
 
-    @property
-    def tags(self):
-        return self.crawler.TAGS
+    def get_tags(self):
+        if self.tags is None:
+            self.tags = self.crawler.get_tags()
+        return self.tags
 
     def get_tag_result(self, tag, page=1):
         return self.crawler.get_tag_result(tag=tag, page=page)

@@ -10,7 +10,9 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    SearchResultItem)
+    SearchResultItem,
+    TagsItem
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +57,21 @@ class ManhuaguiCrawler(CrawlerBase):
         author_soup = li_list[1].find_all('strong')[1]
         author = author_soup.previous_element.a.get('title')
         cover_image_url = soup.find('div', attrs={'class': 'book-cover fl'}).p.img.get('src')
+        status = soup.find('li', {'class': 'status'}).span.span.text
         book = ComicBookItem(name=name,
                              desc=desc,
                              tag=tag,
                              cover_image_url=cover_image_url,
                              author=author,
                              source_url=self.source_url,
-                             source_name=self.SOURCE_NAME)
+                             source_name=self.SOURCE_NAME,
+                             status=status)
+        for a in tag_soup.previous_element.find_all('a'):
+            name = a.get('title')
+            href = a.get('href')
+            tag = href.replace('/list/', '').replace('/', '')
+            book.add_tag(name=name, tag=tag)
+
         chapter_soup = soup.find('div', {'class': 'chapter'})
         h4_list = chapter_soup.find_all('h4')
         div_list = chapter_soup.find_all('div', {'class': 'chapter-list'})
@@ -290,10 +300,12 @@ class ManhuaguiCrawler(CrawlerBase):
             href = li_soup.find('div', {'class': 'book-cover'}).a.get('href')
             comicid = href.split('/')[2]
             source_url = self.get_source_url(comicid)
+            status = li_soup.find('span', {'class': 'tt'}).text
             result.add_result(comicid=comicid,
                               name=name,
                               cover_image_url=cover_image_url,
-                              source_url=source_url)
+                              source_url=source_url,
+                              status=status)
         return result
 
     def latest(self, page=1):
@@ -307,22 +319,49 @@ class ManhuaguiCrawler(CrawlerBase):
                 href = li.a.get('href')
                 comicid = href.split('/')[2]
                 source_url = self.get_source_url(comicid)
+                status = li.find('span', {'class': 'tt'}).text
                 result.add_result(comicid=comicid,
                                   name=name,
                                   cover_image_url=cover_image_url,
-                                  source_url=source_url)
+                                  source_url=source_url,
+                                  status=status)
         return result
+
+    def get_tags(self):
+        item = TagsItem()
+        url = 'https://www.manhuagui.com/list/'
+        soup = self.get_soup(url)
+        div_list = soup.find('div', {'class': 'filter-nav'}).find_all('div', {'class': 'filter'})
+        for idx, div in enumerate(div_list, start=1):
+            category = div.label.get_text().strip().replace('：', '')
+            for li in div.find_all('li'):
+                name = li.a.text
+                tag = li.a.get('href').replace('/list/', '').replace('/', '')
+                if tag:
+                    tag = '%s_%s' % (idx, tag)
+                    item.add_tag(category=category, name=name, tag=tag)
+        return item
 
     def get_tag_result(self, tag, page=1):
         result = SearchResultItem(site=self.SITE)
-        tag = self.fuzz_get_tag(tag)
-        if not tag:
-            return result
-        url = "https://www.manhuagui.com/list/%s/index_p%s.html" % (tag, page)
+        if tag:
+            params = {}
+            for i in tag.split(','):
+                if re.match(r'd+_.*', i):
+                    idx, tag = tag.split('_', 1)
+                    params[int(idx)] = tag
+                else:
+                    params[0] = i
+            query = '_'.join([i[1] for i in sorted(params.items(), key=lambda x: x[0])])
+            url = "https://www.manhuagui.com/list/%s/index_p%s.html" % (query, page)
+        else:
+            url = 'https://www.manhuagui.com/list/'
+
         soup = self.get_soup(url)
 
         ul = soup.find('ul', {'id': 'contList'})
         for li in ul.find_all('li'):
+            status = li.find('span', {'class': 'tt'}).text
             name = li.img.get('alt')
             cover_image_url = li.img.get('src')
             href = li.a.get('href')
@@ -331,7 +370,8 @@ class ManhuaguiCrawler(CrawlerBase):
             result.add_result(comicid=comicid,
                               name=name,
                               cover_image_url=cover_image_url,
-                              source_url=source_url)
+                              source_url=source_url,
+                              status=status)
         return result
 
     def login(self):

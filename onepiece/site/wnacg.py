@@ -8,7 +8,9 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    SearchResultItem)
+    SearchResultItem,
+    TagsItem
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,7 @@ class WnacgCrawler(CrawlerBase):
 
     DEFAULT_COMICID = 106789
     DEFAULT_SEARCH_NAME = '过期米线线喵'
+    DEFAULT_TAG = "3"
     REQUIRE_JAVASCRIPT = True
 
     def __init__(self, comicid=None):
@@ -99,6 +102,43 @@ class WnacgCrawler(CrawlerBase):
 
     def latest(self, page=1):
         url = 'http://www.wnacg.org/albums-index-page-%s.html' % page
+        soup = self.get_soup(url)
+        result = SearchResultItem(self.SITE)
+        for li in soup.find('ul', {'class': 'cc'}).find_all('li'):
+            href = li.a.get('href')
+            name = li.a.get('title')
+            name = re.sub(r'<[^>]+>', '', name, re.S)
+            comicid = href.rsplit('.', 1)[0].split('-')[-1]
+            cover_image_url = 'http:' + li.img.get('data-original')
+            source_url = self.get_source_url(comicid)
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
+
+    TAGS = [
+        dict(name='同人志-全部', tag_id='5'),
+        dict(name='同人志-汉化', tag_id='1'),
+        dict(name='同人志-日语', tag_id='12'),
+        dict(name='同人志-CG畫集', tag_id='2'),
+        dict(name='同人志-Cosplay', tag_id='3'),
+        dict(name='单行本-全部', tag_id='6'),
+        dict(name='单行本-汉化', tag_id='9'),
+        dict(name='单行本-日語', tag_id='13'),
+    ]
+
+    def get_tags(self):
+        tags = TagsItem()
+        for i in self.TAGS:
+            category, name = i['name'].split('-', 1)
+            tag_id = i['tag_id']
+            tags.add_tag(category=category, name=name, tag=tag_id)
+        return tags
+
+    def get_tag_result(self, tag, page=1):
+        url = 'http://www.wnacg.org/albums-index-page-%s-cate-%s.html' % (page, tag)
+        logger.info('url=%s', url)
         soup = self.get_soup(url)
         result = SearchResultItem(self.SITE)
         for li in soup.find('ul', {'class': 'cc'}).find_all('li'):

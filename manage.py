@@ -1,6 +1,6 @@
-from api import create_app
+from api import create_dev_app
 
-app = create_app()
+app = create_dev_app()
 
 if __name__ == '__main__':
     app.run()

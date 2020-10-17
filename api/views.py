@@ -1,9 +1,11 @@
 import datetime
+import logging
 from flask import (
     Blueprint,
     jsonify,
     request,
-    abort
+    abort,
+    current_app
 )
 import cachetools.func
 
@@ -15,6 +17,7 @@ from onepiece.exceptions import (
 )
 
 
+logger = logging.getLogger(__name__)
 app = Blueprint("api", __name__, url_prefix='/api')
 CACHE_TIME = 600
 
@@ -41,6 +44,10 @@ def handle_404(error):
 @cachetools.func.ttl_cache(maxsize=1024, ttl=CACHE_TIME, typed=False)
 def get_comicbook_from_cache(site, comicid):
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    proxy_config = current_app.config.get('CRAWLER_PROXY', {})
+    proxy = proxy_config.get(site)
+    if proxy:
+        comicbook.crawler.get_session().set_proxy(proxy)
     return comicbook
 
 
@@ -90,9 +97,10 @@ def search(site):
 @app.route("/<site>/tags")
 def tags(site):
     comicbook = get_comicbook_from_cache(site, comicid=None)
+    tags = comicbook.get_tags()
     return jsonify(
         {
-            "tags": [i['name'] for i in comicbook.tags]
+            "tags": tags.to_dict()
         }
     )
 

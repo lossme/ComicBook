@@ -5,7 +5,8 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    SearchResultItem)
+    SearchResultItem
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,8 @@ class NhentaiCrawler(CrawlerBase):
 
     DEFAULT_COMICID = 331735
     DEFAULT_SEARCH_NAME = 'manga'
+    DEFAULT_TAG = 'big-breasts'
+
     REQUIRE_JAVASCRIPT = True
 
     def __init__(self, comicid=None):
@@ -49,6 +52,12 @@ class NhentaiCrawler(CrawlerBase):
                              author=author,
                              source_url=self.source_url,
                              source_name=self.SOURCE_NAME)
+        for div in soup.find('section', {'id': 'tags'}).find_all('div', {'class': 'tag-container'}):
+            for a in div.find('span', {'class': 'tags'}).find_all('a'):
+                href = a.get('href')
+                name, tag = href.strip('/').split('/')
+                book.add_tag(name=name.capitalize(), tag='%s_%s' % (name, tag))
+
         for div in div_list:
             url = div.img.get('data-src').replace('t.nhentai', 'i.nhentai')
             url_split = url.rsplit('.', 1)
@@ -89,6 +98,28 @@ class NhentaiCrawler(CrawlerBase):
     def latest(self, page=1):
         url = urljoin(self.SITE_INDEX, '/?page=%s' % (page))
         soup = self.get_soup(url)
+        result = SearchResultItem(site=self.SITE)
+        for div in soup.find_all('div', {'class': 'gallery'}):
+            href = div.a.get('href')
+            name = div.find('div', {'class': 'caption'}).text
+            comicid = href.strip('/').split('/')[-1]
+            cover_image_url = div.img.get('data-src')
+            source_url = self.get_source_url(comicid)
+            result.add_result(comicid=comicid,
+                              name=name,
+                              cover_image_url=cover_image_url,
+                              source_url=source_url)
+        return result
+
+    def get_tag_result(self, tag, page=1):
+        if '_' in tag:
+            name, tag = tag.split('_', 1)
+            url = 'https://nhentai.net/%s/%s/popular' % (name, tag)
+        else:
+            url = 'https://nhentai.net/tag/%s/popular' % tag
+        logger.info('url=%s', url)
+        params = {'page': page}
+        soup = self.get_soup(url, params=params)
         result = SearchResultItem(site=self.SITE)
         for div in soup.find_all('div', {'class': 'gallery'}):
             href = div.a.get('href')

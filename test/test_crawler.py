@@ -4,9 +4,14 @@ from onepiece.comicbook import ComicBook
 
 logger = logging.getLogger()
 
+DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
 
-def _test_crawl_comicbook(site, comicid=None, chapter_number=1):
+
+def _test_crawl_comicbook(site, comicid=None, chapter_number=1, proxy=None):
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    if proxy:
+        comicbook.crawler.get_session().set_proxy(proxy)
+
     comicbook.start_crawler()
     chapter = comicbook.Chapter(chapter_number=chapter_number)
     assert len(chapter.image_urls) > 0
@@ -41,4 +46,16 @@ def test_kuaikan():
 
 def test_manhuagui():
     # 鬼灭之刃 URL: https://www.manhuagui.com/comic/19430
-    _test_crawl_comicbook(site='manhuagui')
+    _test_crawl_comicbook(site='manhuagui', proxy=DEFAULT_PROXY)
+
+
+def test_18comic():
+    _test_crawl_comicbook(site='18comic', proxy=DEFAULT_PROXY)
+
+
+def test_nhentai():
+    _test_crawl_comicbook(site='nhentai', proxy=DEFAULT_PROXY)
+
+
+def test_wnacg():
+    _test_crawl_comicbook(site='wnacg', proxy=DEFAULT_PROXY)

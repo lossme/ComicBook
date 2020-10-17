@@ -6,7 +6,9 @@ from ..crawlerbase import (
     CrawlerBase,
     ChapterItem,
     ComicBookItem,
-    SearchResultItem)
+    SearchResultItem,
+    TagsItem
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ class C18comicCrawler(CrawlerBase):
 
     DEFAULT_COMICID = 201118
     DEFAULT_SEARCH_NAME = '騎馬的女孩好想被她騎'
+    DEFAULT_TAG = 'CG集'
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -116,6 +119,27 @@ class C18comicCrawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
+
+    def get_tags(self):
+        url = "https://18comic.org/theme/"
+        soup = self.get_soup(url)
+
+        div_list = soup.find('div', {'id': 'wrapper'}).find('div', {'class': 'container'})\
+            .find_all('div', {'class': 'row'})
+        logger.info('div_list=%s', div_list)
+        tags = TagsItem()
+        for div in div_list:
+            h4 = div.h4
+            if not h4:
+                continue
+            category = h4.text
+            for li in div.find_all('li'):
+                name = li.a.text
+                tags.add_tag(category=category, name=name, tag=name)
+        return tags
+
+    def get_tag_result(self, tag, page=1):
+        return self.search(name=tag, page=page)
 
     def login(self):
         self.selenium_login(login_url=self.LOGIN_URL,
