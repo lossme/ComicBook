@@ -3,12 +3,12 @@
 安装依赖
 ```sh
 pip install -r requirements-api.txt
+
 ```
+复制`api/config.py.example`并命名为`api/config.py`，并根据实际情况修改`api/config.py`的参数
 
 启动接口
 ```sh
-# 根据实际情况 调整项目配置文件 api/config.py
-
 gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
 # 查看可选的配置选项 gunicorn --help
