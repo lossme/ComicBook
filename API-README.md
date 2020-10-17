@@ -7,6 +7,8 @@ pip install -r requirements-api.txt
 
 启动接口
 ```sh
+# 根据实际情况 调整项目配置文件 api/config.py
+
 gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
 # 查看可选的配置选项 gunicorn --help
@@ -22,6 +24,7 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 - [1.5 获取所有tag](#15)
 - [1.6 根据tag搜索](#16)
 - [1.7 聚合搜索](#17)
+
 
 ### 1.1 获取概要信息
 
@@ -301,7 +304,7 @@ curl "http://127.0.0.1:8000/api/qq/list?tag=theme_105,finish_2&page=1"
 }
 ```
 
-### 1.6 聚合搜索
+### 1.7 聚合搜索
 
 `GET /aggregate/search?name={name}&site={site}`
 请求示例

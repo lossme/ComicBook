@@ -2,13 +2,14 @@ class Config(object):
     DEBUG = False
     JSON_AS_ASCII = False
     LOG_LEVEL = 'INFO'
+    CRAWLER_PROXY = {}
 
 
 class ProductionConfig(Config):
-    DEBUG = False
-    LOG_LEVEL = 'DEBUG'
     URL_PREFIX = "http://127.0.0.1:8000"
     DEFAULT_PROXY = 'socks5://127.0.0.1:1080'
+
+    # 指定哪些站点走代理 可参考 DevelopmentConfig
     CRAWLER_PROXY = {}
 
 
