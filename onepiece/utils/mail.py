@@ -66,11 +66,11 @@ class Mail():
             if debug:
                 s.set_debuglevel(1)
             s.login(sender, sender_passwd)
-            logger.info('正在向 {} 发送 {}'.format(','.join(receivers), subject))
+            logger.info('sending mail. receivers=%s subject=%s', ','.join(receivers), subject)
             s.sendmail(sender, receivers, msg.as_string())
             s.quit()
-        except smtplib.SMTPException as e:
-            logger.info('发送 {} 邮件时出现错误！error:{}'.format(subject, e))
+        except smtplib.SMTPException:
+            logger.exception('send mail failed. subject=%s', subject)
             raise
 
     @classmethod

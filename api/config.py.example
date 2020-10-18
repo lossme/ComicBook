@@ -1,28 +1,42 @@
+import os
+HERE = os.path.abspath(os.path.dirname(__file__))
+PROJECT_HOME = os.path.abspath(os.path.join(HERE, os.path.pardir))
+
+
 class Config(object):
     DEBUG = False
     JSON_AS_ASCII = False
     LOG_LEVEL = 'INFO'
-    CRAWLER_PROXY = {}
-    POOL_SIZE = 8
+    PROJECT_HOME = PROJECT_HOME
 
-
-class ProductionConfig(Config):
     URL_PREFIX = "http://127.0.0.1:8000"
-    DEFAULT_PROXY = 'socks5://127.0.0.1:1080'
 
-    # 指定哪些站点走代理 可参考 DevelopmentConfig
-    CRAWLER_PROXY = {}
+    # 配置代理
+    # DEFAULT_PROXY = 'socks5://127.0.0.1:1080'
+    DEFAULT_PROXY = None
 
-
-class DevelopmentConfig(Config):
-    DEBUG = True
-    LOG_LEVEL = 'DEBUG'
-    URL_PREFIX = "http://127.0.0.1:8000"
-    DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
-
+    # 指定哪些站点走代理
     CRAWLER_PROXY = {
         '18comic': DEFAULT_PROXY,
         'manhuagui': DEFAULT_PROXY,
         'nhentai': DEFAULT_PROXY,
         'wnacg': DEFAULT_PROXY,
     }
+
+    DATA_DIR = os.path.join(PROJECT_HOME, 'download')
+
+    # 数据库连接
+    SQLALCHEMY_ECHO = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLITE_FILE = os.path.join(DATA_DIR, 'onepiece.db')
+
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{SQLITE_FILE}"
+    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://user:password@ip:port/test?charset=utf8mb4'
+
+    MAIL_CONFIG = dict(
+        sender="???@163.com",
+        sender_passwd="???",
+        smtp_server="smtp.163.com",
+        smtp_port=465,
+        receivers=["???@qq.com"]
+    )

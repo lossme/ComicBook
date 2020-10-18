@@ -49,7 +49,7 @@ class ComicBook():
     def set_driver_path(self, driver_path):
         self.crawler.DRIVER_PATH = driver_path
 
-    def start_crawler(self):
+    def refresh(self):
         self.comicbook_item = self.crawler.get_comicbook_item()
         self.crawler_time = datetime.datetime.now()
         for field in self.comicbook_item.FIELDS:
@@ -64,10 +64,14 @@ class ComicBook():
             self.last_chapter_number = 0
             self.last_chapter_title = ""
 
+    def start_crawler(self):
+        if self.crawler_time is None:
+            self.refresh()
+
     @classmethod
     def create_comicbook(cls, site, comicid=None):
         if site not in cls.CRAWLER_CLS_MAP:
-            raise SiteNotSupport("site={} 暂不支持".format(site))
+            raise SiteNotSupport(f"SiteNotSupport site={site}")
         crawler_cls = cls.CRAWLER_CLS_MAP[site]
         if comicid is None:
             comicid = crawler_cls.DEFAULT_COMICID

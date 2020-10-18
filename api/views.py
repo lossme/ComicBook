@@ -3,77 +3,44 @@ from flask import (
     Blueprint,
     jsonify,
     request,
-    abort,
-    current_app
+    abort
 )
-import cachetools.func
-from concurrent.futures import ThreadPoolExecutor
 
-from onepiece.comicbook import ComicBook
 from onepiece.exceptions import (
     ComicbookException,
     NotFoundError,
     SiteNotSupport
 )
+from . import crawler
+from . import task
 
 
 logger = logging.getLogger(__name__)
 app = Blueprint("api", __name__, url_prefix='/api')
 aggregate_app = Blueprint("aggregate", __name__, url_prefix='/aggregate')
-
-CACHE_TIME = 600
-THREAD_POOL = None
-POOL_SIZE = 4
-
-
-def get_pool():
-    global THREAD_POOL
-    if THREAD_POOL is None:
-        pool_size = current_app.config['POOL_SIZE']
-        THREAD_POOL = ThreadPoolExecutor(max_workers=pool_size)
-    return THREAD_POOL
+task_app = Blueprint("task", __name__, url_prefix='/task')
 
 
 @app.errorhandler(ComicbookException)
 def handle_404(error):
     if isinstance(error, NotFoundError):
-        return jsonify(
-            {
-                "message": str(error)
-            }), 404
+        return jsonify(dict(message=str(error))), 404
     elif isinstance(error, SiteNotSupport):
-        return jsonify(
-            {
-                "message": str(error)
-            }), 400
+        return jsonify(dict(message=str(error))), 400
     else:
-        return jsonify(
-            {
-                "message": str(error)
-            }), 500
-
-
-@cachetools.func.ttl_cache(maxsize=1024, ttl=CACHE_TIME, typed=False)
-def get_comicbook_from_cache(site, comicid=None):
-    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
-    proxy_config = current_app.config.get('CRAWLER_PROXY', {})
-    proxy = proxy_config.get(site)
-    if proxy:
-        comicbook.crawler.get_session().set_proxy(proxy)
-    return comicbook
+        return jsonify(dict(message=str(error))), 500
 
 
 @app.route("/<site>/comic/<comicid>")
 def get_comicbook_info(site, comicid):
-    comicbook = get_comicbook_from_cache(site=site, comicid=comicid)
-    return jsonify(comicbook.to_dict())
+    result = crawler.get_comicbook_info(site=site, comicid=comicid)
+    return jsonify(result)
 
 
 @app.route("/<site>/comic/<comicid>/<int:chapter_number>")
 def get_chapter_info(site, comicid, chapter_number):
-    comicbook = get_comicbook_from_cache(site, comicid)
-    chapter = comicbook.Chapter(chapter_number)
-    return jsonify(chapter.to_dict())
+    result = crawler.get_chapter_info(site=site, comicid=comicid, chapter_number=chapter_number)
+    return jsonify(result)
 
 
 @app.route("/<site>/search")
@@ -82,79 +49,63 @@ def search(site):
     page = request.args.get('page', default=1, type=int)
     if not name:
         abort(400)
-    comicbook = get_comicbook_from_cache(site, comicid=None)
-    result = comicbook.search(name=name, page=page)
-    return jsonify(
-        {
-            "search_result": result.to_dict()
-        }
-    )
+    result = crawler.get_search_resuult(site=site, name=name, page=page)
+    return jsonify(dict(search_result=result))
 
 
 @app.route("/<site>/tags")
 def tags(site):
-    comicbook = get_comicbook_from_cache(site, comicid=None)
-    tags = comicbook.get_tags()
-    return jsonify(
-        {
-            "tags": tags.to_dict()
-        }
-    )
+    result = crawler.get_tags(site)
+    return jsonify(dict(tags=result))
 
 
 @app.route("/<site>/list")
 def tag_list(site):
     tag = request.args.get('tag')
     page = request.args.get('page', default=1, type=int)
-    comicbook = get_comicbook_from_cache(site, comicid=None)
-    result = comicbook.get_tag_result(tag=tag, page=page)
-    return jsonify(
-        {
-            "list": result.to_dict()
-        }
-    )
+    result = crawler.get_tag_result(site=site, tag=tag, page=page)
+    return jsonify(dict(list=result))
 
 
 @app.route("/<site>/latest")
 def latest(site):
     page = request.args.get('page', default=1, type=int)
-    comicbook = get_comicbook_from_cache(site, comicid=None)
-    result = comicbook.latest(page=page)
-    return jsonify(
-        {
-            "latest": result.to_dict()
-        }
-    )
+    result = crawler.get_latest(site=site, page=page)
+    return jsonify(dict(latest=result))
 
 
 @aggregate_app.route("/search")
 def aggregate_search():
     site = request.args.get('site')
     name = request.args.get('name')
-    if site:
-        sites = []
-        for s in set(site.split(',')):
-            if s in ComicBook.CRAWLER_CLS_MAP:
-                sites.append(s)
-    else:
-        sites = list(ComicBook.CRAWLER_CLS_MAP.keys())
     if not name:
         abort(400)
-    ret = []
-    pool = get_pool()
-    future_list = []
-    for site in sites:
-        comicbook = get_comicbook_from_cache(site=site)
-        future = pool.submit(comicbook.search, name=name)
-        future_list.append(future)
-    for future in future_list:
-        try:
-            for i in future.result():
-                ret.append(i.to_dict())
-        except Exception:
-            logger.exception('task error. future=%s future._exception=%s', future, future._exception)
-    return jsonify(
-        {
-            "list": ret
-        }
-    )
+    result = crawler.aggregate_search(site=site, name=name)
+    return jsonify(dict(list=result))
+
+
+@task_app.route("/add")
+def add_task():
+    site = request.args.get('site')
+    comicid = request.args.get('comicid')
+    chapter = request.args.get('chapter', default='-1')
+    send_mail = request.args.get('send_mail', default=0, type=int)
+    gen_pdf = request.args.get('gen_pdf', default=0, type=int)
+    receivers = request.args.get('receivers', default="")
+    is_all = 1 if request.args.get('all') == '1' else 0
+    result = task.add_task(site=site,
+                           comicid=comicid,
+                           chapter=chapter,
+                           is_all=is_all,
+                           send_mail=send_mail,
+                           gen_pdf=gen_pdf,
+                           receivers=receivers)
+    return jsonify(dict(data=result))
+
+
+@task_app.route("/list")
+def list_task():
+    page = request.args.get('page', default=1, type=int)
+    size = 20
+    result = task.list_task(page=page, size=size)
+    return jsonify(dict(list=result))

@@ -85,7 +85,7 @@ class BilibiliCrawler(CrawlerBase):
         indexData = list(indexData)[9:]
         if not indexData:
             source_url = self.get_chapter_soure_url(cid=cid)
-            raise ChapterNotFound("{} 请传送至哔哩哔哩漫画 APP 阅读".format(source_url))
+            raise ChapterNotFound(f"please go to bilibili comics APP to read. {source_url}")
         indexData = self.unhashContent(hashKey=hashKey, indexData=indexData)
 
         file = io.BytesIO(indexData)

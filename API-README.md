@@ -5,13 +5,19 @@
 pip install -r requirements-api.txt
 
 ```
-复制`api/config.py.example`并命名为`api/config.py`，并根据实际情况修改`api/config.py`的参数
 
-启动接口
 ```sh
+# 1. 复制`api/config.py.example`并命名为`api/config.py` 并根据实际情况修改`api/config.py`的参数
+cp api/config.py.example api/config.py
+
+
+# 2. 创建数据库 若创建失败可能需要删掉之前已创建的数据库
+python manage.py createdb
+
+# 3. 启动接口
 gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
-# 查看可选的配置选项 gunicorn --help
+# 4. 查看可选的配置选项 gunicorn --help
 # 文档 http://docs.gunicorn.org/en/latest/settings.html
 ```
 
@@ -24,6 +30,8 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 - [1.5 获取所有tag](#15)
 - [1.6 根据tag搜索](#16)
 - [1.7 聚合搜索](#17)
+- [2.1 添加到异步任务](#21)
+- [2.2 查看任务列表](#22)
 
 
 ### 1.1 获取概要信息
@@ -307,6 +315,7 @@ curl "http://127.0.0.1:8000/api/qq/list?tag=theme_105,finish_2&page=1"
 ### 1.7 聚合搜索
 
 `GET /aggregate/search?name={name}&site={site}`
+
 请求示例
 
 ```sh
@@ -337,3 +346,56 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
     ]
 }
 ```
+
+
+### 2.1 添加到异步任务
+
+`GET /task/add?name={name}&site={site}`
+
+- site: 站点
+- comicid: 漫画id
+- chapter: 下载漫画的哪个章节，不传默认下载最新一集
+- all: 是否下载所有章节, 0 否，1 是，默认 否
+- gen_pdf: 是否生成pdf, 0 否，1 是，默认 否
+- send_mail: 是否发送到邮箱, 0 否，1 是，默认 否
+- receivers: 收件人列表，如: `xxx@qq.com,yyy@qq.com`, 不传默认发送到配置文件里的收件人，
+
+
+请求示例
+
+```sh
+curl "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&send_mail=0"
+```
+
+```json
+{
+    "data":{
+        "chapter":"3",
+        "comicid":"505430",
+        "create_time":"2020-10-18 19:43:51",
+        "gen_pdf":1,
+        "id":12,
+        "is_all":0,
+        "name":null,
+        "reason":null,
+        "receivers":"",
+        "send_mail":0,
+        "site":"qq",
+        "source_url":null,
+        "status":"初始化",
+        "update_time":"2020-10-18 19:43:51"
+    }
+}
+```
+
+
+### 2.2 查看任务列表
+
+`GET /aggregate/search?name={name}&site={site}`
+
+请求示例
+
+```sh
+curl "http://127.0.0.1:8000/task/list?page=1"
+```
+

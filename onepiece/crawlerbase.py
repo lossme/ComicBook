@@ -166,7 +166,7 @@ class CrawlerBase():
             try:
                 execjs.get()
             except Exception:
-                raise RuntimeError('请先安装nodejs。 https://nodejs.org/zh-cn/')
+                raise RuntimeError('pleaese install nodejs first. https://nodejs.org/zh-cn/')
 
     def set_session(self, session):
         self._session = session
@@ -191,7 +191,7 @@ class CrawlerBase():
         try:
             return session.request(method=method, url=url, **kwargs)
         except Exception as e:
-            msg = "URL链接访问异常！ url={}".format(url)
+            msg = "URL error. url={}".format(url)
             raise URLException(msg) from e
 
     def get_html(self, url, **kwargs):
@@ -256,14 +256,14 @@ class CrawlerBase():
 
     def selenium_login(self, login_url, check_login_status_func):
         if check_login_status_func():
-            logger.info("已登录")
+            logger.info("login success")
             return
 
-        logger.info("请在浏览器上完成登录")
+        logger.info("Please complete login on your browser")
         driver = self.create_driver()
         driver.get(login_url)
         while True:
-            logger.info("等待登录")
+            logger.info("Waiting to login")
             time.sleep(3)
             try:
                 cookies = driver.get_cookies()
@@ -278,15 +278,15 @@ class CrawlerBase():
                                                domain=cookie["domain"],
                                                secure=cookie["secure"])
             if check_login_status_func():
-                logger.info("登录成功")
+                logger.info("login success")
                 driver.quit()
                 break
 
     def create_driver(self):
-        assert self.DRIVER_PATH, "必须设置 DRIVER_PATH"
+        assert self.DRIVER_PATH, "DRIVER_PATH must be set"
 
         driver_type = self.DRIVER_TYPE or self.DEFAULT_DRIVER_TYPE
-        assert driver_type in self.SUPPORT_DRIVER_TYPE, "DRIVER_TYPE 必须为: {}"\
+        assert driver_type in self.SUPPORT_DRIVER_TYPE, "DRIVER_TYPE must be: {}"\
             .format(",".join(self.SUPPORT_DRIVER_TYPE))
 
         from selenium import webdriver
