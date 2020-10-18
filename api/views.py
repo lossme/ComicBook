@@ -92,7 +92,7 @@ def add_task():
     send_mail = request.args.get('send_mail', default=0, type=int)
     gen_pdf = request.args.get('gen_pdf', default=0, type=int)
     receivers = request.args.get('receivers', default="")
-    is_all = 1 if request.args.get('all') == '1' else 0
+    is_all = 1 if request.args.get('is_all') == '1' else 0
     result = task.add_task(site=site,
                            comicid=comicid,
                            chapter=chapter,

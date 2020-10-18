@@ -32,10 +32,10 @@ def add_task(site, comicid, chapter, is_all, send_mail, gen_pdf, receivers):
                                      send_mail=send_mail,
                                      gen_pdf=gen_pdf,
                                      receivers=receivers)
-    dt = datetime.datetime.now() - datetime.timedelta(seconds=const.TASK_AVOID_REPEAT_TIME)
+    time_window = datetime.datetime.utcnow() - datetime.timedelta(seconds=const.TASK_AVOID_REPEAT_TIME)
 
     task = db.session.query(CrawlerTask)\
-        .filter(CrawlerTask.hash_code == hash_code and CrawlerTask.create_time >= dt)\
+        .filter(CrawlerTask.hash_code == hash_code and CrawlerTask.create_time >= time_window)\
         .order_by(CrawlerTask.create_time.desc()).first()
     if task:
         return task.to_dict()
@@ -79,6 +79,11 @@ def run_task(app, task_id):
         if task.status in TaskStatus.DONE_STATUS:
             logger.info('task already done. task_id=%s', task_id)
             return
+        task.status = TaskStatus.RUNNING
+        task.start_time = datetime.datetime.utcnow()
+        db.session.flush()
+        db.session.commit()
+
         comicbook = crawler.get_comicbook_from_cache(site=task.site, comicid=task.comicid)
         comicbook.start_crawler()
 
@@ -89,8 +94,6 @@ def run_task(app, task_id):
         output_dir = app.config['DATA_DIR']
         name = comicbook.name
         last_chapter_number = comicbook.last_chapter_number
-        task.status = TaskStatus.RUNNING
-        db.session.commit()
 
         chapter_number_list = parser_chapter_str(chapter_str=chapter_str,
                                                  last_chapter_number=last_chapter_number,
@@ -120,14 +123,16 @@ def run_task(app, task_id):
                 logger.exception('task error. task_id=%s', task_id)
                 task.reason = str(e)
 
+        task.cost_time = int((datetime.datetime.utcnow() - task.start_time).total_seconds())
         task.status = TaskStatus.DONE
+        db.session.flush()
         db.session.commit()
 
 
 def list_task(page, size):
     offset = (page - 1) * size
     res = db.session.query(CrawlerTask)\
-        .order_by(CrawlerTask.create_time.desc())\
+        .order_by(CrawlerTask.id.desc())\
         .offset(offset)\
         .limit(size)
     return [i.to_dict() for i in res]

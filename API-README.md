@@ -10,8 +10,10 @@ pip install -r requirements-api.txt
 # 1. 复制`api/config.py.example`并命名为`api/config.py` 并根据实际情况修改`api/config.py`的参数
 cp api/config.py.example api/config.py
 
+# 2.1 删除旧数据库
+rm download/onepiece.db
 
-# 2. 创建数据库 若创建失败可能需要删掉之前已创建的数据库
+# 2.2 创建新数据库
 python manage.py createdb
 
 # 3. 启动接口
@@ -355,7 +357,7 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 - site: 站点
 - comicid: 漫画id
 - chapter: 下载漫画的哪个章节，不传默认下载最新一集
-- all: 是否下载所有章节, 0 否，1 是，默认 否
+- is_all: 是否下载所有章节, 0 否，1 是，默认 否
 - gen_pdf: 是否生成pdf, 0 否，1 是，默认 否
 - send_mail: 是否发送到邮箱, 0 否，1 是，默认 否
 - receivers: 收件人列表，如: `xxx@qq.com,yyy@qq.com`, 不传默认发送到配置文件里的收件人，
@@ -372,18 +374,20 @@ curl "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&
     "data":{
         "chapter":"3",
         "comicid":"505430",
-        "create_time":"2020-10-18 19:43:51",
+        "cost_time":0,
+        "create_time":"2020-10-18 22:51:54",
         "gen_pdf":1,
-        "id":12,
+        "id":1,
         "is_all":0,
-        "name":null,
-        "reason":null,
+        "name":"航海王",
+        "reason":"",
         "receivers":"",
         "send_mail":0,
         "site":"qq",
-        "source_url":null,
+        "source_url":"https://ac.qq.com/Comic/ComicInfo/id/505430",
+        "start_time":"",
         "status":"初始化",
-        "update_time":"2020-10-18 19:43:51"
+        "update_time":"2020-10-18 22:51:54"
     }
 }
 ```
@@ -395,7 +399,33 @@ curl "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&
 
 请求示例
 
+若任务超过10min 任务状态还没变成完成/失败，则需重新添加异步任务
+
 ```sh
 curl "http://127.0.0.1:8000/task/list?page=1"
 ```
 
+```json
+{
+    "list":[
+        {
+            "chapter":"-11",
+            "comicid":"505430",
+            "cost_time":1,
+            "create_time":"2020-10-18 22:51:54",
+            "gen_pdf":1,
+            "id":1,
+            "is_all":0,
+            "name":"航海王",
+            "reason":"",
+            "receivers":"",
+            "send_mail":0,
+            "site":"qq",
+            "source_url":"https://ac.qq.com/Comic/ComicInfo/id/505430",
+            "start_time":"2020-10-18 22:51:54",
+            "status":"完成",
+            "update_time":"2020-10-18 22:51:54"
+        }
+    ]
+}
+```
