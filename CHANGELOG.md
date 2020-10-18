@@ -1,5 +1,8 @@
 **unreleased**
 **v0.3.5**
+- Added: 支持异步下载任务
+- Added: 任务列表查询
+
 **v0.3.4**
 - Added: 支持聚合搜索接口
 - Added: 支持标签过滤
