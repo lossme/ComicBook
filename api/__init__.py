@@ -60,7 +60,11 @@ def index():
     prefix = current_app.config.get('URL_PREFIX', '')
     examples = []
     for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
-        item = dict(site=site, source_name=crawler.SOURCE_NAME, examples=[])
+        item = dict(
+            site=site,
+            source_name=crawler.SOURCE_NAME,
+            source_INDEX=crawler.SITE_INDEX,
+            examples=[])
         examples.append(item)
 
         site_examples = item['examples']
@@ -105,7 +109,7 @@ def index():
 
     aggregate_examples = []
     aggregate_examples.append(dict(
-        desc="",
+        desc="聚合搜索",
         api=prefix + '/aggregate/search?name=海贼&site=bilibili,u17'
     ))
 

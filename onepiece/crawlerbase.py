@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 class ComicBookItem():
     FIELDS = ["name", "desc", "tag", "cover_image_url", "author",
               "source_url", "source_name", "crawl_time", "chapters", "ext_chapters", "volumes",
-              "status", 'tags', "site"]
+              "status", 'tags', "site", "last_update_time"]
 
     def __init__(self, name=None, desc=None, tag=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
-                 crawl_time=None, status=None, site=None):
+                 crawl_time=None, status=None, site=None, last_update_time=None):
         self.name = name or ""
         self.desc = desc or ""
         self.tag = tag or ""
@@ -28,6 +28,7 @@ class ComicBookItem():
         self.crawl_time = crawl_time or datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.status = status or ""
         self.site = site or ""
+        self.last_update_time = last_update_time or ""
 
         # {1: Citem(chapter_number=1, title="xx", cid="xxx"}
         self.citems = {}

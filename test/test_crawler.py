@@ -7,7 +7,8 @@ logger = logging.getLogger()
 DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
 
 
-def _test_crawl_comicbook(site, comicid=None, chapter_number=1, proxy=None):
+def _test_crawl_comicbook(site, comicid=None,
+                          chapter_number=1, proxy=None, test_search=True):
     comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
     if proxy:
         comicbook.crawler.get_session().set_proxy(proxy)
@@ -18,9 +19,9 @@ def _test_crawl_comicbook(site, comicid=None, chapter_number=1, proxy=None):
 
     logger.info(chapter.to_dict())
     logger.info(comicbook.to_dict())
-
-    result = comicbook.search(name=comicbook.crawler.DEFAULT_SEARCH_NAME)
-    assert len(result.to_dict()) > 0
+    if test_search:
+        result = comicbook.search(name=comicbook.crawler.DEFAULT_SEARCH_NAME)
+        assert len(result.to_dict()) > 0
     return comicbook, chapter
 
 
@@ -59,3 +60,7 @@ def test_nhentai():
 
 def test_wnacg():
     _test_crawl_comicbook(site='wnacg', proxy=DEFAULT_PROXY)
+
+
+def test_manhuatai():
+    _test_crawl_comicbook(site='manhuatai', test_search=False)
