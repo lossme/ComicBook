@@ -161,7 +161,7 @@ class Chapter():
         return chapter_dir
 
     def save_as_pdf(self, output_dir):
-        from .utils.img2pdf import image_dir_to_pdf
+        from .utils import image_dir_to_pdf
         chapter_dir = self.save(output_dir)
         pdf_path = self.get_chapter_pdf_path(output_dir)
         image_dir_to_pdf(img_dir=chapter_dir,
