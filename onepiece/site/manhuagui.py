@@ -340,9 +340,9 @@ class ManhuaguiCrawler(CrawlerBase):
         if tag:
             params = {}
             for i in tag.split(','):
-                if re.match(r'd+_.*', i):
-                    idx, tag = tag.split('_', 1)
-                    params[int(idx)] = tag
+                if re.match(r'\d+_.*', i):
+                    idx, t = tag.split('_', 1)
+                    params[int(idx)] = t
                 else:
                     params[0] = i
             query = '_'.join([i[1] for i in sorted(params.items(), key=lambda x: x[0])])
