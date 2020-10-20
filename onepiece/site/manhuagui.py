@@ -343,7 +343,7 @@ class ManhuaguiCrawler(CrawlerBase):
             params = {}
             for i in tag.split(','):
                 if re.match(r'\d+_.*', i):
-                    idx, t = tag.split('_', 1)
+                    idx, t = i.split('_', 1)
                     params[int(idx)] = t
                 else:
                     params[0] = i
@@ -353,8 +353,9 @@ class ManhuaguiCrawler(CrawlerBase):
             url = 'https://www.manhuagui.com/list/'
 
         soup = self.get_soup(url)
-
         ul = soup.find('ul', {'id': 'contList'})
+        if not ul:
+            return result
         for li in ul.find_all('li'):
             status = li.find('span', {'class': 'tt'}).text
             name = li.img.get('alt')
