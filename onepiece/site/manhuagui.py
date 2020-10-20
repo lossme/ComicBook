@@ -45,12 +45,13 @@ class ManhuaguiCrawler(CrawlerBase):
         name = soup.find('div', {'class': 'book-title'}).h1.text
         desc = soup.find('div', {'id': 'intro-all'}).p.text
 
-        li_list = soup.find('ul', {'class': 'detail-list cf'}).find_all('li')
+        li_list = soup.find('ul', {'class': 'detail-list'}).find_all('li')
         tag_soup = li_list[1].find_all('strong')[0]
         tag = ','.join([a.get('title') for a in tag_soup.previous_element.find_all('a')])
         author_soup = li_list[1].find_all('strong')[1]
         author = author_soup.previous_element.a.get('title')
-        cover_image_url = soup.find('div', attrs={'class': 'book-cover fl'}).p.img.get('src')
+        img = soup.find('div', attrs={'class': 'book-cover'}).p.img
+        cover_image_url = img.get('data-src') or img.get('src')
         status = soup.find('li', {'class': 'status'}).span.span.text
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
@@ -289,7 +290,8 @@ class ManhuaguiCrawler(CrawlerBase):
         result = self.new_search_result_item()
         for li_soup in li_list:
             name = li_soup.find('div', {'class': 'book-cover'}).a.get('title')
-            cover_image_url = li_soup.find('div', {'class': 'book-cover'}).a.img.get('src')
+            img = li_soup.find('div', {'class': 'book-cover'}).a.img
+            cover_image_url = img.get('data-src') or img.get('src')
             href = li_soup.find('div', {'class': 'book-cover'}).a.get('href')
             comicid = href.split('/')[2]
             source_url = self.get_source_url(comicid)
@@ -308,7 +310,7 @@ class ManhuaguiCrawler(CrawlerBase):
         for div in soup.find_all('div', {'class': 'latest-list'})[page - 1:page]:
             for li in div.find_all('li'):
                 name = li.img.get('alt')
-                cover_image_url = li.img.get('src')
+                cover_image_url = li.img.get('data-src') or li.img.get('src')
                 href = li.a.get('href')
                 comicid = href.split('/')[2]
                 source_url = self.get_source_url(comicid)
@@ -356,7 +358,7 @@ class ManhuaguiCrawler(CrawlerBase):
         for li in ul.find_all('li'):
             status = li.find('span', {'class': 'tt'}).text
             name = li.img.get('alt')
-            cover_image_url = li.img.get('src')
+            cover_image_url = li.img.get('data-src') or li.img.get('src')
             href = li.a.get('href')
             comicid = href.split('/')[2]
             source_url = self.get_source_url(comicid)

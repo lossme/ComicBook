@@ -361,7 +361,7 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 - gen_pdf: 是否生成pdf, 0 否，1 是，默认 否
 - send_mail: 是否发送到邮箱, 0 否，1 是，默认 否
 - receivers: 收件人列表，如: `xxx@qq.com,yyy@qq.com`, 不传默认发送到配置文件里的收件人，
-
+- secret: config.py 中的 TASK_SECRET
 
 请求示例
 
@@ -395,7 +395,7 @@ curl "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&
 
 ### 2.2 查看任务列表
 
-`GET /aggregate/search?name={name}&site={site}`
+`GET /task/list?name={page}&secret={secret}`
 
 请求示例
 

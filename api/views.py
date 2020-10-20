@@ -93,6 +93,8 @@ def add_task():
     gen_pdf = request.args.get('gen_pdf', default=0, type=int)
     receivers = request.args.get('receivers', default="")
     is_all = 1 if request.args.get('is_all') == '1' else 0
+    secret = request.args.get('secret', '')
+    task.check_task_secret(secret)
     result = task.add_task(site=site,
                            comicid=comicid,
                            chapter=chapter,
@@ -106,6 +108,8 @@ def add_task():
 @task_app.route("/list")
 def list_task():
     page = request.args.get('page', default=1, type=int)
+    secret = request.args.get('secret', '')
+    task.check_task_secret(secret)
     size = 20
     result = task.list_task(page=page, size=size)
     return jsonify(dict(list=result))

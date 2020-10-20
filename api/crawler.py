@@ -60,8 +60,11 @@ def aggregate_search(name, site):
     if site:
         sites = []
         for s in set(site.split(',')):
-            if is_support(s):
+            try:
+                check_site_support(s)
                 sites.append(s)
+            except SiteNotSupport:
+                continue
     else:
         sites = list(ComicBook.CRAWLER_CLS_MAP.keys())
 
