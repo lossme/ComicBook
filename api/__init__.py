@@ -63,7 +63,7 @@ def index():
         item = dict(
             site=site,
             source_name=crawler.SOURCE_NAME,
-            source_INDEX=crawler.SITE_INDEX,
+            source_index=crawler.SITE_INDEX,
             examples=[])
         examples.append(item)
 
