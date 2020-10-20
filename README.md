@@ -1,6 +1,7 @@
 # TencentComicBook
 
-腾讯漫画、哔哩哔哩漫画、有妖气漫画、快看漫画、漫画柜爬虫
+腾讯漫画、哔哩哔哩漫画、有妖气漫画、快看漫画、漫画柜、漫画台爬虫
+
 
 ## 本项目特点
 
@@ -11,7 +12,7 @@
 - [x] 支持生成pdf
 - [x] 支持发送到邮箱
 - [x] 支持设置代理
-- [x] 集成api，方便调用 [API-README](API-README.md)
+- [x] 支持API调用 [API-README](API-README.md)
 
 
 ## 使用步骤
@@ -28,7 +29,7 @@ python3 -m onepiece --help
 
 如果在使用过程中，发现问题可以先更新代码再试下，说不定已经修复了。
 
-欢迎大家提建议和issue
+star防止走丢，欢迎大家提建议和issue
 
 ## 常规使用
 
@@ -47,6 +48,7 @@ python3 -m onepiece --help
 - 从有妖气漫画下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=1`
 - 从快看漫画下载: `python3 -m onepiece --site=kuaikan --comicid=1338 --chapter=1`
 - 从漫画柜下载: `python3 -m onepiece --site=manhuagui --comicid=19430 --chapter=1`
+- 从漫画台下载: `python3 -m onepiece --site=manhuatai --comicid=doupocangqiong --chapter=1`
 
 若不清楚或不记得comicid，可以使用名字来搜索，按照提示输入comicid
 - `python3 -m onepiece --site=qq --name=海贼`
