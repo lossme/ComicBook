@@ -1,7 +1,5 @@
-import tempfile
 import io
 import json
-import os
 import zipfile
 import re
 import logging
@@ -45,11 +43,6 @@ class BilibiliCrawler(CrawlerBase):
     def get_source_url(self, comicid):
         return urljoin(self.SITE_INDEX, "/m/detail/mc{}".format(comicid))
 
-    @classmethod
-    def unzip(cls, file, target_dir):
-        obj = zipfile.ZipFile(file)
-        obj.extractall(target_dir)
-
     @staticmethod
     def generateHashKey(seasonId, episodeId):
         n = [None for i in range(8)]
@@ -89,11 +82,9 @@ class BilibiliCrawler(CrawlerBase):
         indexData = self.unhashContent(hashKey=hashKey, indexData=indexData)
 
         file = io.BytesIO(indexData)
-        tmp_dir = tempfile.TemporaryDirectory()
-        self.unzip(file, tmp_dir.name)
-        json_file = os.path.join(tmp_dir.name, "index.dat")
-
-        return json.load(open(json_file))
+        obj = zipfile.ZipFile(file)
+        data = json.loads(obj.read("index.dat"))
+        return data
 
     def get_api_data(self):
         data = {"comic_id": self.comicid}
