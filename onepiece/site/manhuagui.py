@@ -350,7 +350,7 @@ class ManhuaguiCrawler(CrawlerBase):
             query = '_'.join([i[1] for i in sorted(params.items(), key=lambda x: x[0])])
             url = "https://www.manhuagui.com/list/%s/index_p%s.html" % (query, page)
         else:
-            url = 'https://www.manhuagui.com/list/'
+            url = 'https://www.manhuagui.com/list/index_p%s.html' % page
 
         soup = self.get_soup(url)
         ul = soup.find('ul', {'id': 'contList'})
