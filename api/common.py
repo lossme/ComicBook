@@ -45,3 +45,8 @@ def log_exception(func):
                              func.__name__, args, kwargs)
             raise e
     return wrap
+
+
+def run_in_background(func, **kwargs):
+    pool = get_pool()
+    pool.submit(func, **kwargs)

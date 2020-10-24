@@ -14,7 +14,7 @@ from .model import (
 from . import db
 from . import const
 from .common import (
-    get_pool,
+    run_in_background,
     log_exception
 )
 
@@ -39,12 +39,12 @@ def add_task(site, comicid, chapter, is_all, send_mail, gen_pdf, receivers):
                                      send_mail=send_mail,
                                      gen_pdf=gen_pdf,
                                      receivers=receivers)
-    time_window = datetime.datetime.utcnow() - datetime.timedelta(seconds=const.TASK_AVOID_REPEAT_TIME)
 
     task = db.session.query(CrawlerTask)\
-        .filter(CrawlerTask.hash_code == hash_code and CrawlerTask.create_time >= time_window)\
+        .filter(CrawlerTask.hash_code == hash_code)\
         .order_by(CrawlerTask.create_time.desc()).first()
-    if task:
+    pre_time = datetime.datetime.utcnow() - datetime.timedelta(seconds=const.TASK_AVOID_REPEAT_TIME)
+    if task and task.create_time >= pre_time:
         return task.to_dict()
 
     crawler.check_site_support(site)
@@ -65,13 +65,11 @@ def add_task(site, comicid, chapter, is_all, send_mail, gen_pdf, receivers):
     db.session.add(task)
     db.session.flush()
     task_id = task.id
-    result = task.to_dict()
     db.session.commit()
-    pool = get_pool()
     app = current_app._get_current_object()
-    pool.submit(run_task, app=app, task_id=task_id)
+    run_in_background(func=run_task, app=app, task_id=task_id)
     # run_task(app=app, task_id=task_id)
-    return result
+    return task.to_dict()
 
 
 @log_exception
