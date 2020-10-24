@@ -160,6 +160,7 @@ class CrawlerBase():
     SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
     REQUIRE_JAVASCRIPT = False
     TAGS = None
+    R18 = False
 
     def __init__(self):
         self._session = None

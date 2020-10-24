@@ -13,6 +13,7 @@ class C18comicCrawler(CrawlerBase):
     SITE_INDEX = 'https://18comic.org/'
     SOURCE_NAME = "禁漫天堂"
     LOGIN_URL = SITE_INDEX
+    R18 = True
 
     DEFAULT_COMICID = 201118
     DEFAULT_SEARCH_NAME = '騎馬的女孩好想被她騎'

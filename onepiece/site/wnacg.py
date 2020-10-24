@@ -20,6 +20,7 @@ class WnacgCrawler(CrawlerBase):
     DEFAULT_SEARCH_NAME = '过期米线线喵'
     DEFAULT_TAG = "3"
     REQUIRE_JAVASCRIPT = True
+    R18 = True
 
     def __init__(self, comicid=None):
         self.comicid = comicid

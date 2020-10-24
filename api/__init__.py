@@ -64,6 +64,7 @@ def index():
             site=site,
             source_name=crawler.SOURCE_NAME,
             source_index=crawler.SITE_INDEX,
+            r18=crawler.R18,
             examples=[])
         examples.append(item)
 
