@@ -71,7 +71,7 @@ def aggregate_search(name, site):
     zip_args = []
     for site in sites:
         comicbook = get_comicbook_from_cache(site=site)
-        zip_args.append(comicbook.search, dict(name=name))
+        zip_args.append((comicbook.search, dict(name=name)))
     ret = concurrent_run(zip_args)
     return [i.to_dict() for i in ret]
 
