@@ -1,5 +1,9 @@
 **unreleased**
 **v0.3.6**
+- fix manhuagui标签搜索功能、封面图获取不到的问题
+- 更换效率更高的pdf生成工具
+- 添加manhuatai源
+
 **v0.3.5**
 - Added: 支持异步下载任务
 - Added: 任务列表查询
