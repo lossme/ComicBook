@@ -3,6 +3,7 @@ import re
 import importlib
 import datetime
 import logging
+import weakref
 
 from .utils import safe_filename
 from .exceptions import (
@@ -119,19 +120,23 @@ class ComicBook():
             citem = self.comicbook_item.citems[chapter_number]
             chapter_item = self.crawler.get_chapter_item(citem)
             self.chapter_cache[chapter_number] = Chapter(
-                comicbook=self,
+                comicbook_ref=weakref.ref(self),
                 chapter_item=chapter_item)
         return self.chapter_cache[chapter_number]
 
 
 class Chapter():
 
-    def __init__(self, comicbook, chapter_item):
-        self.comicbook = comicbook
+    def __init__(self, comicbook_ref, chapter_item):
+        self.comicbook_ref = comicbook_ref
         self.chapter_item = chapter_item
 
         for field in self.chapter_item.FIELDS:
             setattr(self, field, getattr(self.chapter_item, field))
+
+    @property
+    def comicbook(self):
+        return self.comicbook_ref()
 
     def to_dict(self):
         return self.chapter_item.to_dict()
