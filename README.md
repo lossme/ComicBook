@@ -2,7 +2,7 @@
 
 腾讯漫画、哔哩哔哩漫画、有妖气漫画、快看漫画、漫画柜、漫画台爬虫
 
-尊重版权，请支持正版，通过本工具下载的资源**禁止传播分享**！该项目**禁止商业使用**！
+尊重版权，请支持正版，通过本工具下载或生成的资源**禁止传播分享！禁止利用本项目进行商业活动！**
 
 ## 本项目特点
 
@@ -35,6 +35,7 @@ star防止走丢，欢迎大家提建议和issue
 ## 常规使用
 
 从腾讯漫画下载：
+
 - 下载漫画 id=505430 最新一集: `python3 -m onepiece --site=qq --comicid=505430`
 - 下载漫画 id=505430 所有章节: `python3 -m onepiece --site=qq --comicid=505430 --all`
 - 下载漫画 id=505430 第800集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=800`
@@ -45,6 +46,7 @@ star防止走丢，欢迎大家提建议和issue
 - 下载漫画 id=505430 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
 
 从其它站点下载，注意不同站点的comicid区别
+
 - 从哔哩哔哩漫画下载: `python3 -m onepiece --site=bilibili --comicid=mc24742 --chapter=1`
 - 从有妖气漫画下载: `python3 -m onepiece --site=u17 --comicid=195 --chapter=1`
 - 从快看漫画下载: `python3 -m onepiece --site=kuaikan --comicid=1338 --chapter=1`
@@ -52,6 +54,7 @@ star防止走丢，欢迎大家提建议和issue
 - 从漫画台下载: `python3 -m onepiece --site=manhuatai --comicid=doupocangqiong --chapter=1`
 
 若不清楚或不记得comicid，可以使用名字来搜索，按照提示输入comicid
+
 - `python3 -m onepiece --site=qq --name=海贼`
 - `python3 -m onepiece --site=bilibili --name=海贼`
 - `python3 -m onepiece --site=u17 --name=雏蜂`

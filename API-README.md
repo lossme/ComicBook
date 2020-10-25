@@ -1,13 +1,10 @@
 ## 接口部署
 
-安装依赖
 ```sh
+# 1. 安装依赖
 pip install -r requirements-api.txt
 
-```
-
-```sh
-# 1. 复制`api/config.py.example`并命名为`api/config.py` 并根据实际情况修改`api/config.py`的参数
+# 2. 复制`api/config.py.example`并命名为`api/config.py` 并根据实际情况修改`api/config.py`的参数
 cp api/config.py.example api/config.py
 
 # 2.1 删除旧数据库
