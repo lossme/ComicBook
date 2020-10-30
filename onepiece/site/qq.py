@@ -50,9 +50,11 @@ class QQCrawler(CrawlerBase):
         tag = re.search(r"的标签：(.*?)", description, re.S).group(1).strip()
         cover_image_url = soup.find('div', {'class': 'works-cover ui-left'}).img.get('src')
         author = soup.find('span', {'class': 'first'}).em.text.strip()
+        status = soup.find('label', {'class': 'works-intro-status'}).text
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
                                        tag=tag,
+                                       status=status,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
