@@ -104,3 +104,4 @@ venv.bak/
 download/
 config.ini
 api/config.py
+data

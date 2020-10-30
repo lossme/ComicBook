@@ -2,11 +2,10 @@ import logging
 import os
 import datetime
 
-from flask import current_app, abort
+from flask import current_app
 
 from onepiece.utils import parser_chapter_str
 from onepiece.utils.mail import Mail
-
 from .model import (
     CrawlerTask,
     TaskStatus
@@ -22,13 +21,6 @@ from . import crawler
 
 
 logger = logging.getLogger(__name__)
-
-
-def check_task_secret(secret):
-    right_secret = current_app.config.get("TASK_SECRET")
-    if right_secret:
-        if secret != right_secret:
-            abort(403)
 
 
 def add_task(site, comicid, chapter, is_all, send_mail, gen_pdf, receivers):

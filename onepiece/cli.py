@@ -4,11 +4,17 @@ import logging
 
 from .comicbook import ComicBook
 from .crawlerbase import CrawlerBase
-from .utils import parser_chapter_str
+from .utils import (
+    parser_chapter_str,
+    ensure_file_dir_exists
+)
+
 from .utils.mail import Mail
 from . import VERSION
 
 logger = logging.getLogger(__name__)
+HERE = os.path.abspath(os.path.dirname(__file__))
+DEFAULT_DOWNLOAD_DIR = os.path.abspath(os.path.join(HERE, os.path.pardir, 'download'))
 
 
 def parse_args():
@@ -62,7 +68,7 @@ def parse_args():
     parser.add_argument('--config', default="config.ini",
                         help="配置文件路径，默认取当前目录下的config.ini")
 
-    parser.add_argument('-o', '--output', type=str, default='./download',
+    parser.add_argument('-o', '--output', type=str, default=DEFAULT_DOWNLOAD_DIR,
                         help="文件保存路径，默认保存在当前路径下的download文件夹")
     support_site = ComicBook.CRAWLER_CLS_MAP.keys()
     parser.add_argument('--site', type=str, default='qq', choices=support_site,
@@ -81,6 +87,7 @@ def parse_args():
                         )
 
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
+    parser.add_argument('--cookies-path', type=str, help="读取或保存上次使用的cookies路径")
 
     parser.add_argument('--proxy', type=str,
                         help='设置代理，如 --proxy "socks5://user:pass@host:port"')
@@ -116,9 +123,8 @@ def main():
     is_send_mail = args.mail
     is_gen_pdf = args.pdf
     is_login = args.login
-    session_path = None
-    if args.session_path:
-        session_path = os.path.abspath(args.session_path)
+    session_path = args.session_path
+    cookies_path = args.cookies_path
 
     loglevel = logging.DEBUG if args.debug else logging.INFO
     init_logger(level=loglevel)
@@ -137,6 +143,12 @@ def main():
     # 加载 session
     if session_path and os.path.exists(session_path):
         comicbook.crawler.load_session(session_path)
+        logger.info('load session success. %s', session_path)
+
+    # 加载cookies
+    if cookies_path and os.path.exists(cookies_path):
+        comicbook.crawler.load_cookies(cookies_path)
+        logger.info('load cookies success. %s', cookies_path)
 
     if args.name:
         result = comicbook.search(name=args.name, limit=10)
@@ -183,9 +195,15 @@ def main():
 
     # 保存 session
     if session_path:
-        os.makedirs(os.path.dirname(session_path), exist_ok=True)
+        ensure_file_dir_exists(session_path)
         comicbook.crawler.export_session(session_path)
-        logger.info("session保存在: {}".format(session_path))
+        logger.info("session saved. path={}".format(session_path))
+
+    # 保存 cookies
+    if cookies_path:
+        ensure_file_dir_exists(cookies_path)
+        comicbook.crawler.export_cookies(cookies_path)
+        logger.info("cookies saved. path={}".format(cookies_path))
 
 
 if __name__ == '__main__':

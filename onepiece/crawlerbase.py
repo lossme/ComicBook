@@ -186,6 +186,12 @@ class CrawlerBase():
         session = Session.load(path)
         self.set_session(session)
 
+    def load_cookies(self, path):
+        self.get_session().load_cookies(path)
+
+    def export_cookies(self, path):
+        self.get_session().export_cookies(path)
+
     def send_request(self, method, url, **kwargs):
         session = self.get_session()
         kwargs.setdefault('headers', {'Referer': self.SITE_INDEX})

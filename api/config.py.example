@@ -23,7 +23,16 @@ class Config(object):
         'wnacg': DEFAULT_PROXY,
     }
 
-    DATA_DIR = os.path.join(PROJECT_HOME, 'download')
+    # 站点数据存放目录
+    DATA_DIR = os.path.join(PROJECT_HOME, 'data')
+
+    # cookies存放目录
+    COOKIES_DIR = os.path.join(DATA_DIR, 'cookies')
+
+    # 异步任务 密钥
+    TASK_SECRET = ""
+    # cookies管理密钥
+    COOKIES_SECRET = ""
 
     # 数据库连接
     SQLALCHEMY_ECHO = False

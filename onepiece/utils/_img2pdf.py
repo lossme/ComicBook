@@ -4,6 +4,8 @@ from reportlab.lib.pagesizes import A4, portrait
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
+from . import ensure_file_dir_exists
+
 
 def imgs_to_pdf(img_path_list, target_path):
     """将一组图片合成一个pdf文件
@@ -29,7 +31,7 @@ def imgs_to_pdf(img_path_list, target_path):
             top_margin = 0
         c.drawImage(img_path, left_margin, top_margin, img_w * ratio, img_h * ratio)
         c.showPage()
-    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    ensure_file_dir_exists(target_path)
     c.save()
     return target_path
 

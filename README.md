@@ -76,7 +76,7 @@ python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
   --login \
   --driver-path="driver路径" \
   --driver-type="Chrome" \
-  --session-path=".cache/session.pickle"
+  --cookies-path="data/cookies/qq.json"
 ```
 
 

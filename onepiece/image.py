@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from .exceptions import ImageDownloadError
 from .session import Session
+from .utils import ensure_file_dir_exists
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -82,9 +83,7 @@ class ImageDownloader():
         except Exception as e:
             msg = "img download error: url=%s error: %s" % (image_url, e)
             raise ImageDownloadError(msg) from e
-
-        image_dir = os.path.dirname(target_path)
-        os.makedirs(image_dir, exist_ok=True)
+        ensure_file_dir_exists(target_path)
         with open(target_path, 'wb') as f:
             f.write(response.content)
 

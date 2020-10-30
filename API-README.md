@@ -8,7 +8,7 @@ pip install -r requirements-api.txt
 cp api/config.py.example api/config.py
 
 # 2.1 删除旧数据库
-rm download/onepiece.db
+rm data/onepiece.db
 
 # 2.2 创建新数据库
 python manage.py createdb
@@ -31,6 +31,8 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 - [1.7 聚合搜索](#17)
 - [2.1 添加到异步任务](#21)
 - [2.2 查看任务列表](#22)
+- [3.1 查看站点cookies](#31)
+- [3.2 更新站点cookies](#32)
 
 
 ### 1.1 获取概要信息
@@ -394,9 +396,9 @@ curl "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&
 
 `GET /task/list?name={page}&secret={secret}`
 
-请求示例
+若任务超过10min，任务状态还没变成完成/失败，可能需重新添加异步任务
 
-若任务超过10min 任务状态还没变成完成/失败，则需重新添加异步任务
+请求示例
 
 ```sh
 curl "http://127.0.0.1:8000/task/list?page=1"
@@ -425,4 +427,25 @@ curl "http://127.0.0.1:8000/task/list?page=1"
         }
     ]
 }
+```
+
+### 3.1 查看站点cookies
+`GET /api/{site}/cookies`
+
+
+请求示例
+
+```sh
+curl "http://127.0.0.1:8000/api/qq/cookies"
+```
+
+### 3.2 更新站点cookies
+
+`POST /api/{site}/cookies`
+
+
+请求示例
+
+```sh
+curl -XPOST "http://127.0.0.1:8000/api/qq/cookies" -H "Content-Type: application/json" -d '{"cookies": [{"domain": ".ac.qq.com", "name": "xxx", "path": "/", "secure": false, "value": "1604080000"}]}'
 ```

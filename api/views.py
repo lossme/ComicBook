@@ -3,7 +3,8 @@ from flask import (
     Blueprint,
     jsonify,
     request,
-    abort
+    abort,
+    current_app
 )
 
 from onepiece.exceptions import (
@@ -13,6 +14,7 @@ from onepiece.exceptions import (
 )
 from . import crawler
 from . import task
+from .const import ConfigKey
 
 
 logger = logging.getLogger(__name__)
@@ -29,6 +31,22 @@ def handle_404(error):
         return jsonify(dict(message=str(error))), 400
     else:
         return jsonify(dict(message=str(error))), 500
+
+
+def check_task_secret(request):
+    secret = request.args.get('secret', '')
+    right_secret = current_app.config.get(ConfigKey.TASK_SECRET)
+    if right_secret:
+        if secret != right_secret:
+            abort(403)
+
+
+def check_cookies_secret(request):
+    secret = request.args.get('secret', '')
+    right_secret = current_app.config.get(ConfigKey.COOKIES_SECRET)
+    if right_secret:
+        if secret != right_secret:
+            abort(403)
 
 
 @app.route("/<site>/comic/<comicid>")
@@ -74,6 +92,25 @@ def latest(site):
     return jsonify(dict(latest=result))
 
 
+@app.route("/<site>/cookies", methods=['GET'])
+def get_cookies(site):
+    check_cookies_secret(request)
+    cookies = crawler.get_cookies(site=site)
+    return jsonify(dict(cookies=cookies))
+
+
+@app.route("/<site>/cookies", methods=['POST'])
+def update_cookies(site):
+    check_cookies_secret(request)
+    content = request.json or {}
+    cookies = content.get('cookies')
+    cover = content.get('cover', False)
+    if not cookies or not isinstance(cookies, list):
+        abort(400)
+    ret = crawler.update_cookies(site=site, cookies=cookies, cover=cover)
+    return jsonify(dict(cookies=ret))
+
+
 @aggregate_app.route("/search")
 def aggregate_search():
     site = request.args.get('site')
@@ -93,8 +130,7 @@ def add_task():
     gen_pdf = request.args.get('gen_pdf', default=0, type=int)
     receivers = request.args.get('receivers', default="")
     is_all = 1 if request.args.get('is_all') == '1' else 0
-    secret = request.args.get('secret', '')
-    task.check_task_secret(secret)
+    check_task_secret(request)
     result = task.add_task(site=site,
                            comicid=comicid,
                            chapter=chapter,
@@ -108,8 +144,7 @@ def add_task():
 @task_app.route("/list")
 def list_task():
     page = request.args.get('page', default=1, type=int)
-    secret = request.args.get('secret', '')
-    task.check_task_secret(secret)
+    check_task_secret(request)
     size = 20
     result = task.list_task(page=page, size=size)
     return jsonify(dict(list=result))

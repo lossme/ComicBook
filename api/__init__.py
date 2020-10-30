@@ -1,4 +1,3 @@
-import os
 import logging
 from flask import (
     Flask,
@@ -6,6 +5,8 @@ from flask import (
     current_app
 )
 from flask_sqlalchemy import SQLAlchemy
+from onepiece.utils import ensure_file_dir_exists
+from .const import ConfigKey
 
 
 db = SQLAlchemy()
@@ -14,13 +15,12 @@ db = SQLAlchemy()
 def create_app(cfg='api.config.Config'):
     app = Flask(__name__)
     app.config.from_object(cfg)
-    log_level = app.config.get('LOG_LEVEL')
+    log_level = app.config.get(ConfigKey.LOG_LEVEL)
     init_logger(level=log_level)
     app.url_map.strict_slashes = False
 
-    if app.config.get('SQLITE_FILE'):
-        db_dir = os.path.dirname(app.config.get('SQLITE_FILE'))
-        os.makedirs(db_dir, exist_ok=True)
+    if app.config.get(ConfigKey.SQLITE_FILE):
+        ensure_file_dir_exists(app.config.get(ConfigKey.SQLITE_FILE))
 
     db.init_app(app)
 
@@ -57,7 +57,7 @@ def init_logger(level=None):
 
 def index():
     from onepiece.comicbook import ComicBook
-    prefix = current_app.config.get('URL_PREFIX', '')
+    prefix = current_app.config.get(ConfigKey.URL_PREFIX, '')
     examples = []
     for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
         item = dict(
@@ -106,6 +106,12 @@ def index():
         site_examples.append(dict(
             desc="根据tag查询",
             api=prefix + f'/api/{site}/list?tag={tag}&page=1'
+        ))
+
+        # GET获取/POST更新站点cookies
+        site_examples.append(dict(
+            desc='GET获取/POST更新站点cookies',
+            api=prefix + f'/api/{site}/cookies',
         ))
 
     aggregate_examples = []

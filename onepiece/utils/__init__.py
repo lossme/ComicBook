@@ -69,3 +69,10 @@ def image_dir_to_pdf(img_dir, target_path, sort_by=None):
 
     with open(target_path, "wb") as f:
         f.write(img2pdf.convert(img_path_list))
+
+
+def ensure_file_dir_exists(filepath):
+    if filepath and isinstance(filepath, str):
+        file_dir = os.path.dirname(filepath)
+        if file_dir and not os.path.exists(file_dir):
+            os.makedirs(file_dir, exist_ok=True)
