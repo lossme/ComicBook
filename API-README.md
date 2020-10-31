@@ -285,6 +285,7 @@ curl "http://127.0.0.1:8000/api/qq/tags"
 请求示例
 
 ```sh
+# 多个标签搜索不一定支持
 curl "http://127.0.0.1:8000/api/qq/list?tag=theme_105,finish_2&page=1"
 ```
 

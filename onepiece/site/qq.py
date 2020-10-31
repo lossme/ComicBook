@@ -47,7 +47,10 @@ class QQCrawler(CrawlerBase):
         name = soup.h2.text.strip()
         desc = soup.find('p', {'class': 'works-intro-short ui-text-gray9'}).text.strip()
         description = soup.find('meta', {'name': 'Description'}).get('content').strip()
-        tag = re.search(r"的标签：(.*?)", description, re.S).group(1).strip()
+        r = re.search(r"的标签：(.*)", description, re.S)
+        tag = ''
+        if r:
+            tag = r.group(1).strip().replace('，', ',')
         cover_image_url = soup.find('div', {'class': 'works-cover ui-left'}).img.get('src')
         author = soup.find('span', {'class': 'first'}).em.text.strip()
         status = soup.find('label', {'class': 'works-intro-status'}).text
@@ -139,6 +142,8 @@ class QQCrawler(CrawlerBase):
             for a in div.find_all('a'):
                 name = a.get('title')
                 tag_id = a.get('id', '')
+                if not tag_id:
+                    continue
                 tags.add_tag(category=category, name=name, tag=tag_id)
         tag_str = re.search(r'var tagList = "(.*?)"', html).group(1)
         for i in tag_str.split('|'):

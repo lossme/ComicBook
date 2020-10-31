@@ -143,6 +143,8 @@ class TagsItem():
     def to_dict(self):
         return self.tags
 
+    def __iter__(self):
+        return iter(self.tags)
 
 class CrawlerBase():
 
