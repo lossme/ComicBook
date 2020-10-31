@@ -38,8 +38,9 @@ class WnacgCrawler(CrawlerBase):
         name = soup.h2.text.strip()
         author = ''
         desc = soup.find('div', {'class': 'asTBcell uwconn'}).p.text
-        tag = ''.join([i.text for i in
-                       soup.find('div', {'class': 'addtags'}).find_all('a', {'class': 'tagshow'})])
+        tag_list = [i.text for i in soup.find('div', {'class': 'addtags'}).find_all('a', {'class': 'tagshow'})]
+        tag = ','.join(tag_list)
+
         cover_image_url = "https:" + soup.find('div', {'class': 'asTBcell uwthumb'}).img.get('data-original')
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
@@ -50,6 +51,8 @@ class WnacgCrawler(CrawlerBase):
         chapter_number = 1
         url = urljoin(self.SITE_INDEX, '/photos-slide-aid-{}.html'.format(self.comicid))
         book.add_chapter(chapter_number=chapter_number, cid=self.comicid, source_url=url, title=str(chapter_number))
+        for t in tag_list:
+            book.add_tag(name='标签', tag=t)
         return book
 
     def get_chapter_item(self, citem):
@@ -132,7 +135,10 @@ class WnacgCrawler(CrawlerBase):
 
     def get_tag_result(self, tag, page=1):
         if tag:
-            url = 'http://www.wnacg.org/albums-index-page-%s-cate-%s.html' % (page, tag)
+            try:
+                url = 'http://www.wnacg.org/albums-index-page-%s-cate-%s.html' % (page, int(tag))
+            except Exception:
+                url = 'http://www.wnacg.org/albums-index-page-%s-tag-%s.html' % (page, tag)
         else:
             url = "http://www.wnacg.org/albums.html"
         soup = self.get_soup(url)
