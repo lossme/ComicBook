@@ -6,6 +6,7 @@ import logging
 import weakref
 
 from .utils import safe_filename
+from .utils import ensure_file_dir_exists
 from .exceptions import (
     SiteNotSupport,
     ChapterNotFound
@@ -135,14 +136,14 @@ class Chapter():
         return chapter_dir
 
     def get_chapter_pdf_path(self, output_dir):
-        first_dir = safe_filename(self.comicbook.source_name)
+        first_dir = safe_filename(self.comicbook.source_name + ' pdf')
         second_dir = safe_filename(self.comicbook.name)
         filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".pdf"
         pdf_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return pdf_path
 
     def get_single_image_path(self, output_dir):
-        first_dir = safe_filename(self.comicbook.source_name)
+        first_dir = safe_filename(self.comicbook.source_name + ' 长图')
         second_dir = safe_filename(self.comicbook.name)
         filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".jpg"
         img_path = os.path.join(output_dir, first_dir, second_dir, filename)
@@ -162,6 +163,7 @@ class Chapter():
         from .utils import image_dir_to_pdf
         chapter_dir = self.save(output_dir)
         pdf_path = self.get_chapter_pdf_path(output_dir)
+        ensure_file_dir_exists(pdf_path)
         image_dir_to_pdf(img_dir=chapter_dir,
                          target_path=pdf_path,
                          sort_by=lambda x: int(x.split('.')[0]))
@@ -171,6 +173,7 @@ class Chapter():
         from .utils import image_dir_to_single_image
         chapter_dir = self.save(output_dir)
         img_path = self.get_single_image_path(output_dir)
+        ensure_file_dir_exists(img_path)
         img_path = image_dir_to_single_image(img_dir=chapter_dir,
                                              target_path=img_path,
                                              sort_by=lambda x: int(x.split('.')[0]))
