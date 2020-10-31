@@ -43,7 +43,7 @@ star防止走丢，欢迎大家提建议和issue
 - 下载1到5集,7集，9到10集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=1-5,7,9-10`
 - 生成pdf文件: `python3 -m onepiece --site=qq --comicid=505430 --pdf`
 - 推送到邮箱: `python3 -m onepiece --site=qq --comicid=505430 --pdf --mail`
-- 拼接成长图: `python3 -m onepiece --site=qq --comicid=505430 --single-image`
+- 拼接成长图: `python3 -m onepiece --site=qq --comicid=505430 --single-image --quality 95`
 - 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
 
 

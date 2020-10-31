@@ -60,6 +60,7 @@ def parse_args():
                         help="是否生成pdf文件, 如 --pdf")
     parser.add_argument('--single-image', action='store_true',
                         help="是否拼接成一张图片, 如 --single-image")
+    parser.add_argument('--quality', type=int, default=95, help="生成长图的图片质量")
 
     parser.add_argument('--login', action='store_true',
                         help="是否登录账号，如 --login")
@@ -127,7 +128,7 @@ def main():
     is_gen_pdf = args.pdf
     is_login = args.login
     is_single_image = args.single_image
-
+    quality = args.quality
     session_path = args.session_path
     cookies_path = args.cookies_path
 
@@ -188,7 +189,7 @@ def main():
             chapter_dir = chapter.save(output_dir=output_dir)
             logger.info("下载成功 %s", chapter_dir)
             if is_single_image:
-                img_path = chapter.save_as_single_image(output_dir=output_dir)
+                img_path = chapter.save_as_single_image(output_dir=output_dir, quality=quality)
                 logger.info("下载成功 %s", img_path)
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)

@@ -169,12 +169,13 @@ class Chapter():
                          sort_by=lambda x: int(x.split('.')[0]))
         return pdf_path
 
-    def save_as_single_image(self, output_dir):
+    def save_as_single_image(self, output_dir, quality=95):
         from .utils import image_dir_to_single_image
         chapter_dir = self.save(output_dir)
         img_path = self.get_single_image_path(output_dir)
         ensure_file_dir_exists(img_path)
         img_path = image_dir_to_single_image(img_dir=chapter_dir,
                                              target_path=img_path,
-                                             sort_by=lambda x: int(x.split('.')[0]))
+                                             sort_by=lambda x: int(x.split('.')[0]),
+                                             quality=quality)
         return img_path

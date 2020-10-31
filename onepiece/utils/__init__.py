@@ -86,27 +86,31 @@ def ensure_file_dir_exists(filepath):
             os.makedirs(file_dir, exist_ok=True)
 
 
-def image_dir_to_single_image(img_dir, target_path, sort_by=None, max_width=None):
+def image_dir_to_single_image(img_dir, target_path, sort_by=None, quality=95):
     max_height = 65500
     img_path_list = find_all_image(img_dir=img_dir, sort_by=sort_by)
     img_list = [Image.open(i) for i in img_path_list]
-    new_width = max_width or img_list[0].size[0]
-    total_height = sum([i.size[1] for i in img_list])
-    new_height = min(max_height, total_height)
-    new_img = Image.new('RGB', (new_width, new_height))
-    current_h = 0
-    idx = 1
-    img_path = '.'.join([target_path.rsplit('.')[0] + f'-{idx}'] + target_path.rsplit('.')[1:])
+    width = img_list[0].size[0]
+
+    # 图片太大 先分组
+    group = 0
+    imgs_group = [dict(width=width, height=0, imgs=[])]
     for img in img_list:
-        if current_h >= max_height:
-            new_img.save(img_path)
-            new_img.close()
-            idx += 1
-            current_h = 0
-            img_path = '.'.join([target_path.rsplit('.')[0] + f'-{idx}'] + target_path.rsplit('.')[1:])
-            new_height = min(max_height, total_height - max_height * (idx - 1))
-            new_img = Image.new('RGB', (new_width, new_height))
-        new_img.paste(img, box=(0, current_h))
-        current_h += img.size[1]
-    new_img.save(img_path)
+        if imgs_group[group]['height'] + img.size[1] >= max_height:
+            group += 1
+            imgs_group.append(dict(width=width, height=0, imgs=[]))
+        imgs_group[group]['imgs'].append(img)
+        imgs_group[group]['height'] += img.size[1]
+
+    for idx, item in enumerate(imgs_group, start=1):
+        width = item['width']
+        height = item['height']
+        new_img = Image.new('RGB', (width, height))
+        current_h = 0
+        img_path = '.'.join([target_path.rsplit('.')[0] + f'-{idx}'] + target_path.rsplit('.')[1:])
+        for img in item['imgs']:
+            new_img.paste(img, box=(0, current_h))
+            current_h += img.size[1]
+        new_img.save(img_path, quality=quality)
+
     return img_path
