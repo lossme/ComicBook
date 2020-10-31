@@ -37,13 +37,15 @@ star防止走丢，欢迎大家提建议和issue
 从腾讯漫画下载：
 
 - 下载漫画 id=505430 最新一集: `python3 -m onepiece --site=qq --comicid=505430`
-- 下载漫画 id=505430 所有章节: `python3 -m onepiece --site=qq --comicid=505430 --all`
-- 下载漫画 id=505430 第800集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=800`
-- 下载漫画 id=505430 倒数第二集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=-2`
-- 下载漫画 id=505430 1到5集,7集，9到10集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=1-5,7,9-10`
-- 下载漫画 id=505430 并生成pdf文件: `python3 -m onepiece --site=qq --comicid=505430 --pdf`
-- 下载漫画 id=505430 并推送到邮箱: `python3 -m onepiece --site=qq --comicid=505430 --pdf --mail`
-- 下载漫画 id=505430 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
+- 下载所有章节: `python3 -m onepiece --site=qq --comicid=505430 --all`
+- 下载第800集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=800`
+- 下载倒数第二集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=-2`
+- 下载1到5集,7集，9到10集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=1-5,7,9-10`
+- 生成pdf文件: `python3 -m onepiece --site=qq --comicid=505430 --pdf`
+- 推送到邮箱: `python3 -m onepiece --site=qq --comicid=505430 --pdf --mail`
+- 拼接成长图: `python3 -m onepiece --site=qq --comicid=505430 --single-image`
+- 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
+
 
 从其它站点下载，注意不同站点的comicid区别
 

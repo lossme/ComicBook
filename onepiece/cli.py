@@ -58,6 +58,8 @@ def parse_args():
 
     parser.add_argument('--pdf', action='store_true',
                         help="是否生成pdf文件, 如 --pdf")
+    parser.add_argument('--single-image', action='store_true',
+                        help="是否拼接成一张图片, 如 --single-image")
 
     parser.add_argument('--login', action='store_true',
                         help="是否登录账号，如 --login")
@@ -124,6 +126,8 @@ def main():
     is_send_mail = args.mail
     is_gen_pdf = args.pdf
     is_login = args.login
+    is_single_image = args.single_image
+
     session_path = args.session_path
     cookies_path = args.cookies_path
 
@@ -180,6 +184,12 @@ def main():
             chapter = comicbook.Chapter(chapter_number)
             logger.info("正在下载 【{}】 {} 【{}】".format(
                 comicbook.name, chapter.chapter_number, chapter.title))
+
+            chapter_dir = chapter.save(output_dir=output_dir)
+            logger.info("下载成功 %s", chapter_dir)
+            if is_single_image:
+                img_path = chapter.save_as_single_image(output_dir=output_dir)
+                logger.info("下载成功 %s", img_path)
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
                 if is_send_mail:
@@ -187,9 +197,6 @@ def main():
                               content=None,
                               file_list=[pdf_path, ])
                 logger.info("下载成功 %s", pdf_path)
-            else:
-                chapter_dir = chapter.save(output_dir=output_dir)
-                logger.info("下载成功  %s", chapter_dir)
         except Exception as e:
             logger.exception(e)
 

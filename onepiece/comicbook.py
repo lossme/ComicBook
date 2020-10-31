@@ -113,7 +113,7 @@ class Chapter():
     def __init__(self, comicbook_ref, chapter_item):
         self.comicbook_ref = comicbook_ref
         self.chapter_item = chapter_item
-
+        self._saved = False
         for field in self.chapter_item.FIELDS:
             setattr(self, field, getattr(self.chapter_item, field))
 
@@ -141,11 +141,21 @@ class Chapter():
         pdf_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return pdf_path
 
+    def get_single_image_path(self, output_dir):
+        first_dir = safe_filename(self.comicbook.source_name)
+        second_dir = safe_filename(self.comicbook.name)
+        filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".jpg"
+        img_path = os.path.join(output_dir, first_dir, second_dir, filename)
+        return img_path
+
     def save(self, output_dir):
         chapter_dir = self.get_chapter_image_dir(output_dir)
+        if self._saved is True:
+            return chapter_dir
         headers = {'Referer': self.chapter_item.source_url}
         self.comicbook.image_downloader.download_images(
             image_urls=self.image_urls, output_dir=chapter_dir, headers=headers)
+        self._saved = True
         return chapter_dir
 
     def save_as_pdf(self, output_dir):
@@ -156,3 +166,12 @@ class Chapter():
                          target_path=pdf_path,
                          sort_by=lambda x: int(x.split('.')[0]))
         return pdf_path
+
+    def save_as_single_image(self, output_dir):
+        from .utils import image_dir_to_single_image
+        chapter_dir = self.save(output_dir)
+        img_path = self.get_single_image_path(output_dir)
+        img_path = image_dir_to_single_image(img_dir=chapter_dir,
+                                             target_path=img_path,
+                                             sort_by=lambda x: int(x.split('.')[0]))
+        return img_path
