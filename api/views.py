@@ -23,7 +23,6 @@ aggregate_app = Blueprint("aggregate", __name__, url_prefix='/aggregate')
 task_app = Blueprint("task", __name__, url_prefix='/task')
 
 
-@app.errorhandler(ComicbookException)
 def handle_404(error):
     if isinstance(error, NotFoundError):
         return jsonify(dict(message=str(error))), 404
@@ -31,6 +30,11 @@ def handle_404(error):
         return jsonify(dict(message=str(error))), 400
     else:
         return jsonify(dict(message=str(error))), 500
+
+
+app.register_error_handler(ComicbookException, handle_404)
+aggregate_app.register_error_handler(ComicbookException, handle_404)
+task_app.register_error_handler(ComicbookException, handle_404)
 
 
 def check_task_secret(request):
