@@ -5,7 +5,7 @@ import execjs
 from bs4 import BeautifulSoup
 
 from .exceptions import URLException
-from .session import Session
+from .session import SessionMgr
 
 logger = logging.getLogger(__name__)
 
@@ -163,39 +163,35 @@ class CrawlerBase():
     R18 = False
 
     def __init__(self):
-        self._session = None
+        self.timeout = 30
         if self.REQUIRE_JAVASCRIPT:
             try:
                 execjs.get()
             except Exception:
                 raise RuntimeError('pleaese install nodejs first. https://nodejs.org/zh-cn/')
 
-    def set_session(self, session):
-        self._session = session
+    def set_timeout(self, timeout=30):
+        self.timeout = timeout
 
     def get_session(self):
-        if self._session is None:
-            self._session = Session.create_session()
-        return self._session
+        return SessionMgr.get_session(self.SITE)
 
     def export_session(self, path):
-        session = self.get_session()
-        session.export(path)
+        SessionMgr.export_session(site=self.SITE, path=path)
 
     def load_session(self, path):
-        session = Session.load(path)
-        self.set_session(session)
+        SessionMgr.load_session(site=self.SITE, path=path)
 
     def load_cookies(self, path):
-        self.get_session().load_cookies(path)
+        SessionMgr.load_cookies(site=self.SITE, path=path)
 
     def export_cookies(self, path):
-        self.get_session().export_cookies(path)
+        SessionMgr.export_cookies(site=self.SITE, path=path)
 
     def send_request(self, method, url, **kwargs):
         session = self.get_session()
         kwargs.setdefault('headers', {'Referer': self.SITE_INDEX})
-        kwargs.setdefault('timeout', session.TIMEOUT)
+        kwargs.setdefault('timeout', self.timeout)
         try:
             return session.request(method=method, url=url, **kwargs)
         except Exception as e:
@@ -274,17 +270,20 @@ class CrawlerBase():
             logger.info("Waiting to login")
             time.sleep(3)
             try:
-                cookies = driver.get_cookies()
+                cookies = []
+                for cookie in driver.get_cookies():
+                    cookies.append(
+                        dict(name=cookie["name"],
+                             value=cookie["value"],
+                             path=cookie["path"],
+                             domain=cookie["domain"],
+                             secure=cookie["secure"])
+                    )
             except Exception:
                 logger.exception('unknow error. driver quit.')
                 driver.quit()
                 return
-            for cookie in cookies:
-                self.get_session().cookies.set(name=cookie["name"],
-                                               value=cookie["value"],
-                                               path=cookie["path"],
-                                               domain=cookie["domain"],
-                                               secure=cookie["secure"])
+            SessionMgr.update_cookies(site=self.SITE, cookies=cookies)
             if check_login_status_func():
                 logger.info("login success")
                 driver.quit()

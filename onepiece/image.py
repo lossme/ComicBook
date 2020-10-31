@@ -6,7 +6,7 @@ import PIL.Image
 from concurrent.futures import ThreadPoolExecutor
 
 from .exceptions import ImageDownloadError
-from .session import Session
+from .session import SessionMgr
 from .utils import ensure_file_dir_exists
 
 
@@ -36,11 +36,28 @@ def walk(rootdir):
             yield os.path.join(parent, filename)
 
 
-class ImageDownloader():
+class WorkerPoolMgr(object):
+    WORKER_POOL = None
+    POOL_SIZE = 4
+
+    @classmethod
+    def get_pool(cls):
+        if cls.WORKER_POOL is None:
+            cls.WORKER_POOL = ThreadPoolExecutor(max_workers=cls.POOL_SIZE)
+        return cls.WORKER_POOL
+
+    @classmethod
+    def set_worker(cls, worker=4):
+        cls.POOL_SIZE = worker
+        if cls.WORKER_POOL:
+            cls.WORKER_POOL._max_workers = worker
+
+
+class ImageDownloader(object):
     URL_PATTERN = re.compile(r'^https?://.*')
 
-    def __init__(self):
-        self._session = None
+    def __init__(self, site):
+        self.site = site
 
         self.image_download_pool = None
         self.pool_size = 4
@@ -50,21 +67,11 @@ class ImageDownloader():
     def set_verify(self, verify=True):
         self.verify = verify
 
-    def set_worker(self, worker=4):
-        self.worker = worker
-
     def set_timeout(self, timeout=30):
         self.timeout = timeout
 
     def get_session(self):
-        if self._session is None:
-            self._session = Session.create_session()
-        return self._session
-
-    def get_pool(self):
-        if self.image_download_pool is None:
-            self.image_download_pool = ThreadPoolExecutor(max_workers=self.pool_size)
-        return self.image_download_pool
+        return SessionMgr.get_session(site=self.site)
 
     @retry(times=3, delay=1)
     def download_image(self, image_url, target_path, **kwargs):
@@ -101,7 +108,7 @@ class ImageDownloader():
     def download_images(self, image_urls, output_dir, **kwargs):
         """下载出错只打印出警告信息，不抛出异常
         """
-        pool = self.get_pool()
+        pool = WorkerPoolMgr.get_pool()
         future_list = []
         for idx, image_url in enumerate(image_urls, start=1):
             ext = self.find_suffix(image_url)

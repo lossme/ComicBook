@@ -8,7 +8,8 @@ from .utils import (
     parser_chapter_str,
     ensure_file_dir_exists
 )
-
+from .session import SessionMgr
+from .image import WorkerPoolMgr
 from .utils.mail import Mail
 from . import VERSION
 
@@ -132,22 +133,22 @@ def main():
     if args.mail:
         mail = Mail.init(args.config)
 
-    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    comicbook = ComicBook(site=site, comicid=comicid)
     if args.proxy:
-        comicbook.set_proxy(args.proxy)
+        SessionMgr.set_proxy(site=site, proxy=args.proxy)
     if args.noverify:
-        comicbook.set_verify(verify=False)
-    comicbook.set_worker(worker=args.worker)
-    comicbook.set_driver_path(driver_path=args.driver_path)
+        comicbook.image_downloader.set_verify(verify=False)
+    WorkerPoolMgr.set_worker(worker=args.worker)
+    comicbook.crawler.DRIVER_PATH = args.driver_path
 
     # 加载 session
     if session_path and os.path.exists(session_path):
-        comicbook.crawler.load_session(session_path)
+        SessionMgr.load_session(site=site, path=session_path)
         logger.info('load session success. %s', session_path)
 
     # 加载cookies
     if cookies_path and os.path.exists(cookies_path):
-        comicbook.crawler.load_cookies(cookies_path)
+        SessionMgr.load_cookies(site=site, path=cookies_path)
         logger.info('load cookies success. %s', cookies_path)
 
     if args.name:
@@ -161,7 +162,6 @@ def main():
 
     if is_login:
         comicbook.crawler.login()
-
     comicbook.start_crawler()
     msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
            "【{last_chapter_title}】 数据来源: {source_url}").format(
@@ -196,13 +196,13 @@ def main():
     # 保存 session
     if session_path:
         ensure_file_dir_exists(session_path)
-        comicbook.crawler.export_session(session_path)
+        SessionMgr.export_session(site=site, path=session_path)
         logger.info("session saved. path={}".format(session_path))
 
     # 保存 cookies
     if cookies_path:
         ensure_file_dir_exists(cookies_path)
-        comicbook.crawler.export_cookies(cookies_path)
+        SessionMgr.export_cookies(site=site, path=cookies_path)
         logger.info("cookies saved. path={}".format(cookies_path))
 
 

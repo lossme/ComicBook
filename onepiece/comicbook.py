@@ -27,28 +27,26 @@ def find_all_crawler():
 class ComicBook():
     CRAWLER_CLS_MAP = {crawler.SITE: crawler for crawler in find_all_crawler()}
 
-    def __init__(self, comicbook_crawler):
-        self.crawler = comicbook_crawler
-        self.image_downloader = ImageDownloader()
+    def __init__(self, site, comicid=None):
+        if site not in self.CRAWLER_CLS_MAP:
+            raise SiteNotSupport(f"SiteNotSupport site={site}")
+        crawler_cls = self.CRAWLER_CLS_MAP[site]
+        comicid = comicid or crawler_cls.DEFAULT_COMICID
+        self.crawler = crawler_cls(comicid)
+
+        self.image_downloader = ImageDownloader(site=site)
 
         # {chapter_number: Chapter}
         self.chapter_cache = {}
         self.crawler_time = None
         self.comicbook_item = None
         self.tags = None
+        self.last_chapter_number = 0
+        self.last_chapter_title = ''
 
-    def set_proxy(self, proxy):
-        self.crawler.get_session().set_proxy(proxy)
-        self.image_downloader.get_session().set_proxy(proxy)
-
-    def set_worker(self, worker):
-        self.image_downloader.set_worker(worker=worker)
-
-    def set_verify(self, verify):
-        self.image_downloader.set_verify(verify)
-
-    def set_driver_path(self, driver_path):
-        self.crawler.DRIVER_PATH = driver_path
+    def start_crawler(self):
+        if self.crawler_time is None:
+            self.refresh()
 
     def refresh(self):
         self.comicbook_item = self.crawler.get_comicbook_item()
@@ -65,21 +63,6 @@ class ComicBook():
             self.last_chapter_number = 0
             self.last_chapter_title = ""
 
-    def start_crawler(self):
-        if self.crawler_time is None:
-            self.refresh()
-
-    @classmethod
-    def create_comicbook(cls, site, comicid=None):
-        if site not in cls.CRAWLER_CLS_MAP:
-            raise SiteNotSupport(f"SiteNotSupport site={site}")
-        crawler_cls = cls.CRAWLER_CLS_MAP[site]
-        if comicid is None:
-            comicid = crawler_cls.DEFAULT_COMICID
-        crawler = crawler_cls(comicid)
-        comicbook = cls(comicbook_crawler=crawler)
-        return comicbook
-
     def search(self, name=None, page=1, limit=None):
         return self.crawler.search(name, page=page, size=limit)
 
@@ -95,7 +78,7 @@ class ComicBook():
         return self.crawler.get_tag_result(tag=tag, page=page)
 
     def to_dict(self):
-        if self.comicbook_item is None:
+        if self.crawler_time is None:
             self.start_crawler()
         return self.comicbook_item.to_dict()
 
@@ -103,7 +86,7 @@ class ComicBook():
         return "<ComicBook>: {}".format(self.to_dict())
 
     def Chapter(self, chapter_number):
-        if self.comicbook_item is None:
+        if self.crawler_time is None:
             self.start_crawler()
 
         if chapter_number < 0:

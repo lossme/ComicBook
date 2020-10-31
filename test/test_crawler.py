@@ -1,7 +1,7 @@
 import logging
 
 from onepiece.comicbook import ComicBook
-
+from onepiece.session import SessionMgr
 logger = logging.getLogger()
 
 DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
@@ -9,10 +9,9 @@ DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
 
 def _test_crawl_comicbook(site, comicid=None,
                           chapter_number=1, proxy=None, test_search=True):
-    comicbook = ComicBook.create_comicbook(site=site, comicid=comicid)
+    comicbook = ComicBook(site=site, comicid=comicid)
     if proxy:
-        comicbook.crawler.get_session().set_proxy(proxy)
-
+        SessionMgr.set_proxy(site=site, proxy=proxy)
     comicbook.start_crawler()
     chapter = comicbook.Chapter(chapter_number=chapter_number)
     assert len(chapter.image_urls) > 0
