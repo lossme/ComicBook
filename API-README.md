@@ -88,7 +88,7 @@ curl "http://127.0.0.1:8000/api/bilibili/comic/24742"
 
 - `volumes`: 单行本 数据结构同 `chapters`
 - `ext_chapters`: 番外篇 数据结构同`chapters`
-- `tags`: 可用于标签搜索，如 `http://127.0.0.1:8000/api/bilibili/list?tag=style_id_998`
+- `tags`: 可用于标签搜索，如 `http://127.0.0.1:8000/api/bilibili/list?tag=style_id_998&page=1`
 
 ------
 
@@ -465,5 +465,19 @@ curl "http://127.0.0.1:8000/api/qq/cookies"
 请求示例
 
 ```sh
-curl -XPOST "http://127.0.0.1:8000/api/qq/cookies" -H "Content-Type: application/json" -d '{"cookies": [{"domain": ".ac.qq.com", "name": "xxx", "path": "/", "secure": false, "value": "1604080000"}]}'
+curl -XPOST "http://127.0.0.1:8000/api/qq/cookies" -H "Content-Type: application/json" -d \
+'{
+    "cookies": [
+        {
+            "domain": ".ac.qq.com",
+            "name": "xxx",
+            "path": "/",
+            "secure": false,
+            "value": "1604080000"
+        }
+    ],
+    "cover": false
+}'
 ```
+
+- `cover`: 可选参数，是否覆盖，默认不覆盖

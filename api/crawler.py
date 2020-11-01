@@ -94,10 +94,10 @@ def get_cookies(site):
 def update_cookies(site, cookies, cover=False):
     if cover:
         SessionMgr.clear_cookies(site=site)
-    SessionMgr.update_cookies(cookies)
+    SessionMgr.update_cookies(site=site, cookies=cookies)
     cookies_path = get_cookies_path(site=site)
-    SessionMgr.export_cookies(cookies_path)
-    return SessionMgr.get_cookies()
+    SessionMgr.export_cookies(site=site, path=cookies_path)
+    return SessionMgr.get_cookies(site=site)
 
 
 def get_cookies_path(site):

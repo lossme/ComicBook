@@ -183,7 +183,7 @@ class CrawlerBase():
         self.timeout = timeout
 
     def get_session(self):
-        return SessionMgr.get_session(self.SITE)
+        return SessionMgr.get_session(site=self.SITE)
 
     def export_session(self, path):
         SessionMgr.export_session(site=self.SITE, path=path)
