@@ -38,21 +38,19 @@ class WnacgCrawler(CrawlerBase):
         name = soup.h2.text.strip()
         author = ''
         desc = soup.find('div', {'class': 'asTBcell uwconn'}).p.text
-        tag_list = [i.text for i in soup.find('div', {'class': 'addtags'}).find_all('a', {'class': 'tagshow'})]
-        tag = ','.join(tag_list)
-
         cover_image_url = "https:" + soup.find('div', {'class': 'asTBcell uwthumb'}).img.get('data-original')
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
-                                       tag=tag,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
         chapter_number = 1
         url = urljoin(self.SITE_INDEX, '/photos-slide-aid-{}.html'.format(self.comicid))
         book.add_chapter(chapter_number=chapter_number, cid=self.comicid, source_url=url, title=str(chapter_number))
-        for t in tag_list:
-            book.add_tag(name='标签', tag=t)
+        tag_list = [i.text for i in soup.find('div', {'class': 'addtags'}).find_all('a', {'class': 'tagshow'})]
+        for tag_name in tag_list:
+            tag_id = self.get_tag_id_by_name(tag_name)
+            book.add_tag(name=tag_name, tag=tag_id)
         return book
 
     def get_chapter_item(self, citem):

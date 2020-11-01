@@ -59,6 +59,8 @@ curl "http://127.0.0.1:8000/api/bilibili/comic/24742"
             "title": "戴草帽的路飞"
         }
     ],
+    "volumes": [],
+    "ext_chapters": [],
     "cover_image_url": "http://i0.hdslb.com/bfs/manga-static/8cfad691e8717f8c189f2b5e93a39d272708f91a.jpg",
     "crawl_time": "2020-08-16 15:06:29",
     "desc": "【此漫画的翻译由版权方提供】拥有财富、名声、权力、这世界上的一切的男人 “海盗王”高路德·罗杰，在临死之前说了一句话，让全世界的人都涌向了大海。“想要我的财宝吗？想要的话，就去拿吧，我把世界上的一切都放在了那里！”，这个世界迎来了“大海盗时代”。",
@@ -67,11 +69,26 @@ curl "http://127.0.0.1:8000/api/bilibili/comic/24742"
     "site": "bilibili",
     "source_url": "https://manga.bilibili.com/m/detail/mc24742",
     "tag": "奇幻,热血,冒险",
-    "tags": [],
-    "volumes": [],
-    "ext_chapters": []
+    "tags": [
+        {
+            "name":"奇幻",
+            "tag":"style_id_998"
+        },
+        {
+            "name":"热血",
+            "tag":"style_id_999"
+        },
+        {
+            "name":"冒险",
+            "tag":"style_id_1013"
+        }
+    ]
 }
 ```
+
+- `volumes`: 单行本 数据结构同 `chapters`
+- `ext_chapters`: 番外篇 数据结构同`chapters`
+- `tags`: 可用于标签搜索，如 `http://127.0.0.1:8000/api/bilibili/list?tag=style_id_998`
 
 ------
 

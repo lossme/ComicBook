@@ -46,21 +46,24 @@ class QQCrawler(CrawlerBase):
         soup = self.get_soup(self.source_url)
         name = soup.h2.text.strip()
         desc = soup.find('p', {'class': 'works-intro-short ui-text-gray9'}).text.strip()
-        description = soup.find('meta', {'name': 'Description'}).get('content').strip()
-        r = re.search(r"的标签：(.*)", description, re.S)
-        tag = ''
-        if r:
-            tag = r.group(1).strip().replace('，', ',')
         cover_image_url = soup.find('div', {'class': 'works-cover ui-left'}).img.get('src')
         author = soup.find('span', {'class': 'first'}).em.text.strip()
         status = soup.find('label', {'class': 'works-intro-status'}).text
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
-                                       tag=tag,
                                        status=status,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
+
+        description = soup.find('meta', {'name': 'Description'}).get('content', '').strip()
+        r = re.search(r"的标签：(.*)", description, re.S)
+        if r:
+            for tag_name in r.group(1).strip().replace('，', ',').split(','):
+                if tag_name:
+                    tag_id = self.get_tag_id_by_name(tag_name)
+                    book.add_tag(name=tag_name, tag=tag_id)
+
         ol = soup.find('ol', {'class': 'works-chapter-list'})
         for idx, a in enumerate(ol.find_all('a'), start=1):
             title = a.get('title')

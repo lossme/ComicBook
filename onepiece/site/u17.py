@@ -40,21 +40,25 @@ class U17Crawler(CrawlerBase):
 
     def get_comicbook_item(self):
         url = self.COMIC_BOOK_API.format(comicid=self.comicid)
+        soup = self.get_soup(self.source_url)
         api_data = self.get_json(url)
         name = api_data['comic_info']['name']
         desc = api_data['comic_info']['description']
         cover_image_url = api_data['comic_info']['cover']
         author = api_data['comic_info']['author_name']
-        tag = ''
         author = api_data['comic_info']['author_name']
         status = self.STATUS_MAP.get(api_data['comic_info']['series_status'], "")
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
-                                       tag=tag,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url,
                                        status=status)
+        for a in soup.find('div', {'class': 'line1'}).find_all('a'):
+            tag_name = a.text.strip()
+            tag_id = self.get_tag_id_by_name(tag_name)
+            book.add_tag(name=tag_name, tag=tag_id)
+
         for idx, item in enumerate(api_data['chapter_list'], start=1):
             chapter_number = idx
             chapter_id = item['chapter_id']

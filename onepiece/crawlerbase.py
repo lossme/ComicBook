@@ -15,12 +15,11 @@ class ComicBookItem():
               "source_url", "source_name", "crawl_time", "chapters", "ext_chapters", "volumes",
               "status", 'tags', "site", "last_update_time"]
 
-    def __init__(self, name=None, desc=None, tag=None, cover_image_url=None,
+    def __init__(self, name=None, desc=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
-                 crawl_time=None, status=None, site=None, last_update_time=None):
+                 crawl_time=None, status=None, site=None, last_update_time=None, **kwargs):
         self.name = name or ""
         self.desc = desc or ""
-        self.tag = tag or ""
         self.cover_image_url = cover_image_url or ""
         self.author = author or ""
         self.source_url = source_url or ""
@@ -36,11 +35,17 @@ class ComicBookItem():
         self.volume_citems = {}
         self.tags = []
 
+    @property
+    def tag(self):
+        return ",".join([tag['name'] for tag in self.tags])
+
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}
 
-    def add_tag(self, name, tag):
-        self.tags.append(dict(name=name, tag=tag))
+    def add_tag(self, name, tag=None):
+        tag = tag or ''
+        if name:
+            self.tags.append(dict(name=name, tag=tag))
 
     def add_chapter(self, chapter_number, title, source_url, **kwargs):
         self.citems[chapter_number] = Citem(
@@ -146,6 +151,7 @@ class TagsItem():
     def __iter__(self):
         return iter(self.tags)
 
+
 class CrawlerBase():
 
     SOURCE_NAME = "未知"
@@ -166,6 +172,7 @@ class CrawlerBase():
 
     def __init__(self):
         self.timeout = 30
+        self._tag_info = None
         if self.REQUIRE_JAVASCRIPT:
             try:
                 execjs.get()
@@ -249,6 +256,9 @@ class CrawlerBase():
         return self.new_search_result_item()
 
     def get_tags(self):
+        """
+        :return TagsItem:
+        """
         return self.new_tags_item()
 
     def get_tag_result(self, tag, page=1):
@@ -301,3 +311,15 @@ class CrawlerBase():
         from selenium import webdriver
         driver_cls = getattr(webdriver, driver_type)
         return driver_cls(self.DRIVER_PATH)
+
+    def get_tags_from_cache(self):
+        if self._tag_info is None:
+            self._tag_info = self.get_tags()
+        return self._tag_info
+
+    def get_tag_id_by_name(self, name):
+        for group in self.get_tags_from_cache():
+            for tag in group['tags']:
+                if tag['name'] == name:
+                    return tag['tag']
+        return ''

@@ -35,19 +35,20 @@ class ManhuataiCrawler(CrawlerBase):
         comic_id = soup.find('h1', {'id': 'detail-title'}).get('data-comic-id')
         author = ''
         desc = soup.find('p', {'class': 'desc-content'}).text
-        tag = ''.join([a.text.strip() for a in
-                       soup.find('ul', {'class': 'tags'}).find_all('a')])
         last_update_time_text = soup.find('span', {'class': 'update'}).text
         last_update_time = re.search(r'(\d{4}-\d{2}-\d{2})', last_update_time_text).group(1)
 
         cover_image_url = "https:" + soup.find('div', {'class': 'detail-cover'}).img.get('data-src')
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
-                                       tag=tag,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url,
                                        last_update_time=last_update_time)
+        for a in soup.find('ul', {'class': 'tags'}).find_all('a'):
+            tag_name = a.text.strip()
+            book.add_tag(name=tag_name, tag='')
+
         li_list = soup.find('ol', {'id': 'j_chapter_list'}).find_all('li')
         for idx, li in enumerate(li_list, start=1):
             chapter_number = idx

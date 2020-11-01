@@ -36,22 +36,22 @@ class NhentaiCrawler(CrawlerBase):
         name = soup.h2.text.strip()
         author = ''
         desc = soup.h2.text.strip()
-        tag = ''
         cover_image_url = soup.find('div', {'id': 'cover'}).img.get('data-src')
         chapter_number = 1
         image_urls = []
         div_list = soup.find('div', {'id': 'thumbnail-container'}).find_all('div', {'class': 'thumb-container'})
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
-                                       tag=tag,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
         for div in soup.find('section', {'id': 'tags'}).find_all('div', {'class': 'tag-container'}):
             for a in div.find('span', {'class': 'tags'}).find_all('a'):
-                href = a.get('href')
+                href = a.get('href', '')
+                if href.startswith('/search'):
+                    continue
                 name, tag = href.strip('/').split('/')
-                book.add_tag(name=name.capitalize(), tag='%s_%s' % (name, tag))
+                book.add_tag(name=tag, tag='%s_%s' % (name, tag))
 
         for div in div_list:
             url = div.img.get('data-src').replace('t.nhentai', 'i.nhentai')

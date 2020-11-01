@@ -47,7 +47,6 @@ class ManhuaguiCrawler(CrawlerBase):
 
         li_list = soup.find('ul', {'class': 'detail-list'}).find_all('li')
         tag_soup = li_list[1].find_all('strong')[0]
-        tag = ','.join([a.get('title') for a in tag_soup.previous_element.find_all('a')])
         author_soup = li_list[1].find_all('strong')[1]
         author = author_soup.previous_element.a.get('title')
         img = soup.find('div', attrs={'class': 'book-cover'}).p.img
@@ -55,7 +54,6 @@ class ManhuaguiCrawler(CrawlerBase):
         status = soup.find('li', {'class': 'status'}).span.span.text
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
-                                       tag=tag,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url,

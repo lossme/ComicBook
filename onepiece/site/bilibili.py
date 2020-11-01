@@ -100,17 +100,19 @@ class BilibiliCrawler(CrawlerBase):
         api_data = self.get_api_data()
         name = api_data['data']['title']
         desc = api_data['data']['evaluate'] or ""
-        tag = ",".join(api_data['data']['styles'])
         author = " ".join(api_data['data']['author_name'])
         cover_image_url = api_data['data']['vertical_cover']
         status = "完结" if api_data['data']['is_finish'] == 1 else "连载"
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
-                                       tag=tag,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url,
                                        status=status)
+        for tag_name in api_data['data']['styles']:
+            tag_id = self.get_tag_id_by_name(tag_name)
+            book.add_tag(name=tag_name, tag=tag_id)
+
         for idx, item in enumerate(sorted(api_data["data"]["ep_list"], key=lambda x: x["ord"]), start=1):
             chapter_number = idx
             cid = item['id']
