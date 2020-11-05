@@ -367,9 +367,13 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 ```
 
 
+### 2.0 API管理相关 简单的认证
+
+在请求的headers添加`API-Secret`字段，值为`config.py`中的`MANAGE_SECRET`
+
 ### 2.1 添加到异步任务
 
-`GET /task/add?name={name}&site={site}`
+`GET /manage/task/add?name={name}&site={site}`
 
 - site: 站点
 - comicid: 漫画id
@@ -377,13 +381,12 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 - is_all: 是否下载所有章节, 0 否，1 是，默认 否
 - gen_pdf: 是否生成pdf, 0 否，1 是，默认 否
 - send_mail: 是否发送到邮箱, 0 否，1 是，默认 否
-- receivers: 收件人列表，如: `xxx@qq.com,yyy@qq.com`, 不传默认发送到配置文件里的收件人，
-- secret: config.py 中的 TASK_SECRET
+- receivers: 收件人列表，如: `xxx@qq.com,yyy@qq.com`, 不传默认发送到配置文件里的收件人
 
 请求示例
 
 ```sh
-curl "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&send_mail=0"
+curl -H "API-Secret: 123" "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&send_mail=0"
 ```
 
 ```json
@@ -412,14 +415,14 @@ curl "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&
 
 ### 2.2 查看任务列表
 
-`GET /task/list?name={page}&secret={secret}`
+`GET /manage/task/list?name={page}&secret={secret}`
 
 若任务超过10min，任务状态还没变成完成/失败，可能需重新添加异步任务
 
 请求示例
 
 ```sh
-curl "http://127.0.0.1:8000/task/list?page=1"
+curl -H "API-Secret: 123" "http://127.0.0.1:8000/task/list?page=1"
 ```
 
 ```json
@@ -447,17 +450,17 @@ curl "http://127.0.0.1:8000/task/list?page=1"
 }
 ```
 
-### 3.1 查看站点cookies
-`GET /api/{site}/cookies`
+### 2.3 查看站点cookies
+`GET /manage/cookies/{site}`
 
 
 请求示例
 
 ```sh
-curl "http://127.0.0.1:8000/api/qq/cookies"
+curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/cookies/qq"
 ```
 
-### 3.2 更新站点cookies
+### 2.4 更新站点cookies
 
 `POST /api/{site}/cookies`
 
@@ -465,7 +468,9 @@ curl "http://127.0.0.1:8000/api/qq/cookies"
 请求示例
 
 ```sh
-curl -XPOST "http://127.0.0.1:8000/api/qq/cookies" -H "Content-Type: application/json" -d \
+curl -XPOST "http://127.0.0.1:8000/manage/cookies/qq" \
+    -H "API-Secret: 123" \
+    -H "Content-Type: application/json" -d \
 '{
     "cookies": [
         {

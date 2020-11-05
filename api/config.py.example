@@ -29,10 +29,8 @@ class Config(object):
     # cookies存放目录
     COOKIES_DIR = os.path.join(DATA_DIR, 'cookies')
 
-    # 异步任务 密钥
-    TASK_SECRET = ""
-    # cookies管理密钥
-    COOKIES_SECRET = ""
+    # API管理 密钥
+    MANAGE_SECRET = ""
 
     # 数据库连接
     SQLALCHEMY_ECHO = False

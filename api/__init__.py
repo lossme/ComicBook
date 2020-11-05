@@ -27,12 +27,12 @@ def create_app(cfg='api.config.Config'):
     from .views import (
         app as api_app,
         aggregate_app,
-        task_app
+        manage_app
     )
 
     app.register_blueprint(api_app)
     app.register_blueprint(aggregate_app)
-    app.register_blueprint(task_app)
+    app.register_blueprint(manage_app)
     app.add_url_rule('/', 'index', index)
     return app
 
@@ -108,32 +108,31 @@ def index():
             api=prefix + f'/api/{site}/list?tag={tag}&page=1'
         ))
 
-        # GET获取/POST更新站点cookies
-        site_examples.append(dict(
-            desc='GET获取/POST更新站点cookies',
-            api=prefix + f'/api/{site}/cookies',
-        ))
-
     aggregate_examples = []
     aggregate_examples.append(dict(
         desc="聚合搜索",
         api=prefix + '/aggregate/search?name=海贼&site=bilibili,u17'
     ))
 
-    task_examples = []
-    task_examples.append(dict(
+    manage_examples = []
+    manage_examples.append(dict(
         desc='添加任务',
-        api=prefix + '/task/add?site=qq&comicid=505430&chapter=-1&gen_pdf=1&send_mail=0',
+        api=prefix + '/manage/task/add?site=qq&comicid=505430&chapter=-1&gen_pdf=1&send_mail=0',
     ))
-    task_examples.append(dict(
+    manage_examples.append(dict(
         desc='查看任务',
-        api=prefix + '/task/list?page=1',
+        api=prefix + '/manage/task/list?page=1',
+    ))
+    # GET获取/POST更新站点cookies
+    manage_examples.append(dict(
+        desc='GET获取/POST更新站点cookies',
+        api=prefix + f'/manage/cookies/qq',
     ))
 
     return jsonify(
         {
             "api_examples": examples,
             "aggregate_examples": aggregate_examples,
-            "task_examples": task_examples
+            "manage_examples": manage_examples
         }
     )

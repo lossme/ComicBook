@@ -20,7 +20,7 @@ from .const import ConfigKey
 logger = logging.getLogger(__name__)
 app = Blueprint("api", __name__, url_prefix='/api')
 aggregate_app = Blueprint("aggregate", __name__, url_prefix='/aggregate')
-task_app = Blueprint("task", __name__, url_prefix='/task')
+manage_app = Blueprint("task", __name__, url_prefix='/manage')
 
 
 def handle_404(error):
@@ -34,20 +34,12 @@ def handle_404(error):
 
 app.register_error_handler(ComicbookException, handle_404)
 aggregate_app.register_error_handler(ComicbookException, handle_404)
-task_app.register_error_handler(ComicbookException, handle_404)
+manage_app.register_error_handler(ComicbookException, handle_404)
 
 
-def check_task_secret(request):
-    secret = request.args.get('secret', '')
-    right_secret = current_app.config.get(ConfigKey.TASK_SECRET)
-    if right_secret:
-        if secret != right_secret:
-            abort(403)
-
-
-def check_cookies_secret(request):
-    secret = request.args.get('secret', '')
-    right_secret = current_app.config.get(ConfigKey.COOKIES_SECRET)
+def check_manage_secret(request):
+    secret = request.headers.get('API-Secret', '')
+    right_secret = current_app.config.get(ConfigKey.MANAGE_SECRET)
     if right_secret:
         if secret != right_secret:
             abort(403)
@@ -96,25 +88,6 @@ def latest(site):
     return jsonify(dict(latest=result))
 
 
-@app.route("/<site>/cookies", methods=['GET'])
-def get_cookies(site):
-    check_cookies_secret(request)
-    cookies = crawler.get_cookies(site=site)
-    return jsonify(dict(cookies=cookies))
-
-
-@app.route("/<site>/cookies", methods=['POST'])
-def update_cookies(site):
-    check_cookies_secret(request)
-    content = request.json or {}
-    cookies = content.get('cookies')
-    cover = content.get('cover', False)
-    if not cookies or not isinstance(cookies, list):
-        abort(400)
-    ret = crawler.update_cookies(site=site, cookies=cookies, cover=cover)
-    return jsonify(dict(cookies=ret))
-
-
 @aggregate_app.route("/search")
 def aggregate_search():
     site = request.args.get('site')
@@ -125,7 +98,26 @@ def aggregate_search():
     return jsonify(dict(list=result))
 
 
-@task_app.route("/add")
+@manage_app.route("/cookies/<site>", methods=['GET'])
+def get_cookies(site):
+    check_manage_secret(request)
+    cookies = crawler.get_cookies(site=site)
+    return jsonify(dict(cookies=cookies))
+
+
+@manage_app.route("/cookies/<site>", methods=['POST'])
+def update_cookies(site):
+    check_manage_secret(request)
+    content = request.json or {}
+    cookies = content.get('cookies')
+    cover = content.get('cover', False)
+    if not cookies or not isinstance(cookies, list):
+        abort(400)
+    ret = crawler.update_cookies(site=site, cookies=cookies, cover=cover)
+    return jsonify(dict(cookies=ret))
+
+
+@manage_app.route("/task/add")
 def add_task():
     site = request.args.get('site')
     comicid = request.args.get('comicid')
@@ -134,7 +126,7 @@ def add_task():
     gen_pdf = request.args.get('gen_pdf', default=0, type=int)
     receivers = request.args.get('receivers', default="")
     is_all = 1 if request.args.get('is_all') == '1' else 0
-    check_task_secret(request)
+    check_manage_secret(request)
     result = task.add_task(site=site,
                            comicid=comicid,
                            chapter=chapter,
@@ -145,10 +137,10 @@ def add_task():
     return jsonify(dict(data=result))
 
 
-@task_app.route("/list")
+@manage_app.route("/task/list")
 def list_task():
     page = request.args.get('page', default=1, type=int)
-    check_task_secret(request)
+    check_manage_secret(request)
     size = 20
     result = task.list_task(page=page, size=size)
     return jsonify(dict(list=result))
