@@ -1,7 +1,17 @@
+import os
 import logging
 import functools
 from concurrent.futures import ThreadPoolExecutor
 
+from flask import (
+    jsonify,
+    current_app
+)
+from onepiece.exceptions import (
+    NotFoundError,
+    SiteNotSupport
+)
+from .const import ConfigKey
 from . import const
 
 
@@ -50,3 +60,17 @@ def log_exception(func):
 def run_in_background(func, **kwargs):
     pool = get_pool()
     pool.submit(func, **kwargs)
+
+
+def handle_404(error):
+    if isinstance(error, NotFoundError):
+        return jsonify(dict(message=str(error))), 404
+    elif isinstance(error, SiteNotSupport):
+        return jsonify(dict(message=str(error))), 400
+    else:
+        return jsonify(dict(message=str(error))), 500
+
+
+def get_cookies_path(site):
+    cookies_path = os.path.join(current_app.config[ConfigKey.COOKIES_DIR], f'{site}.json')
+    return cookies_path

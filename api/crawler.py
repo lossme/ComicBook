@@ -1,14 +1,14 @@
 import logging
-import os
 import cachetools.func
-from flask import current_app
 
 from onepiece.comicbook import ComicBook
 from onepiece.exceptions import SiteNotSupport
 from onepiece.session import SessionMgr
 from . import const
-from .const import ConfigKey
-from .common import concurrent_run
+from .common import (
+    concurrent_run,
+    get_cookies_path
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +16,6 @@ logger = logging.getLogger(__name__)
 @cachetools.func.ttl_cache(maxsize=1024, ttl=const.CACHE_TIME, typed=False)
 def get_comicbook_from_cache(site, comicid=None):
     comicbook = ComicBook(site=site, comicid=comicid)
-    proxy_config = current_app.config.get(ConfigKey.CRAWLER_PROXY, {})
-    proxy = proxy_config.get(site)
-    if proxy:
-        SessionMgr.set_proxy(site=site, proxy=proxy)
-    cookies_path = get_cookies_path(site=site)
-    if os.path.exists(cookies_path):
-        SessionMgr.load_cookies(site=site, path=cookies_path)
     return comicbook
 
 
@@ -93,13 +86,17 @@ def get_cookies(site):
 
 def update_cookies(site, cookies, cover=False):
     if cover:
-        SessionMgr.clear_cookies(site=site)
+        SessionMgr.set_proxy.clear_cookies(site=site)
     SessionMgr.update_cookies(site=site, cookies=cookies)
     cookies_path = get_cookies_path(site=site)
     SessionMgr.export_cookies(site=site, path=cookies_path)
     return SessionMgr.get_cookies(site=site)
 
 
-def get_cookies_path(site):
-    cookies_path = os.path.join(current_app.config[ConfigKey.COOKIES_DIR], f'{site}.json')
-    return cookies_path
+def set_proxy(site, proxy):
+    SessionMgr.set_proxy(site=site, proxy=proxy)
+    return get_proxy(site)
+
+
+def get_proxy(site):
+    return SessionMgr.get_proxy(site=site)

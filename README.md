@@ -72,7 +72,7 @@ star防止走丢，欢迎大家提建议和issue
 1. 安装selenium: `python3 -m pip install selenium`
 2. 安装chrome浏览器，或其它浏览器
 3. [下载chromedriver](https://chromedriver.chromium.org/downloads)，或其它浏览器的driver
-4. 登录，并将cookies保存在本地（保存登录状态，存着下次用）
+4. 登录，并将cookies保存在本地（保存登录状态）
 ```sh
 python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
   --login \

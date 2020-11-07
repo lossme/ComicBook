@@ -123,7 +123,7 @@ class BilibiliCrawler(CrawlerBase):
 
     def get_chapter_soure_url(self, cid):
         return urljoin(
-            self.SITE_INDEX, "/m/mc{}/{}".format(self.comicid, cid))
+            self.SITE_INDEX, "/mc{}/{}".format(self.comicid, cid))
 
     def get_chapter_item(self, citem):
         chapter_api_data = self.get_chapter_api_data(cid=citem.cid)

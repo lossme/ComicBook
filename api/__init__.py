@@ -1,4 +1,5 @@
 import logging
+import os
 from flask import (
     Flask,
     jsonify,
@@ -6,8 +7,11 @@ from flask import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from onepiece.utils import ensure_file_dir_exists
-from .const import ConfigKey
+from onepiece.session import SessionMgr
+from onepiece.comicbook import ComicBook
 
+from .const import ConfigKey
+from .common import get_cookies_path
 
 db = SQLAlchemy()
 
@@ -27,14 +31,27 @@ def create_app(cfg='api.config.Config'):
     from .views import (
         app as api_app,
         aggregate_app,
-        manage_app
     )
+    from .manage_view import manage_app
 
     app.register_blueprint(api_app)
     app.register_blueprint(aggregate_app)
     app.register_blueprint(manage_app)
     app.add_url_rule('/', 'index', index)
+    init_session(app)
     return app
+
+
+def init_session(app):
+    with app.app_context():
+        proxy_config = app.config.get(ConfigKey.CRAWLER_PROXY, {})
+        for site in ComicBook.CRAWLER_CLS_MAP:
+            proxy = proxy_config.get(site)
+            if proxy:
+                SessionMgr.set_proxy(site=site, proxy=proxy)
+            cookies_path = get_cookies_path(site=site)
+            if os.path.exists(cookies_path):
+                SessionMgr.load_cookies(site=site, path=cookies_path)
 
 
 def create_dev_app():
@@ -56,7 +73,6 @@ def init_logger(level=None):
 
 
 def index():
-    from onepiece.comicbook import ComicBook
     prefix = current_app.config.get(ConfigKey.URL_PREFIX, '')
     examples = []
     for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
@@ -127,6 +143,11 @@ def index():
     manage_examples.append(dict(
         desc='GET获取/POST更新站点cookies',
         api=prefix + f'/manage/cookies/qq',
+    ))
+    # 查看/设置站点代理
+    manage_examples.append(dict(
+        desc='查看/设置站点代理',
+        api=prefix + f'/manage/proxy/qq',
     ))
 
     return jsonify(

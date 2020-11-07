@@ -25,7 +25,8 @@ class Config(object):
 
     # 站点数据存放目录
     DATA_DIR = os.path.join(PROJECT_HOME, 'data')
-
+    # 图片保存目录
+    DOWNLOAD_DIR = os.path.join(PROJECT_HOME, 'download')
     # cookies存放目录
     COOKIES_DIR = os.path.join(DATA_DIR, 'cookies')
 

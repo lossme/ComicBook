@@ -87,3 +87,8 @@ class SessionMgr(object):
             'http': proxy,
             'https': proxy
         }
+
+    @classmethod
+    def get_proxy(cls, site):
+        session = cls.get_session(site)
+        return session.proxies.get('http')

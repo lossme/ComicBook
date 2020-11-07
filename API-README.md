@@ -22,7 +22,7 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
 ## 接口文档
 
-- [1.1 获取概要信息](#11)
+- [1.1 获取漫画概要信息](#11)
 - [1.2 获取章节详情](#12)
 - [1.3 搜索接口](#13)
 - [1.4 获取最近更新](#14)
@@ -31,11 +31,13 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 - [1.7 聚合搜索](#17)
 - [2.1 添加到异步任务](#21)
 - [2.2 查看任务列表](#22)
-- [3.1 查看站点cookies](#31)
-- [3.2 更新站点cookies](#32)
+- [2.3 查看站点cookies](#23)
+- [2.4 更新站点cookies](#24)
+- [2.5 查看站点代理配置](#25)
+- [2.6 设置站点代理](#26)
 
 
-### 1.1 获取概要信息
+### 1.1 获取漫画概要信息
 
 `GET /api/<site>/comic/<comicid>`
 
@@ -369,7 +371,12 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 
 ### 2.0 API管理相关 简单的认证
 
-在请求的headers添加`API-Secret`字段，值为`config.py`中的`MANAGE_SECRET`
+`/manage/`路由下的接口，需要在请求的headers添加`API-Secret`字段，值为`config.py`中的`MANAGE_SECRET`，若配置留空则不用验证
+
+如
+```sh
+curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/proxy/qq"
+```
 
 ### 2.1 添加到异步任务
 
@@ -386,7 +393,7 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 请求示例
 
 ```sh
-curl -H "API-Secret: 123" "http://127.0.0.1:8000/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&send_mail=0"
+curl "http://127.0.0.1:8000/manage/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&send_mail=0"
 ```
 
 ```json
@@ -422,7 +429,7 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/task/add?site=qq&comicid=505430
 请求示例
 
 ```sh
-curl -H "API-Secret: 123" "http://127.0.0.1:8000/task/list?page=1"
+curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/task/list?page=1"
 ```
 
 ```json
@@ -453,7 +460,6 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/task/list?page=1"
 ### 2.3 查看站点cookies
 `GET /manage/cookies/{site}`
 
-
 请求示例
 
 ```sh
@@ -462,7 +468,7 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/cookies/qq"
 
 ### 2.4 更新站点cookies
 
-`POST /api/{site}/cookies`
+`POST /manage/cookies/{site}`
 
 
 请求示例
@@ -486,3 +492,25 @@ curl -XPOST "http://127.0.0.1:8000/manage/cookies/qq" \
 ```
 
 - `cover`: 可选参数，是否覆盖，默认不覆盖
+
+
+### 2.5 查看站点代理配置
+
+`GET /manage/proxy/{site}`
+
+请求示例
+
+```sh
+curl "http://127.0.0.1:8000/manage/proxy/qq"
+```
+
+
+### 2.6 设置站点代理
+
+`GET /manage/proxy/{site}?proxy={proxy}`
+
+请求示例
+
+```sh
+curl "http://127.0.0.1:8000/manage/proxy/wnacg?proxy=socks5://127.0.0.1:1082"
+```

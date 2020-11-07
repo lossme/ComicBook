@@ -12,6 +12,7 @@ from .model import (
 )
 from . import db
 from . import const
+from .const import ConfigKey
 from .common import (
     run_in_background,
     log_exception
@@ -88,7 +89,7 @@ def run_task(app, task_id):
         chapter_str = task.chapter
         is_send_mail = task.send_mail == 1
         is_gen_pdf = task.gen_pdf == 1
-        output_dir = app.config['DATA_DIR']
+        output_dir = app.config[ConfigKey.DOWNLOAD_DIR]
         name = comicbook.name
         last_chapter_number = comicbook.last_chapter_number
 
