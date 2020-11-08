@@ -1,10 +1,7 @@
 import os
 
-from reportlab.lib.pagesizes import A4, portrait
-from reportlab.lib.utils import ImageReader
-from reportlab.pdfgen import canvas
-
 from . import ensure_file_dir_exists
+from . import find_all_image
 
 
 def imgs_to_pdf(img_path_list, target_path):
@@ -13,6 +10,10 @@ def imgs_to_pdf(img_path_list, target_path):
     :param list img_path_list: 要合成的图片的路径列表
     :return str target_path: 输出pdf文件路径
     """
+    from reportlab.lib.pagesizes import A4, portrait
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+
     a4_w, a4_h = portrait(A4)
 
     c = canvas.Canvas(target_path, pagesize=portrait(A4))
@@ -36,7 +37,20 @@ def imgs_to_pdf(img_path_list, target_path):
     return target_path
 
 
-def image_dir_to_pdf(img_dir, target_path, sort_by=None):
+def image_dir_to_pdf_v2(img_dir, target_path, sort_by=None):
+    """将一个目录下的所有图片（不递归查找）合成一个pdf文件
+    :param str img_dir: 图片目录
+    :param str target_path: 输出文件路径
+    :param func sort_by: 排序依据，如按文件名数字大小排序 sort_by=lambda x: int(x.split('.')[0])
+    :return str target_path: 输出文件路径
+    """
+    import img2pdf
+    img_path_list = find_all_image(img_dir=img_dir, sort_by=sort_by)
+    with open(target_path, "wb") as f:
+        f.write(img2pdf.convert(img_path_list))
+
+
+def image_dir_to_pdf_v1(img_dir, target_path, sort_by=None):
     """将一个目录下的所有图片（不递归查找）合成一个pdf文件
     :param str img_dir: 图片目录
     :param str target_path: 输出文件路径
@@ -48,3 +62,10 @@ def image_dir_to_pdf(img_dir, target_path, sort_by=None):
     img_path_list = list(filter(lambda x: x.lower() not in allow_image_suffix, img_path_list))
     img_path_list = [os.path.join(img_dir, i)for i in img_path_list]
     return imgs_to_pdf(img_path_list=img_path_list, target_path=target_path)
+
+try:
+    import img2pdf
+    image_dir_to_pdf = image_dir_to_pdf_v2
+except ImportError:
+    import reportlab
+    image_dir_to_pdf = image_dir_to_pdf_v1
