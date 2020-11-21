@@ -56,8 +56,7 @@ class KuaiKanCrawler(CrawlerBase):
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
-        comics = sorted(data['comics'], key=lambda x: x['id'])
-        for idx, c in enumerate(comics, start=1):
+        for idx, c in enumerate(reversed(data['comics']), start=1):
             chapter_number = idx
             title = c['title']
             cid = c['id']
