@@ -78,8 +78,8 @@ def parse_args():
     parser.add_argument('--site', type=str, default='qq', choices=support_site,
                         help="数据源网站：支持{}".format(','.join(sorted(support_site))))
 
-    parser.add_argument('--noverify', action='store_true',
-                        help="noverify")
+    parser.add_argument('--verify', action='store_true',
+                        help="verify")
 
     parser.add_argument('--driver-path', type=str, help="selenium driver")
 
@@ -141,8 +141,9 @@ def main():
     comicbook = ComicBook(site=site, comicid=comicid)
     if args.proxy:
         SessionMgr.set_proxy(site=site, proxy=args.proxy)
-    if args.noverify:
-        comicbook.image_downloader.set_verify(verify=False)
+    if args.verify:
+        SessionMgr.set_proxy(site=site, verify=True)
+
     WorkerPoolMgr.set_worker(worker=args.worker)
     comicbook.crawler.DRIVER_PATH = args.driver_path
 

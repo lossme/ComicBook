@@ -61,11 +61,7 @@ class ImageDownloader(object):
 
         self.image_download_pool = None
         self.pool_size = 4
-        self.verify = True
         self.timeout = 30
-
-    def set_verify(self, verify=True):
-        self.verify = verify
 
     def set_timeout(self, timeout=30):
         self.timeout = timeout
@@ -83,7 +79,7 @@ class ImageDownloader(object):
                 pass
         try:
             session = self.get_session()
-            response = session.get(image_url, verify=self.verify, timeout=self.timeout, **kwargs)
+            response = session.get(image_url, timeout=self.timeout, **kwargs)
             if response.status_code != 200:
                 msg = 'img download error: url=%s status_code=%s' % (image_url, response.status_code)
                 raise ImageDownloadError(msg)

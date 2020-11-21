@@ -15,12 +15,14 @@ class SessionMgr(object):
                        'Chrome/65.0.3325.146 Safari/537.36')
     }
     COOKIES_KEYS = ['name', 'value', 'path', 'domain', 'secure']
+    DEFAULT_VERIFY = False
 
     @classmethod
     def get_session(cls, site):
         if site not in cls.SESSION_INSTANCE:
             session = requests.Session()
             session.headers.update(cls.DEFAULT_HEADERS)
+            session.verify = cls.DEFAULT_VERIFY
             cls.SESSION_INSTANCE[site] = session
         return cls.SESSION_INSTANCE[site]
 
@@ -92,3 +94,8 @@ class SessionMgr(object):
     def get_proxy(cls, site):
         session = cls.get_session(site)
         return session.proxies.get('http')
+
+    @classmethod
+    def set_verify(cls, site, verify):
+        session = cls.get_session(site)
+        session.verify = verify
