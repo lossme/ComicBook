@@ -20,14 +20,13 @@ def create_app(cfg='api.config.Config'):
     app = Flask(__name__)
     app.config.from_object(cfg)
     log_level = app.config.get(ConfigKey.LOG_LEVEL)
-    init_logger(level=log_level)
+    logger = init_logger(level=log_level)
     app.url_map.strict_slashes = False
 
     if app.config.get(ConfigKey.SQLITE_FILE):
         ensure_file_dir_exists(app.config.get(ConfigKey.SQLITE_FILE))
 
     db.init_app(app)
-
     from .views import (
         app as api_app,
         aggregate_app,
@@ -43,6 +42,8 @@ def create_app(cfg='api.config.Config'):
 
 
 def init_session(app):
+    with app.app_context():
+        db.create_all()
     with app.app_context():
         proxy_config = app.config.get(ConfigKey.CRAWLER_PROXY, {})
         for site in ComicBook.CRAWLER_CLS_MAP:

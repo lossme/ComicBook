@@ -38,9 +38,9 @@ class Config(object):
     # 数据库连接
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLITE_FILE = os.path.join(DATA_DIR, 'onepiece.db')
-
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{SQLITE_FILE}"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    # SQLITE_FILE = os.path.join(DATA_DIR, 'onepiece.db')
+    # SQLALCHEMY_DATABASE_URI = f"sqlite:///{SQLITE_FILE}"
     # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://user:password@ip:port/test?charset=utf8mb4'
 
     MAIL_CONFIG = dict(

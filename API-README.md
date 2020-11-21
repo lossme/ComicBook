@@ -7,12 +7,6 @@ pip install -r requirements-api.txt
 # 2. 复制`api/config.py.example`并命名为`api/config.py` 并根据实际情况修改`api/config.py`的参数
 cp api/config.py.example api/config.py
 
-# 2.1 删除旧数据库
-rm data/onepiece.db
-
-# 2.2 创建新数据库
-python manage.py createdb
-
 # 3. 启动接口
 gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
 
@@ -380,7 +374,7 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/proxy/qq"
 
 ### 2.1 添加到异步任务
 
-`GET /manage/task/add?name={name}&site={site}`
+`GET /manage/task/add`
 
 - site: 站点
 - comicid: 漫画id
@@ -422,7 +416,7 @@ curl "http://127.0.0.1:8000/manage/task/add?site=qq&comicid=505430&chapter=3&gen
 
 ### 2.2 查看任务列表
 
-`GET /manage/task/list?name={page}&secret={secret}`
+`GET /manage/task/list?page={page}`
 
 若任务超过10min，任务状态还没变成完成/失败，可能需重新添加异步任务
 
