@@ -98,13 +98,16 @@ class Citem():
 class ChapterItem():
     FIELDS = ["chapter_number", "title", "image_urls", "source_url", "site", "source_name"]
 
-    def __init__(self, chapter_number, title, image_urls, source_url=None, site=None, source_name=None):
+    def __init__(self, chapter_number, title, image_urls, 
+                 source_url=None, site=None, source_name=None,
+                 image_pipelines=None):
         self.chapter_number = chapter_number
         self.title = title or ""
         self.image_urls = image_urls or []
         self.source_url = source_url or ""
         self.site = site or ""
         self.source_name = source_name or ""
+        self.image_pipelines = image_pipelines
 
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}

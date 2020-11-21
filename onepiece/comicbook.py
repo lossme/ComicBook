@@ -155,7 +155,10 @@ class Chapter():
             return chapter_dir
         headers = {'Referer': self.chapter_item.source_url}
         self.comicbook.image_downloader.download_images(
-            image_urls=self.image_urls, output_dir=chapter_dir, headers=headers)
+            image_urls=self.image_urls,
+            output_dir=chapter_dir,
+            headers=headers,
+            image_pipelines=self.chapter_item.image_pipelines)
         self._saved = True
         return chapter_dir
 

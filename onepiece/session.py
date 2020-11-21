@@ -11,8 +11,7 @@ requests.packages.urllib3.disable_warnings()
 class SessionMgr(object):
     SESSION_INSTANCE = {}
     DEFAULT_HEADERS = {
-        'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                       'Chrome/65.0.3325.146 Safari/537.36')
+        'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36')
     }
     COOKIES_KEYS = ['name', 'value', 'path', 'domain', 'secure']
     DEFAULT_VERIFY = False
