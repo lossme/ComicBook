@@ -61,9 +61,11 @@ star防止走丢，欢迎大家提建议和issue
 - `python3 -m onepiece --site=bilibili --name=海贼`
 - `python3 -m onepiece --site=u17 --name=雏蜂`
 
-**注意**: 发送到邮箱需预先配置好信息
+**注意**:
 
-复制`config.ini.example`并命名为`config.ini`，并根据实际情况修改`config.ini`的参数
+- 发送到邮箱需预先配置好信息：复制`config.ini.example`并命名为`config.ini`，并根据实际情况修改`config.ini`的参数
+- 生成pdf文件需要额外安装依赖，`python3 -m pip install img2pdf`或`python3 -m pip install reportlab`
+
 
 ### 关于登录
 
