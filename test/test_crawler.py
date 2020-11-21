@@ -63,3 +63,16 @@ def test_wnacg():
 
 def test_manhuatai():
     _test_crawl_comicbook(site='manhuatai', test_search=False)
+
+
+def test_acg456():
+    _test_crawl_comicbook(site='acg456', test_search=False, proxy=DEFAULT_PROXY)
+
+
+def test_mh1234():
+    _test_crawl_comicbook(site='mh1234', proxy=DEFAULT_PROXY)
+
+
+def test_77mh():
+    _test_crawl_comicbook(site='77mh', proxy=DEFAULT_PROXY)
+
