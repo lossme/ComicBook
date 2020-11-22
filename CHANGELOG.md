@@ -1,4 +1,10 @@
 **unreleased**
+**v0.3.9**
+- 添加漫画源：acg456、mh1234、77mh、dmzj
+- 支持对18comic的图片重组
+- 支持生成zip文件
+- 兼容不同版本的pdf生成工具
+
 **v0.3.8**
 - 支持通过API管理cookies
 - 支持通过API配置代理配置
