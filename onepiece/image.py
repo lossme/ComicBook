@@ -1,8 +1,9 @@
 import re
 import os
 import time
-import warnings
+import logging
 import PIL.Image
+from PIL import UnidentifiedImageError
 from concurrent.futures import ThreadPoolExecutor
 
 from .exceptions import ImageDownloadError
@@ -12,6 +13,8 @@ from .utils import ensure_file_dir_exists
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 PROJECT_HOME = os.path.abspath(os.path.join(HERE, os.path.pardir))
+
+logger = logging.getLogger(__name__)
 
 
 def retry(times=3, delay=0):
@@ -89,12 +92,16 @@ class ImageDownloader(object):
         ensure_file_dir_exists(target_path)
         with open(target_path, 'wb') as f:
             f.write(response.content)
-
         try:
             self.verify_image(target_path)
-        except Exception as e:
-            os.unlink(target_path)
-            raise ImageDownloadError(f'Corrupt image from {image_url}') from e
+        except UnidentifiedImageError as e:
+            end = target_path.split('.')[-1]
+            if end.lower() == 'webp':
+                logger.warn('UnidentifiedImageWarn. image=%s', target_path)
+            else:
+                os.unlink(target_path)
+                raise ImageDownloadError(f'Corrupt image from {image_url}') from e
+
         if image_pipeline:
             image_pipeline(target_path)
         return target_path
@@ -128,7 +135,7 @@ class ImageDownloader(object):
             try:
                 future.result()
             except Exception as e:
-                warnings.warn(str(e))
+                logger.warn('image download error. error=%s', e)
         return output_dir
 
     @staticmethod
