@@ -1,8 +1,8 @@
 Pillow>=6.2.0
-requests>=2.20.0
+requests
 requests[socks]
-PyExecJS>=1.5.1
-bs4>=0.0.1
+PyExecJS
+bs4
 jsbeautifier
 
 gunicorn>=20.0.4

@@ -15,7 +15,10 @@ from . import VERSION
 
 logger = logging.getLogger(__name__)
 HERE = os.path.abspath(os.path.dirname(__file__))
-DEFAULT_DOWNLOAD_DIR = os.path.abspath(os.path.join(HERE, os.path.pardir, 'download'))
+if os.environ.get('ONEPIECE_DOWNLOAD_DIR'):
+    DEFAULT_DOWNLOAD_DIR = os.environ.get('ONEPIECE_DOWNLOAD_DIR')
+else:
+    DEFAULT_DOWNLOAD_DIR = 'download'
 
 
 def parse_args():

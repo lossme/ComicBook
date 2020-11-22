@@ -1,16 +1,21 @@
 ## 接口部署
 
 ```sh
-# 1. 安装依赖
-pip install -r requirements-api.txt
+# 下载源码 clone项目 或从这里下载最新的代码并解压 https://github.com/lossme/TencentComicBook/releases
+git clone git@github.com:lossme/TencentComicBook.git
+# 切换工作目录
+cd TencentComicBook
 
-# 2. 复制`api/config.py.example`并命名为`api/config.py` 并根据实际情况修改`api/config.py`的参数
+# 安装依赖
+python3 -m pip install -r requirements-api.txt
+
+# 复制`api/config.py.example`并命名为`api/config.py` 并根据实际情况修改`api/config.py`的参数
 cp api/config.py.example api/config.py
 
-# 3. 启动接口
-gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=30
+# 启动接口
+gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=10
 
-# 4. 查看可选的配置选项 gunicorn --help
+# 查看可选的配置选项 gunicorn --help
 # 文档 http://docs.gunicorn.org/en/latest/settings.html
 ```
 

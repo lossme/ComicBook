@@ -17,22 +17,35 @@
 - [x] 支持设置代理
 - [x] 支持API调用 [API-README](API-README.md)
 
+## 安装/升级步骤
 
-## 使用步骤
+### 方式一（推荐）
+
 ```sh
-# clone项目
+# 在线安装/升级
+# 由于网络环境不好导致安装失败 可以搜索关键词尝试解决: github host 修改
+python3 -m pip install -U git+https://github.com/lossme/TencentComicBook
+
+# 查看帮助
+python3 -m onepiece --help
+```
+
+### 方式二（源码安装）
+
+```sh
+# clone项目 或从这里下载最新的代码并解压 https://github.com/lossme/TencentComicBook/releases
 git clone git@github.com:lossme/TencentComicBook.git
 # 切换工作目录
 cd TencentComicBook
-# 安装依赖
-python3 -m pip install requirements.txt
+# 安装
+python3 setup.py install
 # 查看帮助
 python3 -m onepiece --help
 ```
 
 如果在使用过程中，发现问题可以先更新代码再试下，说不定已经修复了。
 
-star防止走丢，欢迎大家提建议和issue
+Star防止走丢，欢迎大家提建议和issue，本项目持续更新。
 
 ## 常规使用
 
@@ -86,5 +99,10 @@ python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
   --cookies-path="data/cookies/qq.json"
 ```
 
+### 高级配置
 
-**免责声明**：本项目仅供学习交流之用，请勿用于非法用途。
+- 通过环境变量配置默认下载目录
+```sh
+# 可以将该行命令添加到 ~/.bashrc 或 ~/.zshrc 文件当中，这样可以不用每次都输入下载文件路径
+export ONEPIECE_DOWNLOAD_DIR="~/Downloads/MyComicBook"
+```
