@@ -20,6 +20,11 @@ if os.environ.get('ONEPIECE_DOWNLOAD_DIR'):
 else:
     DEFAULT_DOWNLOAD_DIR = 'download'
 
+if os.environ.get('MAIL_CONFIG_FILE'):
+    DEFAULT_MAIL_CONFIG_FILE = os.environ.get('ONEPIECE_MAIL_CONFIG_FILE')
+else:
+    DEFAULT_MAIL_CONFIG_FILE = ''
+
 
 def parse_args():
     """
@@ -47,7 +52,7 @@ def parse_args():
     parser = argparse.ArgumentParser(prog="onepiece")
 
     parser.add_argument('-id', '--comicid', type=str,
-                        help="漫画id，海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
+                        help="漫画id，如海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
 
     parser.add_argument('--name', type=str, help="漫画名")
 
@@ -74,14 +79,16 @@ def parse_args():
     parser.add_argument('--zip', action='store_true',
                         help="打包生成zip文件")
 
-    parser.add_argument('--config', default="config.ini",
-                        help="配置文件路径，默认取当前目录下的config.ini")
+    parser.add_argument('--config', default=DEFAULT_MAIL_CONFIG_FILE, help="邮件配置文件路径")
 
     parser.add_argument('-o', '--output', type=str, default=DEFAULT_DOWNLOAD_DIR,
                         help="文件保存路径，默认保存在当前路径下的download文件夹")
-    support_site = ComicBook.CRAWLER_CLS_MAP.keys()
-    parser.add_argument('--site', type=str, default='qq', choices=support_site,
-                        help="数据源网站：支持{}".format(','.join(sorted(support_site))))
+
+    s = ' '.join(['%s(%s)' % (crawler.SITE, crawler.SOURCE_NAME) for crawler in ComicBook.CRAWLER_CLS_MAP.values()])
+    site_help_msg = "数据源网站：支持 %s" % s
+
+    parser.add_argument('--site', type=str, default='qq', choices=ComicBook.CRAWLER_CLS_MAP.keys(),
+                        help=site_help_msg)
 
     parser.add_argument('--verify', action='store_true',
                         help="verify")
