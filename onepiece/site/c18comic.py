@@ -1,7 +1,6 @@
 import re
 import logging
 from urllib.parse import urljoin
-import math
 
 from PIL import Image
 
@@ -115,8 +114,7 @@ class C18comicCrawler(CrawlerBase):
             box = (0, h_start, width, h_end)
             new_img.paste(region, box=box)
         img.close()
-        new_img.save(image_path)
-
+        new_img.save(image_path, quality=95)
 
     def search(self, name, page=1, size=None):
         url = urljoin(

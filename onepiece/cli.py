@@ -68,6 +68,8 @@ def parse_args():
     parser.add_argument('--mail', action='store_true',
                         help="是否发送pdf文件到邮箱, 如 --mail。需要预先配置邮件信息。\
                         可以参照config.ini.example文件，创建并修改config.ini文件")
+    parser.add_argument('--zip', action='store_true',
+                        help="打包生成zip文件")
 
     parser.add_argument('--config', default="config.ini",
                         help="配置文件路径，默认取当前目录下的config.ini")
@@ -191,14 +193,17 @@ def main():
             logger.info("下载成功 %s", chapter_dir)
             if is_single_image:
                 img_path = chapter.save_as_single_image(output_dir=output_dir, quality=quality)
-                logger.info("下载成功 %s", img_path)
+                logger.info("生成长图 %s", img_path)
             if is_gen_pdf or is_send_mail:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
+                logger.info("生成pdf文件 %s", pdf_path)
                 if is_send_mail:
                     mail.send(subject=os.path.basename(pdf_path),
                               content=None,
                               file_list=[pdf_path, ])
-                logger.info("下载成功 %s", pdf_path)
+            if args.zip:
+                zip_file_path = chapter.save_as_zip(output_dir=output_dir)
+                logger.info("生成zip文件 %s", zip_file_path)
         except Exception as e:
             logger.exception(e)
 

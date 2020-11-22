@@ -1,6 +1,7 @@
 import time
 import os
 import logging
+import zipfile
 
 from PIL import Image
 
@@ -101,3 +102,13 @@ def image_dir_to_single_image(img_dir, target_path, sort_by=None, quality=95):
         new_img.save(img_path, quality=quality)
 
     return img_path
+
+
+def image_dir_to_zipfile(img_dir, target_path):
+    f = zipfile.ZipFile(target_path, 'w', zipfile.ZIP_DEFLATED)
+    arc_basename = os.path.basename(img_dir.rstrip('/'))
+    for dirpath, dirnames, filenames in os.walk(img_dir):
+        for filename in filenames:
+            f.write(os.path.join(dirpath, filename), arcname=os.path.join(arc_basename, filename))
+    f.close()
+    return target_path

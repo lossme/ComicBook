@@ -149,6 +149,13 @@ class Chapter():
         img_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return img_path
 
+    def get_zipfile_path(self, output_dir):
+        first_dir = safe_filename(self.comicbook.source_name + ' zip')
+        second_dir = safe_filename(self.comicbook.name)
+        filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".zip"
+        zipfile_path = os.path.join(output_dir, first_dir, second_dir, filename)
+        return zipfile_path
+
     def save(self, output_dir):
         chapter_dir = self.get_chapter_image_dir(output_dir)
         if self._saved is True:
@@ -182,3 +189,10 @@ class Chapter():
                                              sort_by=lambda x: int(x.split('.')[0]),
                                              quality=quality)
         return img_path
+
+    def save_as_zip(self, output_dir):
+        from .utils import image_dir_to_zipfile
+        chapter_dir = self.save(output_dir)
+        zipfile_path = self.get_zipfile_path(output_dir)
+        ensure_file_dir_exists(zipfile_path)
+        return image_dir_to_zipfile(chapter_dir, zipfile_path)
