@@ -76,3 +76,6 @@ def test_mh1234():
 def test_77mh():
     _test_crawl_comicbook(site='77mh', proxy=DEFAULT_PROXY)
 
+
+def test_dmzj():
+    _test_crawl_comicbook(site='dmzj')

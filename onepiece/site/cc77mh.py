@@ -1,9 +1,7 @@
 import re
 import logging
-import time
 from urllib.parse import urljoin
-
-import execjs
+import jsbeautifier
 
 from ..crawlerbase import CrawlerBase
 
@@ -20,7 +18,6 @@ class Mh1234Crawler(CrawlerBase):
     DEFAULT_COMICID = '78824'
     DEFAULT_SEARCH_NAME = '海贼王'
     DEFAULT_TAG = "chunqing"
-    REQUIRE_JAVASCRIPT = True
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -61,30 +58,17 @@ class Mh1234Crawler(CrawlerBase):
     def get_chapter_item(self, citem):
         html = self.get_html(citem.source_url)
         coid = citem.source_url.split('/')[-1].split('.')[0]
-        script_content = re.search(r'<script type="text/javascript">(.*?)</script>', html, re.S).group(1)
-        parse_str = script_content.replace('function(p,a,c,k,e,d)', 'function fun(p, a, c, k, e, d)')
-        parse_str = parse_str.replace('eval(', '')[:-2]
-        fun = """
-             function run(){
-                            let result = %s;
-                            return result;
-                        }
-            """ % parse_str
-        parse_str = execjs.compile(fun).call('run')
-        fun = """
-            function run(){
-                            %s;
-                            return {"z":atsvr,"page":msg,"s":img_s};
-                        }
-            """ % parse_str
-        parse_str = execjs.compile(fun).call('run')
-        url_params = {'z': parse_str['z'], 's': parse_str['s'], 'cid': self.comicid, 'coid': coid}
-        image_prefix = self.get_image_prefix(url_params)
-        page_str = parse_str['page']
-        pages = page_str.split('|')
+        s = re.search(r'<script type="text/javascript">(.*?)</script>', html, re.S).group(1).strip()
+        js_str = jsbeautifier.beautify(s)
+        msg = re.search(r"var msg = '(.*?)';", js_str).group(1)
+        atsvr = re.search(r'var atsvr = "(.*?)";', js_str).group(1)
+        img_s = re.search(r"var img_s = (\d+);", js_str).group(1)
         image_urls = []
-        for url in pages:
-            image_url = image_prefix + url + '.webp'
+        url_params = {'z': atsvr, 's': img_s, 'cid': self.comicid, 'coid': coid}
+        image_prefix, end = self.get_image_prefix(url_params)
+        image_urls = []
+        for url in msg.split('|'):
+            image_url = image_prefix + url + end
             image_urls.append(image_url)
         return self.new_chapter_item(chapter_number=citem.chapter_number,
                                      title=citem.title,
@@ -94,9 +78,11 @@ class Mh1234Crawler(CrawlerBase):
     def get_image_prefix(self, params):
         url = 'https://css.gdbyhtl.net/img_v1/cn_svr.aspx'
         html = self.get_html(url, params=params)
-        pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-        url = re.findall(pattern, html)
-        return url[0]
+        prefix = re.search(
+            r'(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)',
+            html).group(1)
+        end = '.webp' if re.search(r'var webpshow = 1;', html) else ''
+        return prefix, end
 
     def latest(self, page=1):
         url = "https://www.77mh.cc/new_coc.html"

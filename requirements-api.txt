@@ -3,6 +3,7 @@ requests>=2.20.0
 requests[socks]
 PyExecJS>=1.5.1
 bs4>=0.0.1
+jsbeautifier
 
 gunicorn>=20.0.4
 Flask>=1.1.1

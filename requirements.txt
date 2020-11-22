@@ -3,3 +3,4 @@ requests>=2.20.0
 requests[socks]
 PyExecJS>=1.5.1
 bs4>=0.0.1
+jsbeautifier

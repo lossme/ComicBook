@@ -76,6 +76,7 @@ star防止走丢，欢迎大家提建议和issue
 3. [下载chromedriver](https://chromedriver.chromium.org/downloads)，或其它浏览器的driver
 4. 登录，并将cookies保存在本地（保存登录状态）
 ```sh
+# 在弹出的浏览器上完成登录。若登录完浏览器没自动关闭，可以手动把浏览器关了
 python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
   --login \
   --driver-path="driver路径" \

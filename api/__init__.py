@@ -20,7 +20,7 @@ def create_app(cfg='api.config.Config'):
     app = Flask(__name__)
     app.config.from_object(cfg)
     log_level = app.config.get(ConfigKey.LOG_LEVEL)
-    logger = init_logger(level=log_level)
+    init_logger(level=log_level)
     app.url_map.strict_slashes = False
 
     if app.config.get(ConfigKey.SQLITE_FILE):
@@ -38,12 +38,11 @@ def create_app(cfg='api.config.Config'):
     app.register_blueprint(manage_app)
     app.add_url_rule('/', 'index', index)
     init_session(app)
+    init_db(app)
     return app
 
 
 def init_session(app):
-    with app.app_context():
-        db.create_all()
     with app.app_context():
         proxy_config = app.config.get(ConfigKey.CRAWLER_PROXY, {})
         for site in ComicBook.CRAWLER_CLS_MAP:
@@ -53,6 +52,13 @@ def init_session(app):
             cookies_path = get_cookies_path(site=site)
             if os.path.exists(cookies_path):
                 SessionMgr.load_cookies(site=site, path=cookies_path)
+
+
+def init_db(app):
+    if app.config.get(ConfigKey.SQLITE_FILE):
+        ensure_file_dir_exists(app.config.get(ConfigKey.SQLITE_FILE))
+    with app.app_context():
+        db.create_all()
 
 
 def create_dev_app():
