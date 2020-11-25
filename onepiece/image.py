@@ -95,18 +95,20 @@ class ImageDownloader(object):
         try:
             self.verify_image(target_path)
         except UnidentifiedImageError as e:
-            end = target_path.split('.')[-1]
-            if end.lower() == 'webp':
-                logger.warn('UnidentifiedImageWarn. image=%s', target_path)
-            else:
-                os.unlink(target_path)
-                raise ImageDownloadError(f'Corrupt image from {image_url}') from e
+            os.unlink(target_path)
+            raise ImageDownloadError(f'Corrupt image from {image_url}') from e
 
         if image_pipeline:
             image_pipeline(target_path)
         return target_path
 
     def verify_image(self, image_path):
+        suffix = image_path.split('.')[-1]
+        webp_head = bytes.fromhex("524946462A73010057454250")
+        if suffix.lower() == 'webp':
+            head = open(image_path, 'rb').read(12)
+            if head[:4] == webp_head[:4] and head[-4:] == webp_head[-4:]:
+                return True
         with PIL.Image.open(image_path) as img:
             img.verify()
 
