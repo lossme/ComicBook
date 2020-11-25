@@ -76,6 +76,8 @@ def parse_args():
     parser.add_argument('--mail', action='store_true',
                         help="是否发送pdf文件到邮箱, 如 --mail。需要预先配置邮件信息。\
                         可以参照config.ini.example文件，创建并修改config.ini文件")
+
+    parser.add_argument('--receivers', type=str, help="邮件接收列表，多个以逗号隔开")
     parser.add_argument('--zip', action='store_true',
                         help="打包生成zip文件")
 
@@ -87,7 +89,7 @@ def parse_args():
     s = ' '.join(['%s(%s)' % (crawler.SITE, crawler.SOURCE_NAME) for crawler in ComicBook.CRAWLER_CLS_MAP.values()])
     site_help_msg = "数据源网站：支持 %s" % s
 
-    parser.add_argument('--site', type=str, default='qq', choices=ComicBook.CRAWLER_CLS_MAP.keys(),
+    parser.add_argument('-s', '--site', type=str, default='qq', choices=ComicBook.CRAWLER_CLS_MAP.keys(),
                         help=site_help_msg)
 
     parser.add_argument('--verify', action='store_true',
@@ -129,28 +131,64 @@ def init_logger(level=None):
     return logger
 
 
+def download_main(comicbook, output_dir, chapters=None,
+                  is_download_all=None, is_gen_pdf=None, is_gen_zip=None,
+                  is_single_image=None, quality=None, mail=None, receivers=None, is_send_mail=None):
+    quality = quality or 95
+    is_gen_pdf = is_gen_pdf or mail
+    chapter_str = chapters or '-1'
+
+    logger.info("正在获取最新数据")
+    comicbook.start_crawler()
+    msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
+           "【{last_chapter_title}】 数据来源: {source_url}").format(
+        source_name=comicbook.source_name,
+        name=comicbook.name,
+        last_chapter_number=comicbook.last_chapter_number,
+        last_chapter_title=comicbook.last_chapter_title,
+        source_url=comicbook.source_url)
+    logger.info(msg)
+    chapter_number_list = parser_chapter_str(chapter_str=chapter_str,
+                                             last_chapter_number=comicbook.last_chapter_number,
+                                             is_all=is_download_all)
+    for chapter_number in chapter_number_list:
+        try:
+            chapter = comicbook.Chapter(chapter_number)
+            logger.info("正在下载 【{}】 {} 【{}】".format(
+                comicbook.name, chapter.chapter_number, chapter.title))
+
+            chapter_dir = chapter.save(output_dir=output_dir)
+            logger.info("下载成功 %s", chapter_dir)
+            if is_single_image:
+                img_path = chapter.save_as_single_image(output_dir=output_dir, quality=quality)
+                logger.info("生成长图 %s", img_path)
+            if is_gen_pdf:
+                pdf_path = chapter.save_as_pdf(output_dir=output_dir)
+                logger.info("生成pdf文件 %s", pdf_path)
+
+            if is_send_mail:
+                mail.send(subject=os.path.basename(pdf_path),
+                          content=None,
+                          file_list=[pdf_path, ],
+                          receivers=receivers)
+            if is_gen_zip:
+                zip_file_path = chapter.save_as_zip(output_dir=output_dir)
+                logger.info("生成zip文件 %s", zip_file_path)
+        except Exception:
+            logger.exception('download comicbook error. site=%s comicid=%s chapter_number=%s',
+                             comicbook.site, comicbook.comicid, chapter_number)
+
+
 def main():
     args = parse_args()
-
     site = args.site
-    comicid = args.comicid
-    output_dir = args.output
-    is_download_all = args.all
-    is_send_mail = args.mail
-    is_gen_pdf = args.pdf
-    is_login = args.login
-    is_single_image = args.single_image
-    quality = args.quality
     session_path = args.session_path
     cookies_path = args.cookies_path
 
     loglevel = logging.DEBUG if args.debug else logging.INFO
     init_logger(level=loglevel)
 
-    if args.mail:
-        mail = Mail.init(args.config)
-
-    comicbook = ComicBook(site=site, comicid=comicid)
+    comicbook = ComicBook(site=args.site, comicid=args.comicid)
     if args.proxy:
         SessionMgr.set_proxy(site=site, proxy=args.proxy)
     if args.verify:
@@ -175,47 +213,27 @@ def main():
             print("comicid={}\tname={}\tsource_url={}".format(item.comicid, item.name, item.source_url))
         comicid = input("请输入要下载的comicid: ")
         comicbook.crawler.comicid = comicid
-
-    logger.info("正在获取最新数据")
-
-    if is_login:
+    if args.login:
         comicbook.crawler.login()
-    comicbook.start_crawler()
-    msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
-           "【{last_chapter_title}】 数据来源: {source_url}").format(
-        source_name=comicbook.source_name,
-        name=comicbook.name,
-        last_chapter_number=comicbook.last_chapter_number,
-        last_chapter_title=comicbook.last_chapter_title,
-        source_url=comicbook.source_url)
-    logger.info(msg)
-    chapter_number_list = parser_chapter_str(chapter_str=args.chapter,
-                                             last_chapter_number=comicbook.last_chapter_number,
-                                             is_all=is_download_all)
 
-    for chapter_number in chapter_number_list:
-        try:
-            chapter = comicbook.Chapter(chapter_number)
-            logger.info("正在下载 【{}】 {} 【{}】".format(
-                comicbook.name, chapter.chapter_number, chapter.title))
-
-            chapter_dir = chapter.save(output_dir=output_dir)
-            logger.info("下载成功 %s", chapter_dir)
-            if is_single_image:
-                img_path = chapter.save_as_single_image(output_dir=output_dir, quality=quality)
-                logger.info("生成长图 %s", img_path)
-            if is_gen_pdf or is_send_mail:
-                pdf_path = chapter.save_as_pdf(output_dir=output_dir)
-                logger.info("生成pdf文件 %s", pdf_path)
-                if is_send_mail:
-                    mail.send(subject=os.path.basename(pdf_path),
-                              content=None,
-                              file_list=[pdf_path, ])
-            if args.zip:
-                zip_file_path = chapter.save_as_zip(output_dir=output_dir)
-                logger.info("生成zip文件 %s", zip_file_path)
-        except Exception as e:
-            logger.exception(e)
+    if args.mail:
+        is_send_mail = True
+        mail = Mail.init(args.config)
+    else:
+        is_send_mail = False
+        mail = None
+    download_main(
+        comicbook=comicbook,
+        output_dir=args.output,
+        chapters=args.chapter,
+        is_download_all=args.all,
+        is_gen_pdf=args.pdf,
+        is_gen_zip=args.zip,
+        is_single_image=args.single_image,
+        quality=args.quality,
+        mail=mail,
+        is_send_mail=is_send_mail,
+        receivers=args.receivers)
 
     # 保存 session
     if session_path:

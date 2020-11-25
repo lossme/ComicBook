@@ -1,3 +1,5 @@
+import json
+
 from flask import (
     Blueprint,
     jsonify,
@@ -45,21 +47,23 @@ def update_cookies(site):
 
 @manage_app.route("/task/add")
 def add_task():
+    check_manage_secret(request)
+
     site = request.args.get('site')
     comicid = request.args.get('comicid')
-    chapter = request.args.get('chapter', default='-1')
-    send_mail = request.args.get('send_mail', default=0, type=int)
-    gen_pdf = request.args.get('gen_pdf', default=0, type=int)
-    receivers = request.args.get('receivers', default="")
-    is_all = 1 if request.args.get('is_all') == '1' else 0
-    check_manage_secret(request)
+    params = request.args.get('params')
+    params = json.loads(params) if params else {}
+    keys = ['chapters', 'is_download_all', 'is_gen_pdf', 'is_gen_zip',
+            'is_single_image', 'quality', 'receivers', 'is_send_mail']
+    clean_params = {}
+    for k in keys:
+        if k in params:
+            value = params[k]
+            if isinstance(value, (bool, int, str)):
+                clean_params[k] = value
     result = task.add_task(site=site,
                            comicid=comicid,
-                           chapter=chapter,
-                           is_all=is_all,
-                           send_mail=send_mail,
-                           gen_pdf=gen_pdf,
-                           receivers=receivers)
+                           params=clean_params)
     return jsonify(dict(data=result))
 
 

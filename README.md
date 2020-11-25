@@ -97,12 +97,12 @@ python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
 
 ### 高级配置
 
+#### 通过环境变量配置默认参数
 ```sh
-# 通过环境变量配置默认下载目录
+# 可以将该命令添加到 ~/.bashrc 或 ~/.zshrc 文件末尾
+# 配置默认下载目录
 export ONEPIECE_DOWNLOAD_DIR="~/Downloads/MyComicBook"
 
-# 通过环境变量配置默认的邮件配置文件路径
+# 配置默认的邮件配置文件路径
 export ONEPIECE_MAIL_CONFIG_FILE="~/MyConfig/config.ini"
-
-# 可以将该命令添加到 ~/.bashrc 或 ~/.zshrc 文件末尾，这样可以不用每次都输入下载文件路径
 ```

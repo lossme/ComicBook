@@ -383,16 +383,25 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/proxy/qq"
 
 - site: 站点
 - comicid: 漫画id
-- chapter: 下载漫画的哪个章节，不传默认下载最新一集
-- is_all: 是否下载所有章节, 0 否，1 是，默认 否
-- gen_pdf: 是否生成pdf, 0 否，1 是，默认 否
-- send_mail: 是否发送到邮箱, 0 否，1 是，默认 否
-- receivers: 收件人列表，如: `xxx@qq.com,yyy@qq.com`, 不传默认发送到配置文件里的收件人
+- params: json字符串
+```json
+{
+    "chapters": "1,2,3",  # 下载的章节数 默认下载最新一集
+    "is_download_all": true,   # 是否下载全部 默认否
+    "is_gen_pdf": true,   # 是否生成pdf文件 默认否
+    "is_gen_zip": true,   # 是否生成zip文件 默认否
+    "is_single_image": true,  # 是否生成单图文件 默认否
+    "quality": 95,  # 生成的单图图片质量 默认95
+    "is_send_mail": true,   # 是否发送邮件 默认否
+    "receivers": "123@qq.com,456@qq.com"   # 邮件接收者，不传默认发送到配置文件里的收件人
+}
+```
+
 
 请求示例
 
 ```sh
-curl "http://127.0.0.1:8000/manage/task/add?site=qq&comicid=505430&chapter=3&gen_pdf=1&send_mail=0"
+curl 'http://127.0.0.1:8000/manage/task/add?site=qq&comicid=505430&params={"chapters": "1","is_download_all":false}'
 ```
 
 ```json

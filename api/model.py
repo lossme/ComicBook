@@ -1,6 +1,7 @@
 import pytz
 import hashlib
 import logging
+import json
 
 from . import db
 from . import const
@@ -40,14 +41,10 @@ class CrawlerTask(db.Model):
     name = db.Column(db.String(100), comment='漫画名字')
     source_url = db.Column(db.String(1000), comment='漫画来源')
 
-    chapter = db.Column(db.String(1000), comment='任务下载的章节 如: 1-10,15,20')
-    is_all = db.Column(db.Integer, comment='是否下载所有章节')
-    send_mail = db.Column(db.Integer, comment='是否发送邮件 0 否 1 是')
-    gen_pdf = db.Column(db.Integer, comment='是否生成pdf文件')
-    receivers = db.Column(db.String(1000), comment='邮件接收列表 如: aaa@qq.com,bbb@qq.com')
+    params = db.Column(db.String(3000), comment='任务参数')
+
     status = db.Column(db.Integer, index=True, comment='任务状态 1 初始化 2 运行中 3 完成 -1 失败')
     reason = db.Column(db.String(1000), comment='任务失败原因')
-
     hash_code = db.Column(db.String(32), comment='任务去重字段')
 
     create_time = db.Column(db.DateTime, server_default=db.func.now(), index=True,
@@ -62,11 +59,9 @@ class CrawlerTask(db.Model):
         return '<CrawlerTask %s-%s %s>' % (self.site, self.comicid, self.source_url)
 
     @classmethod
-    def gen_hash(cls, **kwargs):
+    def gen_hash(cls, site, comicid, params):
         obj = hashlib.md5()
-        fields = ['site', 'comicid', 'chapter', 'is_all', 'gen_pdf', 'send_mail', 'receivers', ]
-        args = [kwargs.get(field) for field in fields]
-        s = "-".join(map(str, args))
+        s = "%s-%s-%s" % (site, comicid, params)
         obj.update(s.encode())
         return obj.hexdigest()
 
@@ -74,19 +69,15 @@ class CrawlerTask(db.Model):
         create_time = self.format_time(self.create_time)
         update_time = self.format_time(self.update_time)
         start_time = self.format_time(self.start_time)
+        params = json.loads(self.params) if self.params else {}
         status = TaskStatus.to_desc(self.status)
         return dict(
             id=self.id,
             site=self.site,
             comicid=self.comicid,
             name=self.name,
-            chapter=self.chapter,
-            source_url=self.source_url,
-            send_mail=self.send_mail,
-            gen_pdf=self.gen_pdf,
-            receivers=self.receivers,
+            params=params,
             status=status,
-            is_all=self.is_all,
             reason=self.reason or "",
             create_time=create_time,
             update_time=update_time,
