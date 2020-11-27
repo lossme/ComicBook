@@ -406,25 +406,21 @@ curl 'http://127.0.0.1:8000/manage/task/add?site=qq&comicid=505430&params={"chap
 
 ```json
 {
-    "data":{
-        "chapter":"3",
-        "comicid":"505430",
-        "cost_time":0,
-        "create_time":"2020-10-18 22:51:54",
-        "gen_pdf":1,
-        "id":1,
-        "is_all":0,
-        "name":"航海王",
-        "reason":"",
-        "receivers":"",
-        "send_mail":0,
-        "site":"qq",
-        "source_url":"https://ac.qq.com/Comic/ComicInfo/id/505430",
-        "start_time":"",
-        "status":"初始化",
-        "update_time":"2020-10-18 22:51:54"
+    "data": {
+        "comicid": "505430",
+        "cost_time": 0,
+        "create_time": "2020-11-27 21:17:18",
+        "id": 1,
+        "name": "航海王",
+        "params": {},
+        "reason": "",
+        "site": "qq",
+        "start_time": "2020-11-27 21:17:18",
+        "status": "运行中",
+        "update_time": "2020-11-27 21:17:18"
     }
 }
+
 ```
 
 
@@ -440,30 +436,6 @@ curl 'http://127.0.0.1:8000/manage/task/add?site=qq&comicid=505430&params={"chap
 curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/task/list?page=1"
 ```
 
-```json
-{
-    "list":[
-        {
-            "chapter":"-11",
-            "comicid":"505430",
-            "cost_time":1,
-            "create_time":"2020-10-18 22:51:54",
-            "gen_pdf":1,
-            "id":1,
-            "is_all":0,
-            "name":"航海王",
-            "reason":"",
-            "receivers":"",
-            "send_mail":0,
-            "site":"qq",
-            "source_url":"https://ac.qq.com/Comic/ComicInfo/id/505430",
-            "start_time":"2020-10-18 22:51:54",
-            "status":"完成",
-            "update_time":"2020-10-18 22:51:54"
-        }
-    ]
-}
-```
 
 ### 2.3 查看站点cookies
 `GET /manage/cookies/{site}`

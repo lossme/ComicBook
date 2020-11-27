@@ -77,12 +77,17 @@ def run_task(app, task_id):
         mail_config = app.config['MAIL_CONFIG']
         mail = Mail(**mail_config)
         params = json.loads(task.params)
-        download_main(comicbook=comicbook,
-                      output_dir=app.config[ConfigKey.DOWNLOAD_DIR],
-                      mail=mail, **params)
-        task.cost_time = int((datetime.datetime.utcnow() - task.start_time).total_seconds())
-        task.status = TaskStatus.DONE
-        db.session.commit()
+        try:
+            download_main(comicbook=comicbook,
+                          output_dir=app.config[ConfigKey.DOWNLOAD_DIR],
+                          mail=mail, **params)
+            task.cost_time = int((datetime.datetime.utcnow() - task.start_time).total_seconds())
+            task.status = TaskStatus.DONE
+            db.session.commit()
+        except Exception:
+            logger.exception('task fail. task=%s', task.to_dict())
+            task.status = TaskStatus.FAIL
+            db.session.commit()
 
 
 def list_task(page, size):
