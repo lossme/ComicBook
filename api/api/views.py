@@ -7,8 +7,8 @@ from flask import (
 )
 
 from onepiece.exceptions import ComicbookException
-from . import crawler
-from .common import handle_404
+from ..common import crawler
+from ..common import handle_404
 
 logger = logging.getLogger(__name__)
 app = Blueprint("api", __name__, url_prefix='/api')

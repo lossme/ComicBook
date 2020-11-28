@@ -11,8 +11,8 @@ from onepiece.exceptions import (
     NotFoundError,
     SiteNotSupport
 )
-from .const import ConfigKey
-from . import const
+from ..const import ConfigKey
+from .. import const
 
 
 logger = logging.getLogger(__name__)

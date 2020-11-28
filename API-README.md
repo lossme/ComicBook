@@ -28,6 +28,7 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=10
 - [1.5 获取所有tag](#15)
 - [1.6 根据tag搜索](#16)
 - [1.7 聚合搜索](#17)
+- [2.0 API管理相关](#20)
 - [2.1 添加到异步任务](#21)
 - [2.2 查看任务列表](#22)
 - [2.3 查看站点cookies](#23)
@@ -237,58 +238,6 @@ curl "http://127.0.0.1:8000/api/qq/tags"
                 {
                     "name":"玄幻",
                     "tag":"theme_101"
-                },
-                {
-                    "name":"异能",
-                    "tag":"theme_103"
-                },
-                {
-                    "name":"恐怖",
-                    "tag":"theme_110"
-                },
-                {
-                    "name":"剧情",
-                    "tag":"theme_106"
-                },
-                {
-                    "name":"科幻",
-                    "tag":"theme_108"
-                },
-                {
-                    "name":"悬疑",
-                    "tag":"theme_112"
-                },
-                {
-                    "name":"奇幻",
-                    "tag":"theme_102"
-                },
-                {
-                    "name":"冒险",
-                    "tag":"theme_104"
-                },
-                {
-                    "name":"犯罪",
-                    "tag":"theme_111"
-                },
-                {
-                    "name":"动作",
-                    "tag":"theme_109"
-                },
-                {
-                    "name":"日常",
-                    "tag":"theme_113"
-                },
-                {
-                    "name":"竞技",
-                    "tag":"theme_114"
-                },
-                {
-                    "name":"武侠",
-                    "tag":"theme_115"
-                },
-                {
-                    "name":"历史",
-                    "tag":"theme_116"
                 }
             ]
         }
@@ -368,14 +317,17 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 ```
 
 
-### 2.0 API管理相关 简单的认证
+### 2.0 API管理相关
 
-`/manage/`路由下的接口，需要在请求的headers添加`API-Secret`字段，值为`config.py`中的`MANAGE_SECRET`，若配置留空则不用验证
+2.x 下面的接口，需要登录校验，用户名和密码可以在`config.py`中的`USERS`配置，若留空则不用验证
 
-如
-```sh
-curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/proxy/qq"
-```
+**登录**: `POST /user/login?next=`
+
+- username: 用户名
+- password: 密码
+
+**登出**: `GET /user/logout?next=`
+
 
 ### 2.1 添加到异步任务
 
@@ -386,16 +338,24 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/proxy/qq"
 - params: json字符串
 ```json
 {
-    "chapters": "1,2,3",  # 下载的章节数 默认下载最新一集
-    "is_download_all": true,   # 是否下载全部 默认否
-    "is_gen_pdf": true,   # 是否生成pdf文件 默认否
-    "is_gen_zip": true,   # 是否生成zip文件 默认否
-    "is_single_image": true,  # 是否生成单图文件 默认否
-    "quality": 95,  # 生成的单图图片质量 默认95
-    "is_send_mail": true,   # 是否发送邮件 默认否
-    "receivers": "123@qq.com,456@qq.com"   # 邮件接收者，不传默认发送到配置文件里的收件人
+    "chapters": "1,2,3",
+    "is_download_all": true,
+    "is_gen_pdf": true,
+    "is_gen_zip": true,
+    "is_single_image": true,
+    "quality": 95,
+    "is_send_mail": true,
+    "receivers": "123@qq.com,456@qq.com"  
 }
 ```
+- chapters: 下载的章节数 默认下载最新一集
+- is_download_all: 是否下载全部 默认否
+- is_gen_pdf: 是否生成pdf文件 默认否
+- is_gen_pdf: 是否生成zip文件 默认否
+- is_single_image: 是否生成单图文件 默认否
+- quality: 生成的单图图片质量 默认95
+- is_send_mail: 是否发送邮件 默认否
+- receivers: 邮件接收者，多个以逗号隔开，不传默认发送到配置文件里的收件人
 
 
 请求示例
@@ -433,7 +393,7 @@ curl 'http://127.0.0.1:8000/manage/task/add?site=qq&comicid=505430&params={"chap
 请求示例
 
 ```sh
-curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/task/list?page=1"
+curl "http://127.0.0.1:8000/manage/task/list?page=1"
 ```
 
 
@@ -443,7 +403,7 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/task/list?page=1"
 请求示例
 
 ```sh
-curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/cookies/qq"
+curl "http://127.0.0.1:8000/manage/cookies/qq"
 ```
 
 ### 2.4 更新站点cookies
@@ -455,7 +415,6 @@ curl -H "API-Secret: 123" "http://127.0.0.1:8000/manage/cookies/qq"
 
 ```sh
 curl -XPOST "http://127.0.0.1:8000/manage/cookies/qq" \
-    -H "API-Secret: 123" \
     -H "Content-Type: application/json" -d \
 '{
     "cookies": [

@@ -10,6 +10,7 @@ class Config(object):
     PROJECT_HOME = PROJECT_HOME
 
     URL_PREFIX = "http://127.0.0.1:8000"
+    SECRET_KEY = "????????????????"
 
     # 配置代理
     # DEFAULT_PROXY = 'socks5://127.0.0.1:1080'
@@ -32,8 +33,10 @@ class Config(object):
     # cookies存放目录
     COOKIES_DIR = os.path.join(DATA_DIR, 'cookies')
 
-    # API管理 密钥
-    MANAGE_SECRET = ""
+    # API管理接口登录校验 若留空则不用登录
+    USERS = [
+        # {'username': 'admin', 'password': 'admin'}
+    ]
 
     # 数据库连接
     SQLALCHEMY_ECHO = False

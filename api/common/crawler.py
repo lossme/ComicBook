@@ -4,8 +4,9 @@ import cachetools.func
 from onepiece.comicbook import ComicBook
 from onepiece.exceptions import SiteNotSupport
 from onepiece.session import SessionMgr
-from . import const
-from .common import (
+
+from .. import const
+from . import (
     concurrent_run,
     get_cookies_path
 )

@@ -1,4 +1,3 @@
-import os
 from flask_script import (
     Manager,
     Server
@@ -8,7 +7,7 @@ from api import create_app
 from api import db
 
 
-app = create_app(os.getenv('ONEPIECE_FLASK_CONFIG') or 'api.config.Config')
+app = create_app()
 manager = Manager(app)
 manager.add_command("runserver", Server(host="127.0.0.1", port=8000))
 

@@ -3,8 +3,8 @@ import hashlib
 import logging
 import json
 
-from . import db
-from . import const
+from .. import db
+from .. import const
 
 timezone = pytz.timezone(const.TIME_ZONE)
 logger = logging.getLogger(__name__)

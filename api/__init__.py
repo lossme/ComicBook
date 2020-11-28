@@ -5,7 +5,9 @@ from flask import (
     jsonify,
     current_app
 )
+from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+
 from onepiece.utils import ensure_file_dir_exists
 from onepiece.session import SessionMgr
 from onepiece.comicbook import ComicBook
@@ -14,9 +16,13 @@ from .const import ConfigKey
 from .common import get_cookies_path
 
 db = SQLAlchemy()
+login_manager = LoginManager()
+login_manager.login_view = "user.login"
+
+ONEPIECE_FLASK_CONFIG = os.environ.get('ONEPIECE_FLASK_CONFIG') or 'api.config.Config'
 
 
-def create_app(cfg='api.config.Config'):
+def create_app(cfg=ONEPIECE_FLASK_CONFIG):
     app = Flask(__name__)
     app.config.from_object(cfg)
     log_level = app.config.get(ConfigKey.LOG_LEVEL)
@@ -27,18 +33,25 @@ def create_app(cfg='api.config.Config'):
         ensure_file_dir_exists(app.config.get(ConfigKey.SQLITE_FILE))
 
     db.init_app(app)
-    from .views import (
+    login_manager.init_app(app)
+
+    from .api.views import (
         app as api_app,
         aggregate_app,
     )
-    from .manage_view import manage_app
+    from .manage.views import manage_app
+    from .user.views import app as user_app
 
     app.register_blueprint(api_app)
     app.register_blueprint(aggregate_app)
     app.register_blueprint(manage_app)
+    app.register_blueprint(user_app)
     app.add_url_rule('/', 'index', index)
+
     init_session(app)
     init_db(app)
+    if not app.config.get('USERS'):
+        app.config['LOGIN_DISABLED'] = True
     return app
 
 
@@ -59,10 +72,6 @@ def init_db(app):
         ensure_file_dir_exists(app.config.get(ConfigKey.SQLITE_FILE))
     with app.app_context():
         db.create_all()
-
-
-def create_dev_app():
-    return create_app(cfg='api.config.DevelopmentConfig')
 
 
 def init_logger(level=None):

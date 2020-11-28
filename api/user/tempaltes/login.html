@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+<div class="login">
+    <h1>Login</h1>
+    <form action="{{ url_for('user.login', next=request.args.next) }}" method="post">
+        <p><input type="text" required="required" placeholder="用户名" name="username"></input></p>
+        <p><input type="password" required="required" placeholder="密码" name="password"></input></p>
+        <p><button type="submit" class="btn btn-primary btn-block btn-large">登录</button></p>
+    </form>
+</div>
+
+<script type="text/javascript">
+    {% if data.login_result %}
+    alert("{{ data.login_result }}");
+    {% endif %}
+</script>
+</body>
+</html>
