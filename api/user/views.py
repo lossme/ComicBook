@@ -9,9 +9,17 @@ from flask import (
 from flask_login import (
     login_user,
     logout_user,
-    login_required
+    login_required,
+    current_user
 )
-from .model import User
+from .model import (
+    User,
+    MyAnonymousUser
+)
+from .. import login_manager
+
+login_manager.login_view = "user.login"
+login_manager.anonymous_user = MyAnonymousUser
 
 
 logger = logging.getLogger(__name__)
@@ -51,3 +59,9 @@ def logout():
     if next_url:
         return redirect(next_url)
     return jsonify(dict(logout='sucess'))
+
+
+@app.route('/info')
+@login_required
+def home():
+    return jsonify(dict(username=current_user.username, user_id=current_user.id))

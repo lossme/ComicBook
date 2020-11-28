@@ -1,5 +1,8 @@
 from flask import current_app
-from flask_login import UserMixin
+from flask_login import (
+    UserMixin,
+    AnonymousUserMixin
+)
 
 from .. import login_manager
 
@@ -32,6 +35,14 @@ class User(UserMixin):
         for user_id, user in enumerate(users):
             if username == user['username']:
                 return cls(username=user['username'], password=user['password'], id=user_id)
+
+
+class MyAnonymousUser(AnonymousUserMixin):
+
+    def __init__(self):
+        self.username = 'anonymoususe'
+        self.id = None
+        self.password = ''
 
 
 @login_manager.user_loader

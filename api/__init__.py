@@ -17,7 +17,6 @@ from .common import get_cookies_path
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-login_manager.login_view = "user.login"
 
 ONEPIECE_FLASK_CONFIG = os.environ.get('ONEPIECE_FLASK_CONFIG') or 'api.config.Config'
 

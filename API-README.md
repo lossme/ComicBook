@@ -328,6 +328,8 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
 
 **登出**: `GET /user/logout?next=`
 
+**获取用户信息**: `GET /user/info`
+
 
 ### 2.1 添加到异步任务
 
