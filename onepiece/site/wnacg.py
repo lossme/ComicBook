@@ -2,8 +2,6 @@ import re
 import logging
 from urllib.parse import urljoin
 
-import execjs
-
 from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
@@ -19,7 +17,6 @@ class WnacgCrawler(CrawlerBase):
     DEFAULT_COMICID = 106789
     DEFAULT_SEARCH_NAME = '过期米线线喵'
     DEFAULT_TAG = "3"
-    REQUIRE_JAVASCRIPT = True
     R18 = True
 
     def __init__(self, comicid=None):
@@ -56,17 +53,14 @@ class WnacgCrawler(CrawlerBase):
     def get_chapter_item(self, citem):
         api_url = urljoin(self.SITE_INDEX, "/photos-gallery-aid-{}.html".format(citem.cid))
         html = self.get_html(api_url)
-        js = re.search(r'var (imglist.*?)\;\"\);\r', html).group(1)
-        js_str = "fast_img_host=''," + js.replace('\\"', '"')
-        img_list = execjs.eval(js_str)
-
+        img_list = re.findall(r'url: fast_img_host\+\\"(.*?)\\".*?}', html)
         image_urls = []
         for i in img_list:
             url = i['url']
             if url.startswith('//'):
                 image_urls.append('http:' + url)
             elif url.startswith('/'):
-                image_urls.append(self.SITE_INDEX + url)
+                urljoin(self.SITE_INDEX, url)
             else:
                 image_urls.append(url)
 

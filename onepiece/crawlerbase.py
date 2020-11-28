@@ -98,7 +98,7 @@ class Citem():
 class ChapterItem():
     FIELDS = ["chapter_number", "title", "image_urls", "source_url", "site", "source_name"]
 
-    def __init__(self, chapter_number, title, image_urls, 
+    def __init__(self, chapter_number, title, image_urls,
                  source_url=None, site=None, source_name=None,
                  image_pipelines=None):
         self.chapter_number = chapter_number
@@ -160,6 +160,7 @@ class CrawlerBase():
     SOURCE_NAME = "未知"
     SITE = ""
     SITE_INDEX = ""
+    LOGIN_URL = ""
 
     DEFAULT_COMICID = None
     DEFAULT_SEARCH_NAME = ''
@@ -271,12 +272,14 @@ class CrawlerBase():
         return self.new_search_result_item()
 
     def login(self):
-        pass
+        login_url = self.LOGIN_URL or self.SITE_INDEX
+        self.selenium_login(login_url=login_url)
 
-    def selenium_login(self, login_url, check_login_status_func):
-        if check_login_status_func():
-            logger.info("login success")
-            return
+    def selenium_login(self, login_url, check_login_status_func=None):
+        if callable(check_login_status_func):
+            if check_login_status_func():
+                logger.info("login success")
+                return
 
         logger.info("Please complete login on your browser")
         driver = self.create_driver()
@@ -299,10 +302,11 @@ class CrawlerBase():
                 driver.quit()
                 return
             SessionMgr.update_cookies(site=self.SITE, cookies=cookies)
-            if check_login_status_func():
-                logger.info("login success")
-                driver.quit()
-                break
+            if callable(check_login_status_func):
+                if check_login_status_func():
+                    logger.info("login success")
+                    driver.quit()
+                    break
 
     def create_driver(self):
         assert self.DRIVER_PATH, "DRIVER_PATH must be set"

@@ -17,7 +17,6 @@ class NhentaiCrawler(CrawlerBase):
     DEFAULT_SEARCH_NAME = 'manga'
     DEFAULT_TAG = 'big-breasts'
 
-    REQUIRE_JAVASCRIPT = True
     R18 = True
 
     def __init__(self, comicid=None):
