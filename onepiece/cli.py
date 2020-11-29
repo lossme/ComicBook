@@ -18,6 +18,8 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 
 DEFAULT_DOWNLOAD_DIR = os.environ.get('ONEPIECE_DOWNLOAD_DIR') or 'download'
 DEFAULT_MAIL_CONFIG_FILE = os.environ.get('ONEPIECE_MAIL_CONFIG_FILE') or ''
+DEFAULT_DRIVER_TYPE = os.environ.get('ONEPIECE_DRIVER_TYPE') or 'Chrome'
+DEFAULT_DRIVER_PATH = os.environ.get('ONEPIECE_DRIVER_PATH') or ''
 
 
 def parse_args():
@@ -89,13 +91,14 @@ def parse_args():
     parser.add_argument('--verify', action='store_true',
                         help="verify")
 
-    parser.add_argument('--driver-path', type=str, help="selenium driver")
+    parser.add_argument('--driver-path', type=str, help="selenium driver", default=DEFAULT_DRIVER_PATH)
 
     parser.add_argument('--driver-type', type=str,
                         choices=CrawlerBase.SUPPORT_DRIVER_TYPE,
+                        default=DEFAULT_DRIVER_TYPE,
                         help="支持的浏览器: {}. 默认为 {}".format(
                             ",".join(sorted(CrawlerBase.SUPPORT_DRIVER_TYPE)),
-                            CrawlerBase.DEFAULT_DRIVER_TYPE)
+                            DEFAULT_DRIVER_TYPE)
                         )
 
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
@@ -189,7 +192,8 @@ def main():
         SessionMgr.set_proxy(site=site, verify=True)
 
     WorkerPoolMgr.set_worker(worker=args.worker)
-    comicbook.crawler.DRIVER_PATH = args.driver_path
+    CrawlerBase.DRIVER_PATH = args.driver_path
+    CrawlerBase.DRIVER_TYPE = args.driver_type
 
     # 加载 session
     if session_path and os.path.exists(session_path):

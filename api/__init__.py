@@ -11,8 +11,10 @@ from flask_sqlalchemy import SQLAlchemy
 from onepiece.utils import ensure_file_dir_exists
 from onepiece.session import SessionMgr
 from onepiece.comicbook import ComicBook
+from onepiece.crawlerbase import CrawlerBase
 
 from .const import ConfigKey
+from . import const
 from .common import get_cookies_path
 
 db = SQLAlchemy()
@@ -55,6 +57,9 @@ def create_app(cfg=ONEPIECE_FLASK_CONFIG):
 
 
 def init_session(app):
+    CrawlerBase.DRIVER_PATH = app.config.get('DRIVER_PATH', '')
+    CrawlerBase.DRIVER_TYPE = app.config.get('DRIVER_TYPE', '')
+    CrawlerBase.HEADLESS = True
     with app.app_context():
         proxy_config = app.config.get(ConfigKey.CRAWLER_PROXY, {})
         for site in ComicBook.CRAWLER_CLS_MAP:
@@ -91,6 +96,8 @@ def index():
     prefix = current_app.config.get(ConfigKey.URL_PREFIX, '')
     examples = []
     for site, crawler in ComicBook.CRAWLER_CLS_MAP.items():
+        if site in const.NOT_SUPPORT_SITES:
+            continue
         item = dict(
             site=site,
             source_name=crawler.SOURCE_NAME,

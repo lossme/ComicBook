@@ -170,6 +170,9 @@ class CrawlerBase():
     DRIVER_TYPE = None
     DEFAULT_DRIVER_TYPE = "Chrome"
     SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
+    DRIVER_INSTANCE = None
+    HEADLESS = False
+
     REQUIRE_JAVASCRIPT = False
     TAGS = None
     R18 = False
@@ -280,7 +283,6 @@ class CrawlerBase():
             if check_login_status_func():
                 logger.info("login success")
                 return
-
         logger.info("Please complete login on your browser")
         driver = self.create_driver()
         driver.get(login_url)
@@ -299,25 +301,54 @@ class CrawlerBase():
                     )
             except Exception:
                 logger.exception('unknow error. driver quit.')
-                driver.quit()
+                self.close_driver()
                 return
             SessionMgr.update_cookies(site=self.SITE, cookies=cookies)
             if callable(check_login_status_func):
                 if check_login_status_func():
                     logger.info("login success")
-                    driver.quit()
+                    self.close_driver()
                     break
 
-    def create_driver(self):
-        assert self.DRIVER_PATH, "DRIVER_PATH must be set"
+    @classmethod
+    def create_driver(cls, **kwargs):
+        try:
+            from selenium import webdriver
+        except ImportError:
+            raise RuntimeError('pleaese install selenium first. python3 -m pip install selenium')
 
-        driver_type = self.DRIVER_TYPE or self.DEFAULT_DRIVER_TYPE
-        assert driver_type in self.SUPPORT_DRIVER_TYPE, "DRIVER_TYPE must be: {}"\
-            .format(",".join(self.SUPPORT_DRIVER_TYPE))
+        if not cls.DRIVER_PATH:
+            raise RuntimeError("DRIVER_PATH must be set")
 
-        from selenium import webdriver
-        driver_cls = getattr(webdriver, driver_type)
-        return driver_cls(self.DRIVER_PATH)
+        if cls.DRIVER_TYPE not in cls.SUPPORT_DRIVER_TYPE:
+            raise RuntimeError(
+                "DRIVER_TYPE must be: {}".format(",".join(cls.SUPPORT_DRIVER_TYPE)))
+
+        if cls.DRIVER_INSTANCE:
+            return cls.DRIVER_INSTANCE
+
+        if cls.DRIVER_TYPE == 'Chrome' and cls.HEADLESS:
+            from selenium.webdriver.chrome.options import Options
+            options = Options()
+            options.add_argument('--headless')
+            prefs = {"profile.managed_default_content_settings.images": 2}
+            options.add_experimental_option("prefs", prefs)
+            driver = webdriver.Chrome(cls.DRIVER_PATH, chrome_options=options)
+        else:
+            driver = getattr(webdriver, cls.DRIVER_TYPE)(cls.DRIVER_PATH, **kwargs)
+        logger.info('new driver=%s', driver)
+        cls.DRIVER_INSTANCE = driver
+        return cls.DRIVER_INSTANCE
+
+    @classmethod
+    def close_driver(cls):
+        if cls.DRIVER_INSTANCE:
+            cls.DRIVER_INSTANCE.quit()
+            cls.DRIVER_INSTANCE = None
+            logger.info('driver quit.')
+
+    def __del__(self):
+        self.close_driver()
 
     def get_tags_from_cache(self):
         if self._tag_info is None:

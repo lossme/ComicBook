@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 @cachetools.func.ttl_cache(maxsize=1024, ttl=const.CACHE_TIME, typed=False)
 def get_comicbook_from_cache(site, comicid=None):
+    if site in const.NOT_SUPPORT_SITES:
+        raise SiteNotSupport()
     comicbook = ComicBook(site=site, comicid=comicid)
     return comicbook
 

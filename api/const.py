@@ -11,6 +11,9 @@ TASK_AVOID_REPEAT_TIME = 10 * 60
 TIME_ZONE = "Asia/Shanghai"
 
 
+NOT_SUPPORT_SITES = ['cocomanhua']
+
+
 class ConfigKey():
     MANAGE_SECRET = 'MANAGE_SECRET'
     COOKIES_DIR = 'COOKIES_DIR'

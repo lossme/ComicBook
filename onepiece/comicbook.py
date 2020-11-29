@@ -32,8 +32,8 @@ class ComicBook():
         if site not in self.CRAWLER_CLS_MAP:
             raise SiteNotSupport(f"SiteNotSupport site={site}")
         crawler_cls = self.CRAWLER_CLS_MAP[site]
-        comicid = comicid or crawler_cls.DEFAULT_COMICID
-        self.crawler = crawler_cls(comicid)
+        self.comicid = comicid or crawler_cls.DEFAULT_COMICID
+        self.crawler = crawler_cls(self.comicid)
 
         self.image_downloader = ImageDownloader(site=site)
 
