@@ -99,10 +99,21 @@ python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
 
 #### 通过环境变量配置默认参数
 ```sh
-# 可以将该命令添加到 ~/.bashrc 或 ~/.zshrc 文件末尾
+# 可以将以下命令添加到 ~/.bashrc 或 ~/.zshrc 文件末尾
 # 配置默认下载目录
 export ONEPIECE_DOWNLOAD_DIR="~/Downloads/MyComicBook"
 
 # 配置默认的邮件配置文件路径
 export ONEPIECE_MAIL_CONFIG_FILE="~/MyConfig/config.ini"
+
+# 配置默认的 webdriver
+export ONEPIECE_DRIVER_TYPE="Chrome"
+export ONEPIECE_DRIVER_PATH="~/data/chromedriver_win32/chromedriver.exe"
+
+# 配置默认的cookies存放路径
+export ONEPIECE__COOKIES_PATH="~/data/cookies"
+export ONEPIECE_SESSION_PATH="~/data/session"
+
+# 配置默认的代理地址
+export ONEPIECE_PROXY="socks5://127.0.0.1:1082"
 ```

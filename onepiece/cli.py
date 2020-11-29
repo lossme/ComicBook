@@ -20,6 +20,9 @@ DEFAULT_DOWNLOAD_DIR = os.environ.get('ONEPIECE_DOWNLOAD_DIR') or 'download'
 DEFAULT_MAIL_CONFIG_FILE = os.environ.get('ONEPIECE_MAIL_CONFIG_FILE') or ''
 DEFAULT_DRIVER_TYPE = os.environ.get('ONEPIECE_DRIVER_TYPE') or 'Chrome'
 DEFAULT_DRIVER_PATH = os.environ.get('ONEPIECE_DRIVER_PATH') or ''
+DEFAULT_COOKIES_PATH = os.environ.get('ONEPIECE__COOKIES_PATH') or ''
+DEFAULT_SESSION_PATH = os.environ.get('ONEPIECE_SESSION_PATH') or ''
+DEFAULT_PROXY = os.environ.get('ONEPIECE_PROXY') or ''
 
 
 def parse_args():
@@ -101,10 +104,12 @@ def parse_args():
                             DEFAULT_DRIVER_TYPE)
                         )
 
-    parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
-    parser.add_argument('--cookies-path', type=str, help="读取或保存上次使用的cookies路径")
+    parser.add_argument('--session-path', type=str, default=DEFAULT_COOKIES_PATH,
+                        help="读取或保存上次使用的session路径")
+    parser.add_argument('--cookies-path', type=str, default=DEFAULT_SESSION_PATH,
+                        help="读取或保存上次使用的cookies路径")
 
-    parser.add_argument('--proxy', type=str,
+    parser.add_argument('--proxy', type=str, default=DEFAULT_PROXY,
                         help='设置代理，如 --proxy "socks5://user:pass@host:port"')
 
     parser.add_argument('-V', '--version', action='version', version=VERSION)

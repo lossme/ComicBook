@@ -5,10 +5,7 @@ from onepiece.comicbook import ComicBook
 from onepiece.session import SessionMgr
 logger = logging.getLogger()
 
-if os.environ.get('ONEPIECE_PROXY'):
-    DEFAULT_PROXY = os.environ.get('ONEPIECE_PROXY')
-else:
-    DEFAULT_PROXY = 'socks5://127.0.0.1:1082'
+DEFAULT_PROXY = os.environ.get('ONEPIECE_TEST_PROXY')
 
 
 def _test_crawl_comicbook(site, comicid=None,
