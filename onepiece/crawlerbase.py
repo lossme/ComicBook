@@ -336,8 +336,6 @@ class CrawlerBase():
         else:
             driver = getattr(webdriver, self.DRIVER_TYPE)(self.DRIVER_PATH, **kwargs)
         logger.info('new driver=%s', driver)
-        for cookie in SessionMgr.get_cookies(site=self.SITE):
-            driver.add_cookie(**cookie)
         self.DRIVER_INSTANCE = driver
         return self.DRIVER_INSTANCE
 
