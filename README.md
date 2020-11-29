@@ -110,9 +110,8 @@ export ONEPIECE_MAIL_CONFIG_FILE="~/MyConfig/config.ini"
 export ONEPIECE_DRIVER_TYPE="Chrome"
 export ONEPIECE_DRIVER_PATH="~/data/chromedriver_win32/chromedriver.exe"
 
-# 配置默认的cookies存放路径
-export ONEPIECE__COOKIES_PATH="~/data/cookies"
-export ONEPIECE_SESSION_PATH="~/data/session"
+# 配置默认的cookies存放目录
+export ONEPIECE_COOKIES_DIR="~/data/cookies"
 
 # 配置默认的代理地址
 export ONEPIECE_PROXY="socks5://127.0.0.1:1082"

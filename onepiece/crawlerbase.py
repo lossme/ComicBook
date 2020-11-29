@@ -310,41 +310,41 @@ class CrawlerBase():
                     self.close_driver()
                     break
 
-    @classmethod
-    def create_driver(cls, **kwargs):
+    def create_driver(self, **kwargs):
         try:
             from selenium import webdriver
         except ImportError:
             raise RuntimeError('pleaese install selenium first. python3 -m pip install selenium')
 
-        if not cls.DRIVER_PATH:
+        if not self.DRIVER_PATH:
             raise RuntimeError("DRIVER_PATH must be set")
 
-        if cls.DRIVER_TYPE not in cls.SUPPORT_DRIVER_TYPE:
+        if self.DRIVER_TYPE not in self.SUPPORT_DRIVER_TYPE:
             raise RuntimeError(
-                "DRIVER_TYPE must be: {}".format(",".join(cls.SUPPORT_DRIVER_TYPE)))
+                "DRIVER_TYPE must be: {}".format(",".join(self.SUPPORT_DRIVER_TYPE)))
 
-        if cls.DRIVER_INSTANCE:
-            return cls.DRIVER_INSTANCE
+        if self.DRIVER_INSTANCE:
+            return self.DRIVER_INSTANCE
 
-        if cls.DRIVER_TYPE == 'Chrome' and cls.HEADLESS:
+        if self.DRIVER_TYPE == 'Chrome' and self.HEADLESS:
             from selenium.webdriver.chrome.options import Options
             options = Options()
             options.add_argument('--headless')
             prefs = {"profile.managed_default_content_settings.images": 2}
             options.add_experimental_option("prefs", prefs)
-            driver = webdriver.Chrome(cls.DRIVER_PATH, chrome_options=options)
+            driver = webdriver.Chrome(self.DRIVER_PATH, chrome_options=options)
         else:
-            driver = getattr(webdriver, cls.DRIVER_TYPE)(cls.DRIVER_PATH, **kwargs)
+            driver = getattr(webdriver, self.DRIVER_TYPE)(self.DRIVER_PATH, **kwargs)
         logger.info('new driver=%s', driver)
-        cls.DRIVER_INSTANCE = driver
-        return cls.DRIVER_INSTANCE
+        for cookie in SessionMgr.get_cookies(site=self.SITE):
+            driver.add_cookie(**cookie)
+        self.DRIVER_INSTANCE = driver
+        return self.DRIVER_INSTANCE
 
-    @classmethod
-    def close_driver(cls):
-        if cls.DRIVER_INSTANCE:
-            cls.DRIVER_INSTANCE.quit()
-            cls.DRIVER_INSTANCE = None
+    def close_driver(self):
+        if self.DRIVER_INSTANCE:
+            self.DRIVER_INSTANCE.quit()
+            self.DRIVER_INSTANCE = None
             logger.info('driver quit.')
 
     def __del__(self):
