@@ -62,14 +62,14 @@ class Mh1234Crawler(CrawlerBase):
         js_str = jsbeautifier.beautify(s)
         msg = re.search(r"var msg = '(.*?)';", js_str).group(1)
         atsvr = re.search(r'var atsvr = "(.*?)";', js_str).group(1)
-        img_s = re.search(r"var img_s = (\d+);", js_str).group(1)
+        img_s = re.search(r"var img_s = (\d*?);", js_str).group(1)
         image_urls = []
-        url_params = {'z': atsvr, 's': img_s, 'cid': self.comicid, 'coid': coid}
-        image_prefix, end = self.get_image_prefix(url_params)
-        image_urls = []
-        for url in msg.split('|'):
-            image_url = image_prefix + url + end
-            image_urls.append(image_url)
+        if img_s:
+            url_params = {'z': atsvr, 's': img_s, 'cid': self.comicid, 'coid': coid}
+            image_prefix, end = self.get_image_prefix(url_params)
+            for url in msg.split('|'):
+                image_url = image_prefix + url + end
+                image_urls.append(image_url)
         return self.new_chapter_item(chapter_number=citem.chapter_number,
                                      title=citem.title,
                                      image_urls=image_urls,

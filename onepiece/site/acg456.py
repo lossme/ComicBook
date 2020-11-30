@@ -33,13 +33,14 @@ class Acg456Crawler(CrawlerBase):
         return urljoin(self.SITE_INDEX, "/HTML/{}".format(comicid))
 
     def get_comicbook_item(self):
-        soup = self.get_soup(self.source_url)
-
+        response = self.send_request('get', self.source_url)
+        html = response.content.decode('utf-8')
+        soup = BeautifulSoup(html, 'html.parser')
         name = soup.h1.b.text.strip()
         author = ''
         desc = ''
         tag_list = []
-        for li in soup.find('ul', {'class':'Height_px22'}).find_all('li'):
+        for li in soup.find('ul', {'class': 'Height_px22'}).find_all('li'):
             if '作　　者：' in li.text:
                 author = li.a.text.replace('作　　者：', '')
             elif '故事简介：' in li.text:
@@ -60,7 +61,7 @@ class Acg456Crawler(CrawlerBase):
             cid = href.strip('/').split('/')[-1]
             title = li.a.text.strip()
             url = urljoin(self.SITE_INDEX, href)
-            book.add_chapter(chapter_number=chapter_number, 
+            book.add_chapter(chapter_number=chapter_number,
                              source_url=url,
                              title=title,
                              cid=cid)
