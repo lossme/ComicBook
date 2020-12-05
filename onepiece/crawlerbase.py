@@ -215,6 +215,11 @@ class CrawlerBase():
         response = self.send_request("GET", url, **kwargs)
         return response.text
 
+    def get_html_and_soup(self, url, **kwargs):
+        html = self.get_html(url, **kwargs)
+        soup = BeautifulSoup(html, 'html.parser')
+        return html, soup
+
     def get_soup(self, url, **kwargs):
         html = self.get_html(url, **kwargs)
         return BeautifulSoup(html, 'html.parser')

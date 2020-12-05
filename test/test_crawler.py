@@ -80,3 +80,11 @@ def test_77mh():
 
 def test_dmzj():
     _test_crawl_comicbook(site='dmzj')
+
+
+def test_dm5():
+    _test_crawl_comicbook(site='dm5')
+
+
+def test_manhuadb():
+    _test_crawl_comicbook(site='manhuadb')
