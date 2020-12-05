@@ -68,23 +68,21 @@ class ManhuaguiCrawler(CrawlerBase):
         h4_list = chapter_soup.find_all('h4')
         div_list = chapter_soup.find_all('div', {'class': 'chapter-list'})
         idx = 1
-        ext_idx = 1
-        volume_idx = 1
+        ext_idx = {}
         for h4, div in zip(h4_list, div_list):
             for ul in div.find_all('ul'):
                 for li in reversed(ul.find_all('li')):
                     href = li.a.get('href')
                     title = li.a.get('title')
                     full_url = urljoin(self.SITE_INDEX, href)
-                    if h4.text.strip() == '单行本':
-                        book.add_volume(chapter_number=volume_idx, title=title, source_url=full_url)
-                        volume_idx += 1
-                    elif h4.text.strip() == '番外篇':
-                        book.add_ext_chapter(chapter_number=ext_idx, title=title, source_url=full_url)
-                        ext_idx += 1
-                    elif h4.text.strip() == '单话':
+                    if h4.text.strip() == '单话':
                         book.add_chapter(chapter_number=idx, title=title, source_url=full_url)
                         idx += 1
+                    else:
+                        name = h4.text.strip()
+                        ext_idx.setdefault(name, 1)
+                        book.add_chapter(chapter_number=ext_idx[name], title=title, ext_name=name, source_url=full_url)
+                        ext_idx[name] += 1
         return book
 
     def get_chapter_item(self, citem):

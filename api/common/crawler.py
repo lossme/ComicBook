@@ -27,9 +27,9 @@ def get_comicbook_info(site, comicid):
     return comicbook.to_dict()
 
 
-def get_chapter_info(site, comicid, chapter_number):
+def get_chapter_info(site, comicid, chapter_number, ext_name):
     comicbook = get_comicbook_from_cache(site, comicid)
-    chapter = comicbook.Chapter(chapter_number)
+    chapter = comicbook.Chapter(chapter_number, ext_name=ext_name)
     return chapter.to_dict()
 
 

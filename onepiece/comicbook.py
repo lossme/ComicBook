@@ -4,6 +4,7 @@ import importlib
 import datetime
 import logging
 import weakref
+from collections import defaultdict
 
 from .utils import safe_filename
 from .utils import ensure_file_dir_exists
@@ -37,13 +38,13 @@ class ComicBook():
 
         self.image_downloader = ImageDownloader(site=site)
 
-        # {chapter_number: Chapter}
-        self.chapter_cache = {}
+        # {ext_name: {chapter_number: Chapter}}
+        self.chapter_cache = defaultdict(dict)
+        self.chapter_desc = defaultdict(dict)
+
         self.crawler_time = None
         self.comicbook_item = None
         self.tags = None
-        self.last_chapter_number = 0
-        self.last_chapter_title = ''
 
     def start_crawler(self):
         if self.crawler_time is None:
@@ -55,14 +56,28 @@ class ComicBook():
         for field in self.comicbook_item.FIELDS:
             setattr(self, field, getattr(self.comicbook_item, field))
 
-        if self.comicbook_item.citems:
-            last_chapter = max(self.comicbook_item.citems.values(),
-                               key=lambda x: x.chapter_number)
-            self.last_chapter_number = last_chapter.chapter_number
-            self.last_chapter_title = last_chapter.title
-        else:
-            self.last_chapter_number = 0
-            self.last_chapter_title = ""
+        for ext_name in self.comicbook_item.citems:
+            citems = self.comicbook_item.citems[ext_name]
+            if not citems:
+                self.chapter_desc[ext_name] = {
+                    'last_chapter_number': 0,
+                    'last_chapter_title': ''
+                }
+            else:
+                last_chapter = max(citems.values(),
+                                   key=lambda x: x.chapter_number)
+                self.chapter_desc[ext_name] = {
+                    'last_chapter_number': last_chapter.chapter_number,
+                    'last_chapter_title': last_chapter.title
+                }
+
+    def get_last_chapter_number(self, ext_name=None):
+        ext_name = ext_name or ""
+        return self.chapter_desc.get(ext_name, {}).get('last_chapter_number', 0)
+
+    def get_last_chapter_title(self, ext_name=None):
+        ext_name = ext_name or ""
+        return self.chapter_desc.get('ext_name', {}).get('last_chapter_title', '')
 
     def search(self, name=None, page=1, limit=None):
         return self.crawler.search(name, page=page, size=limit)
@@ -86,32 +101,36 @@ class ComicBook():
     def __repr__(self):
         return "<ComicBook>: {}".format(self.to_dict())
 
-    def Chapter(self, chapter_number):
+    def Chapter(self, chapter_number, ext_name=None):
+        ext_name = ext_name or self.crawler.DEFAULT_EXT_NAME
         if self.crawler_time is None:
             self.start_crawler()
 
         if chapter_number < 0:
             chapter_number = self.last_chapter_number + chapter_number + 1
 
-        if chapter_number not in self.comicbook_item.citems:
+        citems = self.comicbook_item.citems.get(ext_name, {})
+        if chapter_number not in citems:
             msg = ChapterNotFound.TEMPLATE.format(site=self.crawler.SITE,
                                                   comicid=self.crawler.comicid,
                                                   chapter_number=chapter_number,
                                                   source_url=self.crawler.source_url)
             raise ChapterNotFound(msg)
-
-        if self.crawler.SITE == 'bilibili' or chapter_number not in self.chapter_cache:
-            citem = self.comicbook_item.citems[chapter_number]
+        if self.crawler.SITE == 'bilibili' or chapter_number not in self.chapter_cache[ext_name]:
+            citem = citems[chapter_number]
             chapter_item = self.crawler.get_chapter_item(citem)
-            self.chapter_cache[chapter_number] = Chapter(
+            self.chapter_cache[ext_name][chapter_number] = Chapter(
                 comicbook_ref=weakref.ref(self),
-                chapter_item=chapter_item)
-        return self.chapter_cache[chapter_number]
+                chapter_item=chapter_item,
+                ext_name=ext_name)
+
+        return self.chapter_cache[ext_name][chapter_number]
 
 
 class Chapter():
 
-    def __init__(self, comicbook_ref, chapter_item):
+    def __init__(self, comicbook_ref, chapter_item, ext_name=None):
+        self.ext_name = ext_name
         self.comicbook_ref = comicbook_ref
         self.chapter_item = chapter_item
         self._saved = False
@@ -128,30 +147,37 @@ class Chapter():
     def __repr__(self):
         return "<Chapter>: {}".format(self.to_dict())
 
+    def get_comicbook_dir_name(self):
+        if self.ext_name:
+            name = safe_filename('{} 【{}】'.format(self.comicbook.name, self.ext_name))
+        else:
+            name = safe_filename(self.comicbook.name)
+        return name
+
     def get_chapter_image_dir(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name)
-        second_dir = safe_filename(self.comicbook.name)
+        second_dir = self.get_comicbook_dir_name()
         third_dir = safe_filename("{:>03} {}".format(self.chapter_item.chapter_number, self.chapter_item.title))
         chapter_dir = os.path.join(output_dir, first_dir, second_dir, third_dir)
         return chapter_dir
 
     def get_chapter_pdf_path(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name + ' pdf')
-        second_dir = safe_filename(self.comicbook.name)
+        second_dir = self.get_comicbook_dir_name()
         filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".pdf"
         pdf_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return pdf_path
 
     def get_single_image_path(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name + ' 长图')
-        second_dir = safe_filename(self.comicbook.name)
+        second_dir = self.get_comicbook_dir_name()
         filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".jpg"
         img_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return img_path
 
     def get_zipfile_path(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name + ' zip')
-        second_dir = safe_filename(self.comicbook.name)
+        second_dir = self.get_comicbook_dir_name()
         filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".zip"
         zipfile_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return zipfile_path

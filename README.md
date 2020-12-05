@@ -59,6 +59,7 @@ Star防止走丢，欢迎大家提建议和issue，本项目持续更新。
 - 拼接成长图: `python3 -m onepiece --site=qq --comicid=505430 --single-image --quality 95`
 - 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
 - 自定义保存目录: `python3 -m onepiece --site=qq --comicid=505430 --output MyComicBook`
+- 下载单行本: `python3 -m onepiece --site=manhuagui --comicid=1128 --ext-name=单行本 --chapter=-1`
 - 推送到邮箱:
 ```sh
 # 注意: 发送到邮箱需预先配置好信息

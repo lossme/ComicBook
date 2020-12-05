@@ -1,6 +1,7 @@
 import datetime
 import time
 import logging
+from collections import defaultdict
 import execjs
 from bs4 import BeautifulSoup
 
@@ -12,12 +13,13 @@ logger = logging.getLogger(__name__)
 
 class ComicBookItem():
     FIELDS = ["name", "desc", "tag", "cover_image_url", "author",
-              "source_url", "source_name", "crawl_time", "chapters", "ext_chapters", "volumes",
+              "source_url", "source_name", "crawl_time", "chapters", "ext_chapters",
               "status", 'tags', "site", "last_update_time"]
 
     def __init__(self, name=None, desc=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
-                 crawl_time=None, status=None, site=None, last_update_time=None, **kwargs):
+                 crawl_time=None, status=None, site=None, last_update_time=None,
+                 default_ext_name=None, **kwargs):
         self.name = name or ""
         self.desc = desc or ""
         self.cover_image_url = cover_image_url or ""
@@ -28,11 +30,10 @@ class ComicBookItem():
         self.status = status or ""
         self.site = site or ""
         self.last_update_time = last_update_time or ""
+        self.default_ext_name = default_ext_name
 
-        # {1: Citem(chapter_number=1, title="xx", cid="xxx"}
-        self.citems = {}
-        self.ext_citems = {}
-        self.volume_citems = {}
+        # {'番外篇': {1: Citem(chapter_number=1, title="xx", cid="xxx"}}
+        self.citems = defaultdict(dict)
         self.tags = []
 
     @property
@@ -47,16 +48,9 @@ class ComicBookItem():
         if name:
             self.tags.append(dict(name=name, tag=tag))
 
-    def add_chapter(self, chapter_number, title, source_url, **kwargs):
-        self.citems[chapter_number] = Citem(
-            chapter_number=chapter_number, title=title, source_url=source_url, **kwargs)
-
-    def add_ext_chapter(self, chapter_number, title, source_url, **kwargs):
-        self.ext_citems[chapter_number] = Citem(
-            chapter_number=chapter_number, title=title, source_url=source_url, **kwargs)
-
-    def add_volume(self, chapter_number, title, source_url, **kwargs):
-        self.volume_citems[chapter_number] = Citem(
+    def add_chapter(self, chapter_number, title, source_url, ext_name=None, **kwargs):
+        ext_name = ext_name or ''
+        self.citems[ext_name][chapter_number] = Citem(
             chapter_number=chapter_number, title=title, source_url=source_url, **kwargs)
 
     def citems_to_list(self, citems):
@@ -73,15 +67,17 @@ class ComicBookItem():
 
     @property
     def chapters(self):
-        return self.citems_to_list(self.citems)
+        ext_name = self.default_ext_name
+        return self.citems_to_list(self.citems[ext_name])
 
     @property
     def ext_chapters(self):
-        return self.citems_to_list(self.ext_citems)
-
-    @property
-    def volumes(self):
-        return self.citems_to_list(self.volume_citems)
+        ret = []
+        for ext_name in self.citems:
+            if ext_name != self.default_ext_name:
+                ext_info = dict(ext_name=ext_name, chapters=self.citems_to_list(self.citems[ext_name]))
+                ret.append(ext_info)
+        return ret
 
 
 class Citem():
@@ -172,6 +168,7 @@ class CrawlerBase():
     SUPPORT_DRIVER_TYPE = frozenset(["Firefox", "Chrome", "Opera", "Ie", "Edge"])
     DRIVER_INSTANCE = None
     HEADLESS = False
+    DEFAULT_EXT_NAME = ""
 
     REQUIRE_JAVASCRIPT = False
     TAGS = None
@@ -239,7 +236,8 @@ class CrawlerBase():
         raise NotImplementedError
 
     def new_comicbook_item(self, **kwargs):
-        return ComicBookItem(site=self.SITE, source_name=self.SOURCE_NAME, **kwargs)
+        return ComicBookItem(site=self.SITE, source_name=self.SOURCE_NAME,
+                             default_ext_name=self.DEFAULT_EXT_NAME, **kwargs)
 
     def new_chapter_item(self, **kwargs):
         return ChapterItem(site=self.SITE, source_name=self.SOURCE_NAME, **kwargs)

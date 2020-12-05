@@ -44,7 +44,7 @@ def add_task():
     comicid = request.args.get('comicid')
     params = request.args.get('params')
     params = json.loads(params) if params else {}
-    keys = ['chapters', 'is_download_all', 'is_gen_pdf', 'is_gen_zip',
+    keys = ['ext_name', 'chapters', 'is_download_all', 'is_gen_pdf', 'is_gen_zip',
             'is_single_image', 'quality', 'receivers', 'is_send_mail']
     clean_params = {}
     for k in keys:

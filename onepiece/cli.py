@@ -52,6 +52,7 @@ def parse_args():
 
     parser.add_argument('-id', '--comicid', type=str,
                         help="漫画id，如海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
+    parser.add_argument('--ext-name', type=str, help="如：番外篇、单行本等。具体得看站点支持哪些")
 
     parser.add_argument('--name', type=str, help="漫画名")
 
@@ -131,29 +132,18 @@ def init_logger(level=None):
     return logger
 
 
-def download_main(comicbook, output_dir, chapters=None,
+def download_main(comicbook, output_dir, ext_name=None, chapters=None,
                   is_download_all=None, is_gen_pdf=None, is_gen_zip=None,
                   is_single_image=None, quality=None, mail=None, receivers=None, is_send_mail=None):
     quality = quality or 95
     is_gen_pdf = is_gen_pdf or mail
     chapter_str = chapters or '-1'
-
-    logger.info("正在获取最新数据")
-    comicbook.start_crawler()
-    msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
-           "【{last_chapter_title}】 数据来源: {source_url}").format(
-        source_name=comicbook.source_name,
-        name=comicbook.name,
-        last_chapter_number=comicbook.last_chapter_number,
-        last_chapter_title=comicbook.last_chapter_title,
-        source_url=comicbook.source_url)
-    logger.info(msg)
     chapter_number_list = parser_chapter_str(chapter_str=chapter_str,
-                                             last_chapter_number=comicbook.last_chapter_number,
+                                             last_chapter_number=comicbook.get_last_chapter_number(ext_name),
                                              is_all=is_download_all)
     for chapter_number in chapter_number_list:
         try:
-            chapter = comicbook.Chapter(chapter_number)
+            chapter = comicbook.Chapter(chapter_number, ext_name=ext_name)
             logger.info("正在下载 【{}】 {} 【{}】".format(
                 comicbook.name, chapter.chapter_number, chapter.title))
 
@@ -228,6 +218,18 @@ def main():
     else:
         is_send_mail = False
         mail = None
+    logger.info("正在获取最新数据")
+    ext_name = args.ext_name
+    comicbook.start_crawler()
+    name = "{} {}".format(comicbook.name, ext_name) if ext_name else comicbook.name
+    msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
+           "【{last_chapter_title}】 数据来源: {source_url}").format(
+        source_name=comicbook.source_name,
+        name=name,
+        last_chapter_number=comicbook.get_last_chapter_number(ext_name),
+        last_chapter_title=comicbook.get_last_chapter_title(ext_name),
+        source_url=comicbook.source_url)
+    logger.info(msg)
     download_main(
         comicbook=comicbook,
         output_dir=args.output,
@@ -238,6 +240,7 @@ def main():
         is_single_image=args.single_image,
         quality=args.quality,
         mail=mail,
+        ext_name=args.ext_name,
         is_send_mail=is_send_mail,
         receivers=args.receivers)
 

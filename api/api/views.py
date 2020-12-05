@@ -26,7 +26,8 @@ def get_comicbook_info(site, comicid):
 
 @app.route("/<site>/comic/<comicid>/<int:chapter_number>")
 def get_chapter_info(site, comicid, chapter_number):
-    result = crawler.get_chapter_info(site=site, comicid=comicid, chapter_number=chapter_number)
+    ext_name = request.args.get('ext_name') or ''
+    result = crawler.get_chapter_info(site=site, comicid=comicid, chapter_number=chapter_number, ext_name=ext_name)
     return jsonify(result)
 
 
