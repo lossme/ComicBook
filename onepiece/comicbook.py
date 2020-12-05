@@ -72,12 +72,12 @@ class ComicBook():
                 }
 
     def get_last_chapter_number(self, ext_name=None):
-        ext_name = ext_name or ""
+        ext_name = ext_name or self.crawler.DEFAULT_EXT_NAME
         return self.chapter_desc.get(ext_name, {}).get('last_chapter_number', 0)
 
     def get_last_chapter_title(self, ext_name=None):
-        ext_name = ext_name or ""
-        return self.chapter_desc.get('ext_name', {}).get('last_chapter_title', '')
+        ext_name = ext_name or self.crawler.DEFAULT_EXT_NAME
+        return self.chapter_desc.get(ext_name, {}).get('last_chapter_title', '')
 
     def search(self, name=None, page=1, limit=None):
         return self.crawler.search(name, page=page, size=limit)
