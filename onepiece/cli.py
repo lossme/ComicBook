@@ -108,7 +108,7 @@ def parse_args():
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
     parser.add_argument('--cookies-path', type=str, help="读取或保存上次使用的cookies路径")
 
-    parser.add_argument('--proxy', type=str, default=DEFAULT_PROXY,
+    parser.add_argument('--proxy', type=str,
                         help='设置代理，如 --proxy "socks5://user:pass@host:port"')
 
     parser.add_argument('-V', '--version', action='version', version=VERSION)
@@ -183,11 +183,13 @@ def main():
     init_logger(level=loglevel)
 
     comicbook = ComicBook(site=args.site, comicid=args.comicid)
-    if args.proxy:
-        logger.info('proxy=%s', args.proxy)
-        SessionMgr.set_proxy(site=site, proxy=args.proxy)
+    # 设置代理
+    proxy = args.proxy or os.environ.get('ONEPIECE_PROXY_{}'.format(site.upper())) or DEFAULT_PROXY
+    if proxy:
+        logger.info('set proxy. %s', proxy)
+        SessionMgr.set_proxy(site=site, proxy=proxy)
     if args.verify:
-        SessionMgr.set_proxy(site=site, verify=True)
+        SessionMgr.set_verify(site=site, verify=True)
 
     WorkerPoolMgr.set_worker(worker=args.worker)
     CrawlerBase.DRIVER_PATH = args.driver_path

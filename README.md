@@ -102,18 +102,22 @@ python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
 ```sh
 # 可以将以下命令添加到 ~/.bashrc 或 ~/.zshrc 文件末尾
 # 配置默认下载目录
-export ONEPIECE_DOWNLOAD_DIR="~/Downloads/MyComicBook"
+export ONEPIECE_DOWNLOAD_DIR="/home/key/Downloads/MyComicBook"
 
 # 配置默认的邮件配置文件路径
-export ONEPIECE_MAIL_CONFIG_FILE="~/MyConfig/config.ini"
+export ONEPIECE_MAIL_CONFIG_FILE="/home/key/MyConfig/config.ini"
 
 # 配置默认的 webdriver
 export ONEPIECE_DRIVER_TYPE="Chrome"
-export ONEPIECE_DRIVER_PATH="~/data/chromedriver_win32/chromedriver.exe"
+export ONEPIECE_DRIVER_PATH="/home/key/data/chromedriver_win32/chromedriver.exe"
 
 # 配置默认的cookies存放目录
-export ONEPIECE_COOKIES_DIR="~/data/cookies"
+export ONEPIECE_COOKIES_DIR="/home/key/data/cookies"
 
-# 配置默认的代理地址
+# 配置默认的全局代理地址
 export ONEPIECE_PROXY="socks5://127.0.0.1:1082"
+# 配置腾讯漫画下载代理地址
+export ONEPIECE_PROXY_QQ="socks5://127.0.0.1:1082"
+# 配置其它站点下载代理地址
+export ONEPIECE_PROXY_XXXX="socks5://127.0.0.1:1082"
 ```
