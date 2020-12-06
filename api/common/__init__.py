@@ -64,7 +64,7 @@ def run_in_background(func, **kwargs):
 
 def handle_404(error):
     if isinstance(error, NotFoundError):
-        return jsonify(dict(message='NotFoundErro. {}'.format(error))), 404
+        return jsonify(dict(message='NotFoundError. {}'.format(error))), 404
     elif isinstance(error, SiteNotSupport):
         return jsonify(dict(message='SiteNotSupport. {}'.format(error))), 400
     else:

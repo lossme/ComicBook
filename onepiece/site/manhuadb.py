@@ -37,12 +37,18 @@ class ManhuadbCrawler(CrawlerBase):
         name = soup.h1.text.strip()
         author = soup.find('ul', {'class': 'creators'}).a.text
         desc = soup.find('p', {'class': 'comic_story'}).text.strip()
-        cover_image_url = soup.find('div', {'class': 'cover'}).img.get('src')
+        try:
+            cover_image_url = soup.find('div', {'class': 'cover'}).img.get('src')
+        except Exception:
+            cover_image_url = ''
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
+        for li in soup.find('ul', {'class': 'tags'}).find_all('li'):
+            tag_name = li.text.strip()
+            book.add_tag(name=tag_name, tag=tag_name)
         tablist = soup.find('ul', {'id': 'myTab'}).find_all('li', {'class': 'nav-item'})
         ext_names = [li.a.span.text for li in tablist]
         ol_list = soup.find_all('ol', {'class': 'links-of-books num_div'})
@@ -55,6 +61,7 @@ class ManhuadbCrawler(CrawlerBase):
                                  source_url=url,
                                  title=title,
                                  ext_name=ext_name)
+
         return book
 
     def get_chapter_item(self, citem):
@@ -65,8 +72,7 @@ class ManhuadbCrawler(CrawlerBase):
         image_urls = []
         prefix = 'https://i1.manhuadb.com/ccbaike'
         for item in data:
-            uri = item['img_webp']
-            # uri = item['img']
+            uri = item.get('img_webp') or item.get('img')
             image_url = '%s/%s/%s' % (prefix, url_part, uri)
             image_urls.append(image_url)
         return self.new_chapter_item(chapter_number=citem.chapter_number,
@@ -101,13 +107,16 @@ class ManhuadbCrawler(CrawlerBase):
         for h5 in soup.find_all('h5', {'class': 'mb-2'}):
             category = h5.span.text
             for a in h5.parent.find_all('a'):
-                name = a.get('title')
+                name = a.text
                 href = a.get('href')
                 tag_id = re.search(r'/manhua/list-(.*?)\.html', href).group(1)
                 tags.add_tag(category=category, name=name, tag=tag_id)
         return tags
 
     def get_tag_result(self, tag, page=1):
+        tag_id = self.get_tag_id_by_name(tag)
+        if tag_id:
+            tag = tag_id
         tag = tag.replace(',', '-')
         if page == 1:
             url = "https://www.manhuadb.com/manhua/list-%s.html" % (tag)

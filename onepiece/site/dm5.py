@@ -1,6 +1,9 @@
 import re
 import logging
+import json
 from urllib.parse import urljoin
+
+import jsbeautifier
 
 from ..crawlerbase import CrawlerBase
 
@@ -41,6 +44,9 @@ class Mh1234Crawler(CrawlerBase):
         for span in div.find('p', {'class': 'tip'}).find_all('span'):
             if '状态：' in span.text:
                 status = span.text.replace('状态：', '')
+            if '题材：' in span.text:
+                tag_name = span.a.text
+
         cover_image_url = soup.find('div', {'class': 'cover'}).img.get('src')
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
@@ -48,22 +54,67 @@ class Mh1234Crawler(CrawlerBase):
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
-        li_list = soup.find('ul', {'id': 'detail-list-select-1'}).find_all('li')
+        book.add_tag(name=tag_name, tag=tag_name)
+        try:
+            li_list = soup.find('ul', {'id': 'detail-list-select-1'}).find_all('li')
+        except Exception:
+            li_list = []
         for chapter_number, li in enumerate(li_list, start=1):
             href = li.a.get('href')
+            cid = href.replace('/', '').replace('m', '')
             url = urljoin(self.SITE_INDEX, href)
             title = li.a.get('title')
+
             book.add_chapter(chapter_number=chapter_number,
                              source_url=url,
+                             cid=cid,
                              title=title)
+
         return book
 
     def get_chapter_item(self, citem):
-        soup = self.get_soup(citem.source_url)
+        html, soup = self.get_html_and_soup(citem.source_url)
         image_urls = []
         div = soup.find('div', {'id': 'barChapter'})
         if div:
             image_urls = [img.get('data-src') for img in div.find_all('img', recursive=False)]
+        else:
+            sign = re.search(r'var DM5_VIEWSIGN="(.*?)";', html).group(1)
+            dt = re.search(r'var DM5_VIEWSIGN_DT="(.*?)";', html).group(1)
+            mid = re.search(r'var COMIC_MID = (\d*);', html).group(1)
+            is_end_page = False
+            page = 1
+            api_url = "https://www.dm5.com/m%s/chapterfun.ashx" % citem.cid
+            added = set()
+            while not is_end_page:
+                params = {
+                    'cid': citem.cid,
+                    '_cid': citem.cid,
+                    'page': page,
+                    'key': '',
+                    'language': '1',
+                    'gtk': '6',
+                    '_mid': mid,
+                    '_dt': dt,
+                    '_sign': sign
+                }
+                html = self.get_html(api_url, params=params)
+                js_str = jsbeautifier.beautify(html)
+                key = re.search(r"var key = '(.*?)';", js_str).group(1)
+                pvalue = re.search(r'var pvalue = (\[.*?\]);', js_str).group(1)
+                pix = re.search(r'var pix = "(.*?)";', js_str).group(1)
+                data = json.loads(pvalue)
+                if len(data) >= 2:
+                    is_end_page = data[0] == data[1]
+                else:
+                    is_end_page = True
+                page += 1
+                for i in data:
+                    if i in added:
+                        continue
+                    added.add(i)
+                    image_url = '%s%s?cid=%s&key=%s' % (pix, i, citem.cid, key)
+                    image_urls.append(image_url)
         return self.new_chapter_item(chapter_number=citem.chapter_number,
                                      title=citem.title,
                                      image_urls=image_urls,
@@ -100,9 +151,14 @@ class Mh1234Crawler(CrawlerBase):
         return tags
 
     def get_tag_result(self, tag, page=1):
-        url = "https://www.dm5.com/manhua-list-tag%s-p%s/" % (tag, page)
-        soup = self.get_soup(url)
         result = self.new_search_result_item()
+        if not tag.isdigit():
+            tag = self.get_tag_id_by_name(tag)
+        if not tag:
+            url = "https://www.dm5.com/manhua-list-p%s/" % page
+        else:
+            url = "https://www.dm5.com/manhua-list-tag%s-p%s/" % (tag, page)
+        soup = self.get_soup(url)
         for li in soup.find('ul', {'class': 'mh-list col7'}).find_all('li'):
             href = li.h2.a.get('href')
             comicid = self.get_comicid_by_url(href)
