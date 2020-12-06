@@ -28,6 +28,7 @@ def find_all_crawler():
 
 class ComicBook():
     CRAWLER_CLS_MAP = {crawler.SITE: crawler for crawler in find_all_crawler()}
+    CHAPTER_NOT_CACHE_SITE = frozenset(['bilibili'])
 
     def __init__(self, site, comicid=None):
         if site not in self.CRAWLER_CLS_MAP:
@@ -116,7 +117,8 @@ class ComicBook():
                                                   chapter_number=chapter_number,
                                                   source_url=self.crawler.source_url)
             raise ChapterNotFound(msg)
-        if self.crawler.SITE == 'bilibili' or chapter_number not in self.chapter_cache[ext_name]:
+        if self.crawler.SITE in self.CHAPTER_NOT_CACHE_SITE \
+                or chapter_number not in self.chapter_cache[ext_name]:
             citem = citems[chapter_number]
             chapter_item = self.crawler.get_chapter_item(citem)
             self.chapter_cache[ext_name][chapter_number] = Chapter(

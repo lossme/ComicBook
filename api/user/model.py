@@ -6,8 +6,6 @@ from flask_login import (
 
 from .. import login_manager
 
-default_users = [dict(username='admin', password='')]
-
 
 class User(UserMixin):
 
@@ -31,7 +29,7 @@ class User(UserMixin):
 
     @classmethod
     def get_user_by_username(cls, username):
-        users = current_app.config.get('USERS') or default_users
+        users = current_app.config.get('USERS', [])
         for user_id, user in enumerate(users):
             if username == user['username']:
                 return cls(username=user['username'], password=user['password'], id=user_id)
@@ -43,10 +41,14 @@ class MyAnonymousUser(AnonymousUserMixin):
         self.username = 'anonymoususe'
         self.id = None
         self.password = ''
+        self.active = True
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    users = current_app.config.get('USERS') or default_users
-    user = users[user_id]
+    if not current_app.config.get('USERS'):
+        return MyAnonymousUser()
+
+    user_id = int(user_id)
+    user = current_app.config.get('USERS')[user_id]
     return User(username=user['username'], password=user['password'], id=user_id)

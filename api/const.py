@@ -1,5 +1,5 @@
 
-# crawler 缓存时间
+# crawler 缓存时间 10分钟
 CACHE_TIME = 600
 
 # 线程池大小
