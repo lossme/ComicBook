@@ -37,12 +37,22 @@ class ManhuadbCrawler(CrawlerBase):
         name = soup.h1.text.strip()
         author = soup.find('ul', {'class': 'creators'}).a.text
         desc = soup.find('p', {'class': 'comic_story'}).text.strip()
-        try:
-            cover_image_url = soup.find('div', {'class': 'cover'}).img.get('src')
-        except Exception:
-            cover_image_url = ''
+
+        cover_image_url = ''
+        cover_tag = soup.find('div', {'class': 'cover'})
+        if cover_tag and cover_tag.img:
+            cover_image_url = cover_tag.img.get('src')
+        if not cover_image_url:
+            cover_tag = soup.find('td', {'class': 'comic-cover'})
+            if cover_tag and cover_tag.img:
+                cover_image_url = cover_tag.img.get('src')
+
+        status_tag = soup.find('a', {'class': 'comic-pub-state'})
+        status = status_tag.text if status_tag else ''
+
         book = self.new_comicbook_item(name=name,
                                        desc=desc,
+                                       status=status,
                                        cover_image_url=cover_image_url,
                                        author=author,
                                        source_url=self.source_url)
