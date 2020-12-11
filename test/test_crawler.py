@@ -88,3 +88,19 @@ def test_dm5():
 
 def test_manhuadb():
     _test_crawl_comicbook(site='manhuadb')
+
+
+def test_36mh():
+    _test_crawl_comicbook(site='36mh', test_search=False)
+
+
+def test_gufengmh8():
+    _test_crawl_comicbook(site='gufengmh8', test_search=False)
+
+
+def test_mh160():
+    _test_crawl_comicbook(site='mh160')
+
+
+def test_tuhao456():
+    _test_crawl_comicbook(site='tuhao456')
