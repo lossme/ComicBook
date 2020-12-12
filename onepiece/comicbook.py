@@ -44,7 +44,6 @@ class ComicBook():
 
         self.crawler_time = None
         self.comicbook_item = None
-        self.tags = None
 
     def start_crawler(self):
         if self.crawler_time is None:
@@ -86,9 +85,7 @@ class ComicBook():
         return self.crawler.latest(page=page)
 
     def get_tags(self):
-        if self.tags is None:
-            self.tags = self.crawler.get_tags()
-        return self.tags
+        return self.crawler.get_tags_from_cache()
 
     def get_tag_result(self, tag, page=1):
         tag_id = self.crawler.get_tag_id_by_name(tag)

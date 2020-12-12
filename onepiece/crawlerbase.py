@@ -175,6 +175,8 @@ class CrawlerBase():
     R18 = False
     SITE_ENCODEING = None
 
+    _TAGS_INFO = None
+
     def __init__(self):
         self.timeout = 30
         self._tag_info = None
@@ -356,9 +358,9 @@ class CrawlerBase():
         self.close_driver()
 
     def get_tags_from_cache(self):
-        if self._tag_info is None:
-            self._tag_info = self.get_tags()
-        return self._tag_info
+        if self._TAGS_INFO is None:
+            self._TAGS_INFO = self.get_tags()
+        return self._TAGS_INFO
 
     def get_tag_id_by_name(self, name):
         for group in self.get_tags_from_cache():

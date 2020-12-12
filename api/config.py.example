@@ -26,6 +26,7 @@ class Config(object):
         'mh1234': DEFAULT_PROXY,
         '177pic': DEFAULT_PROXY,
         '18hmmcg': DEFAULT_PROXY,
+        'xiuren': DEFAULT_PROXY,
     }
 
     # 站点数据存放目录
