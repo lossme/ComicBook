@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 class C36mhCrawler(CrawlerBase):
 
-    SITE = "18h"
+    SITE = "18hmmcg"
     SITE_INDEX = 'http://18h.mm-cg.com/'
-    SOURCE_NAME = "18H漫画区"
+    SOURCE_NAME = "18h漫！"
     LOGIN_URL = SITE_INDEX
     R18 = True
 
