@@ -99,9 +99,6 @@ class ComicBook():
             self.start_crawler()
         return self.comicbook_item.to_dict()
 
-    def __repr__(self):
-        return "<ComicBook>: {}".format(self.to_dict())
-
     def Chapter(self, chapter_number, ext_name=None):
         ext_name = ext_name or self.crawler.DEFAULT_EXT_NAME
         if self.crawler_time is None:
@@ -145,9 +142,6 @@ class Chapter():
 
     def to_dict(self):
         return self.chapter_item.to_dict()
-
-    def __repr__(self):
-        return "<Chapter>: {}".format(self.to_dict())
 
     def get_comicbook_dir_name(self):
         if self.ext_name:

@@ -91,6 +91,8 @@ class Acg456Crawler(CrawlerBase):
         return soup
 
     def latest(self, page=1):
+        if page > 1:
+            return self.new_search_result_item()
         soup = self.get_index_soup()
         result = self.new_search_result_item()
         table = soup.find('div', {'id': 'TopList_1'}).find_all('table', recursive=False)[1]

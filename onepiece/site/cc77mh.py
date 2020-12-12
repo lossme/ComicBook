@@ -85,6 +85,8 @@ class Mh1234Crawler(CrawlerBase):
         return prefix, end
 
     def latest(self, page=1):
+        if page > 1:
+            return self.new_search_result_item()
         url = "https://www.77mh.cc/new_coc.html"
         soup = self.get_soup(url)
         result = self.new_search_result_item()

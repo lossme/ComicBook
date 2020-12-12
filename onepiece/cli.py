@@ -9,7 +9,7 @@ from .utils import (
     ensure_file_dir_exists
 )
 from .session import SessionMgr
-from .image import WorkerPoolMgr
+from .worker import WorkerPoolMgr
 from .utils.mail import Mail
 from . import VERSION
 

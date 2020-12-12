@@ -4,12 +4,10 @@ import cachetools.func
 from onepiece.comicbook import ComicBook
 from onepiece.exceptions import SiteNotSupport
 from onepiece.session import SessionMgr
+from onepiece.worker import concurrent_run
 
 from .. import const
-from . import (
-    concurrent_run,
-    get_cookies_path
-)
+from . import get_cookies_path
 
 logger = logging.getLogger(__name__)
 
@@ -28,31 +26,31 @@ def get_comicbook_info(site, comicid):
 
 
 def get_chapter_info(site, comicid, chapter_number, ext_name):
-    comicbook = get_comicbook_from_cache(site, comicid)
+    comicbook = get_comicbook_from_cache(site=site, comicid=comicid)
     chapter = comicbook.Chapter(chapter_number, ext_name=ext_name)
     return chapter.to_dict()
 
 
 def get_search_resuult(site, name, page):
-    comicbook = get_comicbook_from_cache(site=site, comicid=None)
+    comicbook = get_comicbook_from_cache(site=site)
     result = comicbook.search(name=name, page=page)
     return result.to_dict()
 
 
 def get_tags(site):
-    comicbook = get_comicbook_from_cache(site, comicid=None)
+    comicbook = get_comicbook_from_cache(site=site)
     tags = comicbook.get_tags()
     return tags.to_dict()
 
 
 def get_tag_result(site, tag, page):
-    comicbook = get_comicbook_from_cache(site, comicid=None)
+    comicbook = get_comicbook_from_cache(site=site)
     result = comicbook.get_tag_result(tag=tag, page=page)
     return result.to_dict()
 
 
 def get_latest(site, page):
-    comicbook = get_comicbook_from_cache(site, comicid=None)
+    comicbook = get_comicbook_from_cache(site=site)
     result = comicbook.latest(page=page)
     return result.to_dict()
 

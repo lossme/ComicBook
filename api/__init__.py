@@ -8,8 +8,10 @@ from onepiece.utils import ensure_file_dir_exists
 from onepiece.session import SessionMgr
 from onepiece.comicbook import ComicBook
 from onepiece.crawlerbase import CrawlerBase
+from onepiece.worker import WorkerPoolMgr
 
 from .const import ConfigKey
+from . import const
 from .common import get_cookies_path
 
 db = SQLAlchemy()
@@ -45,6 +47,7 @@ def create_app(cfg=ONEPIECE_FLASK_CONFIG):
     app.register_blueprint(user_app)
 
     init_session(app)
+    WorkerPoolMgr.set_worker(const.POOL_SIZE)
     init_db(app)
     if not app.config.get('USERS'):
         app.config['LOGIN_DISABLED'] = True

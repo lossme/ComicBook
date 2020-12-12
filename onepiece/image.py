@@ -4,12 +4,11 @@ import time
 import logging
 import PIL.Image
 from PIL import UnidentifiedImageError
-from concurrent.futures import ThreadPoolExecutor
 
 from .exceptions import ImageDownloadError
 from .session import SessionMgr
 from .utils import ensure_file_dir_exists
-
+from .worker import WorkerPoolMgr
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 PROJECT_HOME = os.path.abspath(os.path.join(HERE, os.path.pardir))
@@ -37,23 +36,6 @@ def walk(rootdir):
     for parent, dirnames, filenames in os.walk(rootdir):
         for filename in filenames:
             yield os.path.join(parent, filename)
-
-
-class WorkerPoolMgr(object):
-    WORKER_POOL = None
-    POOL_SIZE = 4
-
-    @classmethod
-    def get_pool(cls):
-        if cls.WORKER_POOL is None:
-            cls.WORKER_POOL = ThreadPoolExecutor(max_workers=cls.POOL_SIZE)
-        return cls.WORKER_POOL
-
-    @classmethod
-    def set_worker(cls, worker=4):
-        cls.POOL_SIZE = worker
-        if cls.WORKER_POOL:
-            cls.WORKER_POOL._max_workers = worker
 
 
 class ImageDownloader(object):

@@ -121,6 +121,8 @@ class Mh1234Crawler(CrawlerBase):
                                      source_url=citem.source_url)
 
     def latest(self, page=1):
+        if page > 1:
+            return self.new_search_result_item()
         url = 'https://www.dm5.com/manhua-new/'
         soup = self.get_soup(url)
         result = self.new_search_result_item()

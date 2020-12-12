@@ -86,7 +86,7 @@ class KuaiKanCrawler(CrawlerBase):
 
     def search(self, name, page=1, size=None):
         if page != 1:
-            return []
+            return self.new_search_result_item()
         url = urljoin(self.SITE_INDEX, "/s/result/{}/".format(name))
         html = self.get_html(url)
         data = self.parse_api_data_from_page(html)

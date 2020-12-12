@@ -91,8 +91,9 @@ class ManhuataiCrawler(CrawlerBase):
                                      source_url=citem.source_url)
 
     def latest(self, page=1):
+        if page > 1:
+            self.new_search_result_item()
         result = self.new_search_result_item()
-
         url = "https://www.manhuatai.com/gengxin/"
         soup = self.get_soup(url)
         div_list = soup.find_all('div', {'class': 'J_weekDataList'})

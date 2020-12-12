@@ -88,6 +88,8 @@ class C36mhCrawler(CrawlerBase):
                                      source_url=citem.source_url)
 
     def latest(self, page=1):
+        if page > 1:
+            self.new_search_result_item()
         url = urljoin(self.SITE_INDEX, '/kanmanhua/zaixian_recent.html')
         soup = self.get_soup(url)
 

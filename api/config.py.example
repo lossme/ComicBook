@@ -24,6 +24,8 @@ class Config(object):
         'wnacg': DEFAULT_PROXY,
         'acg456': DEFAULT_PROXY,
         'mh1234': DEFAULT_PROXY,
+        '177pic': DEFAULT_PROXY,
+        '18h': DEFAULT_PROXY,
     }
 
     # 站点数据存放目录

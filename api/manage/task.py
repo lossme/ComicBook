@@ -6,6 +6,7 @@ from flask import current_app
 
 from onepiece.utils.mail import Mail
 from onepiece.cli import download_main
+from onepiece.worker import run_in_background
 
 from .model import (
     CrawlerTask,
@@ -14,11 +15,7 @@ from .model import (
 from .. import db
 from .. import const
 from ..const import ConfigKey
-from ..common import (
-    run_in_background,
-    log_exception
-)
-
+from ..common import log_exception
 from ..common import crawler
 
 logger = logging.getLogger(__name__)

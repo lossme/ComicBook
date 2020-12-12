@@ -69,6 +69,8 @@ class Mh1234Crawler(CrawlerBase):
                                      source_url=citem.source_url)
 
     def latest(self, page=1):
+        if page > 1:
+            self.new_search_result_item()
         url = "https://www.mh1234.com/comic/one/page_recent.html"
         soup = self.get_soup(url)
         result = self.new_search_result_item()

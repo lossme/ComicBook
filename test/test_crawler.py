@@ -5,12 +5,11 @@ from onepiece.comicbook import ComicBook
 from onepiece.session import SessionMgr
 logger = logging.getLogger()
 
-DEFAULT_PROXY = os.environ.get('ONEPIECE_TEST_PROXY')
-
 
 def _test_crawl_comicbook(site, comicid=None,
-                          chapter_number=1, proxy=None, test_search=True):
+                          chapter_number=1, test_search=True):
     comicbook = ComicBook(site=site, comicid=comicid)
+    proxy = os.environ.get('ONEPIECE_PROXY_{}'.format(site.upper())) or os.environ.get('ONEPIECE_PROXY')
     if proxy:
         SessionMgr.set_proxy(site=site, proxy=proxy)
     comicbook.start_crawler()
@@ -47,19 +46,19 @@ def test_kuaikan():
 
 def test_manhuagui():
     # 鬼灭之刃 URL: https://www.manhuagui.com/comic/19430
-    _test_crawl_comicbook(site='manhuagui', proxy=DEFAULT_PROXY)
+    _test_crawl_comicbook(site='manhuagui')
 
 
 def test_18comic():
-    _test_crawl_comicbook(site='18comic', proxy=DEFAULT_PROXY)
+    _test_crawl_comicbook(site='18comic')
 
 
 def test_nhentai():
-    _test_crawl_comicbook(site='nhentai', proxy=DEFAULT_PROXY)
+    _test_crawl_comicbook(site='nhentai')
 
 
 def test_wnacg():
-    _test_crawl_comicbook(site='wnacg', proxy=DEFAULT_PROXY)
+    _test_crawl_comicbook(site='wnacg')
 
 
 def test_manhuatai():
@@ -67,15 +66,15 @@ def test_manhuatai():
 
 
 def test_acg456():
-    _test_crawl_comicbook(site='acg456', test_search=False, proxy=DEFAULT_PROXY)
+    _test_crawl_comicbook(site='acg456', test_search=False)
 
 
 def test_mh1234():
-    _test_crawl_comicbook(site='mh1234', proxy=DEFAULT_PROXY)
+    _test_crawl_comicbook(site='mh1234')
 
 
 def test_77mh():
-    _test_crawl_comicbook(site='77mh', proxy=DEFAULT_PROXY)
+    _test_crawl_comicbook(site='77mh')
 
 
 def test_dmzj():
@@ -104,3 +103,11 @@ def test_mh160():
 
 def test_tuhao456():
     _test_crawl_comicbook(site='tuhao456')
+
+
+def test_177pic():
+    _test_crawl_comicbook(site='177pic')
+
+
+def test_18h():
+    _test_crawl_comicbook(site='18h')
