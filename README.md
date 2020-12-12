@@ -38,7 +38,7 @@ git clone git@github.com:lossme/ComicBook.git
 # 切换工作目录
 cd ComicBook
 # 安装
-python3 setup.py install
+python3 setup.py clean --all install
 # 查看帮助
 python3 -m onepiece --help
 ```
