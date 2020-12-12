@@ -109,5 +109,5 @@ def test_177pic():
     _test_crawl_comicbook(site='177pic')
 
 
-def test_18h():
-    _test_crawl_comicbook(site='18h')
+def test_18hmmcg():
+    _test_crawl_comicbook(site='18hmmcg')
