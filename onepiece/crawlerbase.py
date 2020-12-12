@@ -173,6 +173,7 @@ class CrawlerBase():
     REQUIRE_JAVASCRIPT = False
     TAGS = None
     R18 = False
+    SITE_ENCODEING = None
 
     def __init__(self):
         self.timeout = 30
@@ -211,17 +212,20 @@ class CrawlerBase():
             msg = "URL error. url={}".format(url)
             raise URLException(msg) from e
 
-    def get_html(self, url, **kwargs):
+    def get_html(self, url, encoding=None, **kwargs):
         response = self.send_request("GET", url, **kwargs)
+        site_encoding = encoding or self.SITE_ENCODEING
+        if site_encoding:
+            return response.content.decode(site_encoding)
         return response.text
 
-    def get_html_and_soup(self, url, **kwargs):
-        html = self.get_html(url, **kwargs)
+    def get_html_and_soup(self, url, encoding=None, **kwargs):
+        html = self.get_html(url, encoding=encoding, **kwargs)
         soup = BeautifulSoup(html, 'html.parser')
         return html, soup
 
-    def get_soup(self, url, **kwargs):
-        html = self.get_html(url, **kwargs)
+    def get_soup(self, url, encoding=None, **kwargs):
+        html = self.get_html(url, encoding=encoding, **kwargs)
         return BeautifulSoup(html, 'html.parser')
 
     def get_json(self, url, **kwargs):

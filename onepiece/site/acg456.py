@@ -3,8 +3,6 @@ import logging
 import time
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
-
 from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
@@ -20,6 +18,7 @@ class Acg456Crawler(CrawlerBase):
     DEFAULT_COMICID = 'OnePiece'
     DEFAULT_SEARCH_NAME = '海贼王'
     DEFAULT_TAG = "1"
+    SITE_ENCODEING = 'utf-8'
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -33,9 +32,7 @@ class Acg456Crawler(CrawlerBase):
         return urljoin(self.SITE_INDEX, "/HTML/{}".format(comicid))
 
     def get_comicbook_item(self):
-        response = self.send_request('get', self.source_url)
-        html = response.content.decode('utf-8')
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = self.get_soup(self.source_url)
         name = soup.h1.b.text.strip()
         author = ''
         desc = ''
@@ -84,16 +81,10 @@ class Acg456Crawler(CrawlerBase):
                                      image_urls=image_urls,
                                      source_url=citem.source_url)
 
-    def get_index_soup(self):
-        response = self.send_request('get', self.SITE_INDEX)
-        html = response.content.decode('utf-8')
-        soup = BeautifulSoup(html, 'html.parser')
-        return soup
-
     def latest(self, page=1):
         if page > 1:
             return self.new_search_result_item()
-        soup = self.get_index_soup()
+        soup = self.get_soup(self.SITE_INDEX)
         result = self.new_search_result_item()
         table = soup.find('div', {'id': 'TopList_1'}).find_all('table', recursive=False)[1]
         for td in table.find_all('table'):
@@ -109,7 +100,7 @@ class Acg456Crawler(CrawlerBase):
         return result
 
     def get_tags(self):
-        soup = self.get_index_soup()
+        soup = self.get_soup(self.SITE_INDEX)
         tags = self.new_tags_item()
         category = '分类列表'
         for a in soup.find('tr', {'class': 'typelist'}).td.find_all('a'):

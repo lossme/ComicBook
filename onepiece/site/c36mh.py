@@ -3,7 +3,6 @@ import logging
 from urllib.parse import urljoin
 import json
 
-from bs4 import BeautifulSoup
 from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
@@ -19,6 +18,7 @@ class C36mhCrawler(CrawlerBase):
     DEFAULT_COMICID = 'quanzhifashi'
     DEFAULT_SEARCH_NAME = '全职法师'
     DEFAULT_TAG = "rexue"
+    SITE_ENCODEING = 'utf-8'
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -30,12 +30,6 @@ class C36mhCrawler(CrawlerBase):
 
     def get_source_url(self, comicid):
         return urljoin(self.SITE_INDEX, "/manhua/{}/".format(comicid))
-
-    def get_soup(self, url):
-        response = self.send_request('get', url)
-        html = response.content.decode('utf-8')
-        soup = BeautifulSoup(html, 'html.parser')
-        return soup
 
     def get_comicbook_item(self):
         soup = self.get_soup(self.source_url)

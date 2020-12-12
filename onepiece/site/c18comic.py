@@ -3,7 +3,6 @@ import logging
 from urllib.parse import urljoin
 
 from PIL import Image
-from bs4 import BeautifulSoup
 
 from ..crawlerbase import CrawlerBase
 
@@ -71,8 +70,7 @@ class C18comicCrawler(CrawlerBase):
         return book
 
     def get_chapter_item(self, citem):
-        html = self.get_html(citem.source_url)
-        soup = BeautifulSoup(html, 'html.parser')
+        html, soup = self.get_html_and_soup(citem.source_url)
         scramble_id = re.search(r'var scramble_id = (\d+);', html).group(1)
         aid = re.search(r'var aid = (\d+);', html).group(1)
         img_list = soup.find('div', 'row thumb-overlay-albums')\

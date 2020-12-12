@@ -4,7 +4,6 @@ from urllib.parse import urljoin
 import logging
 
 import execjs
-from bs4 import BeautifulSoup
 
 from ..crawlerbase import CrawlerBase
 
@@ -40,8 +39,7 @@ class ManhuaguiCrawler(CrawlerBase):
         return urljoin(self.SITE_INDEX, "/comic/{}".format(comicid))
 
     def get_comicbook_item(self):
-        html = self.get_html(self.source_url)
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = self.get_soup(self.source_url)
         name = soup.find('div', {'class': 'book-title'}).h1.text
         desc = soup.find('div', {'id': 'intro-all'}).p.text
 
@@ -280,8 +278,7 @@ class ManhuaguiCrawler(CrawlerBase):
 
     def search(self, name, page=1, size=None):
         url = urljoin(self.SITE_INDEX, '/s/{}_p{}.html'.format(name, page))
-        html = self.get_html(url)
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = self.get_soup(url)
         li_list = soup.find_all('li', {'class': 'cf'})
         result = self.new_search_result_item()
         for li_soup in li_list:

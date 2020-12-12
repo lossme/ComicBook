@@ -4,8 +4,6 @@ import json
 import logging
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
-
 from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
@@ -136,8 +134,7 @@ class QQCrawler(CrawlerBase):
     def get_tags(self):
         tags = self.new_tags_item()
         url = 'https://ac.qq.com/Comic/all/search/hot/page/1'
-        html = self.get_html(url)
-        soup = BeautifulSoup(html, 'html.parser')
+        html, soup = self.get_html_and_soup(url)
         for div in soup.find_all('div', {'class': 'ret-tags-type'}):
             category = div.h3.text
             if category == '标签':

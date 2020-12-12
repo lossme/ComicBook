@@ -2,8 +2,7 @@ import logging
 from flask import (
     Blueprint,
     jsonify,
-    request,
-    abort
+    request
 )
 
 from onepiece.exceptions import ComicbookException
@@ -36,7 +35,7 @@ def search(site):
     name = request.args.get('name')
     page = request.args.get('page', default=1, type=int)
     if not name:
-        abort(400)
+        return jsonify(dict(list=[]))
     result = crawler.get_search_resuult(site=site, name=name, page=page)
     return jsonify(dict(search_result=result))
 
@@ -67,6 +66,6 @@ def aggregate_search():
     site = request.args.get('site')
     name = request.args.get('name')
     if not name:
-        abort(400)
+        return jsonify(dict(list=[]))
     result = crawler.aggregate_search(site=site, name=name)
     return jsonify(dict(list=result))
