@@ -14,8 +14,8 @@ class WnacgCrawler(CrawlerBase):
     SOURCE_NAME = "绅士漫画"
     LOGIN_URL = SITE_INDEX
 
-    DEFAULT_COMICID = 106789
-    DEFAULT_SEARCH_NAME = '过期米线线喵'
+    DEFAULT_COMICID = 110785
+    DEFAULT_SEARCH_NAME = '漢化'
     DEFAULT_TAG = "3"
     R18 = True
 
@@ -55,8 +55,7 @@ class WnacgCrawler(CrawlerBase):
         html = self.get_html(api_url)
         img_list = re.findall(r'url: fast_img_host\+\\"(.*?)\\".*?}', html)
         image_urls = []
-        for i in img_list:
-            url = i['url']
+        for url in img_list:
             if url.startswith('//'):
                 image_urls.append('http:' + url)
             elif url.startswith('/'):
