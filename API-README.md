@@ -1,10 +1,10 @@
 ## 接口部署
 
 ```sh
-# 下载源码 clone项目 或从这里下载最新的代码并解压 https://github.com/lossme/TencentComicBook/releases
-git clone git@github.com:lossme/TencentComicBook.git
+# 下载源码 clone项目 或从这里下载最新的代码并解压 https://github.com/lossme/ComicBook/releases
+git clone git@github.com:lossme/ComicBook.git
 # 切换工作目录
-cd TencentComicBook
+cd ComicBook
 
 # 安装依赖
 python3 -m pip install -r requirements-api.txt

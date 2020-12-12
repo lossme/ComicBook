@@ -1,8 +1,8 @@
-# TencentComicBook
+# ComicBook
 
-漫画爬虫，支持腾讯漫画、哔哩哔哩漫画、有妖气漫画、快看漫画、漫画柜等主流站点
+漫画爬虫、漫画下载工具，支持腾讯漫画、哔哩哔哩漫画、有妖气漫画、快看漫画、漫画柜等站点
 
-[漫画源收录情况](https://github.com/lossme/TencentComicBook/projects/1)
+[漫画源收录情况](https://github.com/lossme/ComicBook/projects/1)
 
 尊重版权，请支持正版，通过本工具下载或生成的资源**禁止传播分享！禁止利用本项目进行商业活动！**
 
@@ -24,7 +24,7 @@
 ```sh
 # 在线安装/升级
 # 由于网络环境不好导致安装失败 可以搜索关键词尝试解决: github host 修改
-python3 -m pip install -U git+https://github.com/lossme/TencentComicBook
+python3 -m pip install -U git+https://github.com/lossme/ComicBook
 
 # 查看帮助
 python3 -m onepiece --help
@@ -33,10 +33,10 @@ python3 -m onepiece --help
 ### 方式二（源码安装）
 
 ```sh
-# clone项目 或从这里下载最新的代码并解压 https://github.com/lossme/TencentComicBook/releases
-git clone git@github.com:lossme/TencentComicBook.git
+# clone项目 或从这里下载最新的代码并解压 https://github.com/lossme/ComicBook/releases
+git clone git@github.com:lossme/ComicBook.git
 # 切换工作目录
-cd TencentComicBook
+cd ComicBook
 # 安装
 python3 setup.py install
 # 查看帮助
@@ -63,7 +63,7 @@ Star防止走丢，欢迎大家提建议和issue，本项目持续更新。
 - 推送到邮箱:
 ```sh
 # 注意: 发送到邮箱需预先配置好信息
-# 配样例参照 https://github.com/lossme/TencentComicBook/blob/master/config.ini.example
+# 配样例参照 https://github.com/lossme/ComicBook/blob/master/config.ini.example
 # 并根据实际情况调整，将配置文件保存为 config.ini
 python3 -m onepiece --site=qq --comicid=505430 --pdf --mail --config config.ini
 ```

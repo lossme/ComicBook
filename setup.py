@@ -9,7 +9,7 @@ from onepiece import VERSION
 # Package meta-data.
 NAME = 'onepiece'
 DESCRIPTION = 'ComicBook Crawler'
-URL = 'https://github.com/lossme/TencentComicBook'
+URL = 'https://github.com/lossme/ComicBook'
 EMAIL = '1612730560@qq.com'
 AUTHOR = 'key'
 REQUIRES_PYTHON = '>=3.6'
