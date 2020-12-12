@@ -130,18 +130,13 @@ class C36mhCrawler(CrawlerBase):
 
     def get_tag_result(self, tag, page):
         if not tag:
-            return self.latest(page=page)
-        if page > 1:
-            url = urljoin(self.SITE_INDEX, "/gallery/%s/" % tag)
+            url = urljoin(self.SITE_INDEX, "/gallery/")
         else:
-            url = urljoin(self.SITE_INDEX, "/gallery/%s/%s.html" % (tag, page))
+            url = urljoin(self.SITE_INDEX, "/gallery/%s/" % tag)
+        if page > 1:
+            url += "%s.html" % page
         soup = self.get_soup(url)
         return self.parse_book_list(soup)
 
     def latest(self, page=1):
-        if page > 1:
-            url = urljoin(self.SITE_INDEX, "/gallery/%s/" % page)
-        else:
-            url = urljoin(self.SITE_INDEX, "/gallery/")
-        soup = self.get_soup(url)
-        return self.parse_book_list(soup)
+        return self.get_tag_result(tag=None, page=page)

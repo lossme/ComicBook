@@ -107,7 +107,7 @@ python3 -m onepiece --site=nvshens --latest-all --latest-page=1-10
 python3 -m onepiece --site=nvshens --show-tags
 
 # 下载标签搜索结果页面的1到10页 所有漫画的全集
-python3 -m onepiece --site=nvshens --tag-all --tag= --tag=nvshen --tag-page=1-10 --all
+python3 -m onepiece --site=nvshens --tag-all --tag=女神 --tag-page=1-10 --all
 ```
 
 ### 高级配置
