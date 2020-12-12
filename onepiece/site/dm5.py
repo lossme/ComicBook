@@ -10,7 +10,7 @@ from ..crawlerbase import CrawlerBase
 logger = logging.getLogger(__name__)
 
 
-class Mh1234Crawler(CrawlerBase):
+class DM5Crawler(CrawlerBase):
 
     SITE = "dm5"
     SITE_INDEX = 'https://www.dm5.com/'

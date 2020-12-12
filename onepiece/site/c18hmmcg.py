@@ -1,7 +1,6 @@
 import re
 import logging
 from urllib.parse import urljoin
-import json
 
 from bs4 import BeautifulSoup
 from ..crawlerbase import CrawlerBase
@@ -9,7 +8,7 @@ from ..crawlerbase import CrawlerBase
 logger = logging.getLogger(__name__)
 
 
-class C36mhCrawler(CrawlerBase):
+class C18hmmcgCrawler(CrawlerBase):
 
     SITE = "18hmmcg"
     SITE_INDEX = 'http://18h.mm-cg.com/'
@@ -55,7 +54,7 @@ class C36mhCrawler(CrawlerBase):
             r"""<script>document.write\("<br>"\);document.getElementById\('main'\).innerHTML = '(.*?)';</script>""",
             html, re.S)
         if r:
-            soup = BeautifulSoup(r.group(1))
+            soup = BeautifulSoup(r.group(1), 'html.parser')
         else:
             soup = BeautifulSoup(html, 'html.parser')
 

@@ -8,7 +8,7 @@ from ..worker import concurrent_run
 logger = logging.getLogger(__name__)
 
 
-class C36mhCrawler(CrawlerBase):
+class NvshensCrawler(CrawlerBase):
 
     SITE = "nvshens"
     SITE_INDEX = 'https://www.nvshens.org/'

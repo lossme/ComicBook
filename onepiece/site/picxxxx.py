@@ -1,14 +1,13 @@
 import re
 import logging
 from urllib.parse import urljoin
-import json
 
 from ..crawlerbase import CrawlerBase
 
 logger = logging.getLogger(__name__)
 
 
-class C36mhCrawler(CrawlerBase):
+class PicxxxxCrawler(CrawlerBase):
 
     SITE = "picxxxx"
     SITE_INDEX = 'http://picxxxx.top/'
