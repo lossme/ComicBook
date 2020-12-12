@@ -96,6 +96,20 @@ python3 -m onepiece --site=qq --comicid=505430 --chapter=-1 \
   --cookies-path="data/cookies/qq.json"
 ```
 
+### 高级批量下载
+
+```sh
+# 有些站点不一定支持，其它的通用参数也适用，可自行组合
+# 下载最近更新页面的1到10页 所有漫画的最新一集
+python3 -m onepiece --site=nvshens --latest-all --latest-page=1-10
+
+# 展示支持的标签
+python3 -m onepiece --site=nvshens --show-tags
+
+# 下载标签搜索结果页面的1到10页 所有漫画的全集
+python3 -m onepiece --site=nvshens --tag-all --tag= --tag=nvshen --tag-page=1-10 --all
+```
+
 ### 高级配置
 
 #### 通过环境变量配置默认参数

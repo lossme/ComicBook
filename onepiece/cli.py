@@ -108,6 +108,14 @@ def parse_args():
     parser.add_argument('--session-path', type=str, help="读取或保存上次使用的session路径")
     parser.add_argument('--cookies-path', type=str, help="读取或保存上次使用的cookies路径")
 
+    parser.add_argument('--latest-all', action='store_true', help="下载最近更新里的所有漫画")
+    parser.add_argument('--latest-page', type=str, help="最近更新的页数，如1-10，默认第1页")
+
+    parser.add_argument('--show-tags', action='store_true', help="展示当前支持的标签")
+    parser.add_argument('--tag-all', action='store_true', help="下载标签里的所有漫画")
+    parser.add_argument('--tag', type=str, help="标签id")
+    parser.add_argument('--tag-page', type=str, help="标签页数，如1-10，默认第1页")
+
     parser.add_argument('--proxy', type=str,
                         help='设置代理，如 --proxy "socks5://user:pass@host:port"')
 
@@ -166,12 +174,60 @@ def download_main(comicbook, output_dir, ext_name=None, chapters=None,
                 logger.info("生成zip文件 %s", zip_file_path)
         except Exception:
             logger.exception('download comicbook error. site=%s comicid=%s chapter_number=%s',
-                             comicbook.site, comicbook.comicid, chapter_number)
+                             comicbook.crawler.SITE, comicbook.crawler.comicid, chapter_number)
+
+
+def download_latest_all(page_str, **kwargs):
+    comicbook = kwargs.pop('comicbook')
+    page_str = page_str or '1'
+    for page in parser_chapter_str(page_str):
+        for citem in comicbook.latest(page=page):
+            next_comicbook = ComicBook(site=comicbook.crawler.SITE, comicid=citem.comicid)
+            next_comicbook.start_crawler()
+            echo_comicbook_desc(comicbook=next_comicbook, ext_name=kwargs.get('ext_name'))
+            download_main(comicbook=next_comicbook, **kwargs)
+
+
+def download_tag_all(tag, page_str, **kwargs):
+    comicbook = kwargs.pop('comicbook')
+    page_str = page_str or '1'
+    for page in parser_chapter_str(page_str):
+        for citem in comicbook.get_tag_result(tag=tag, page=page):
+            next_comicbook = ComicBook(site=comicbook.crawler.SITE, comicid=citem.comicid)
+            next_comicbook.start_crawler()
+            echo_comicbook_desc(comicbook=next_comicbook, ext_name=kwargs.get('ext_name'))
+            download_main(comicbook=next_comicbook, **kwargs)
+
+
+def show_tags(comicbook):
+    msg_list = []
+    for t1 in comicbook.get_tags():
+        category = t1['category']
+        t1_msg_list = []
+        for t2 in t1['tags']:
+            msg = '{name}={tag}'.format(name=t2['name'], tag=t2['tag'])
+            t1_msg_list.append(msg)
+        msg = '{}:\n{}'.format(category, '\t'.join(t1_msg_list))
+        msg_list.append(msg)
+    logger.info('支持的标签\n%s', '\n'.join(msg_list))
+
+
+def echo_comicbook_desc(comicbook, ext_name=None):
+    name = "{} {}".format(comicbook.name, ext_name) if ext_name else comicbook.name
+    msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
+           "【{last_chapter_title}】 数据来源: {source_url}").format(
+        source_name=comicbook.source_name,
+        name=name,
+        last_chapter_number=comicbook.get_last_chapter_number(ext_name),
+        last_chapter_title=comicbook.get_last_chapter_title(ext_name),
+        source_url=comicbook.source_url)
+    logger.info(msg)
 
 
 def main():
     args = parse_args()
     site = args.site
+    comicid = args.comicid
     session_path = args.session_path
     if not session_path and DEFAULT_SESSION_DIR:
         session_path = os.path.join(DEFAULT_SESSION_DIR, f'{site}.pickle')
@@ -181,8 +237,7 @@ def main():
 
     loglevel = logging.DEBUG if args.debug else logging.INFO
     init_logger(level=loglevel)
-
-    comicbook = ComicBook(site=args.site, comicid=args.comicid)
+    comicbook = ComicBook(site=args.site, comicid=comicid)
     # 设置代理
     proxy = args.proxy or os.environ.get('ONEPIECE_PROXY_{}'.format(site.upper())) or DEFAULT_PROXY
     if proxy:
@@ -205,14 +260,19 @@ def main():
         SessionMgr.load_cookies(site=site, path=cookies_path)
         logger.info('load cookies success. %s', cookies_path)
 
+    if args.login:
+        comicbook.crawler.login()
+
+    if args.show_tags:
+        show_tags(comicbook=comicbook)
+        exit(0)
+
     if args.name:
         result = comicbook.search(name=args.name, limit=10)
         for item in result:
             print("comicid={}\tname={}\tsource_url={}".format(item.comicid, item.name, item.source_url))
         comicid = input("请输入要下载的comicid: ")
         comicbook.crawler.comicid = comicid
-    if args.login:
-        comicbook.crawler.login()
 
     if args.mail:
         is_send_mail = True
@@ -220,19 +280,8 @@ def main():
     else:
         is_send_mail = False
         mail = None
-    logger.info("正在获取最新数据")
-    ext_name = args.ext_name
-    comicbook.start_crawler()
-    name = "{} {}".format(comicbook.name, ext_name) if ext_name else comicbook.name
-    msg = ("{source_name} 【{name}】 更新至: {last_chapter_number:>03} "
-           "【{last_chapter_title}】 数据来源: {source_url}").format(
-        source_name=comicbook.source_name,
-        name=name,
-        last_chapter_number=comicbook.get_last_chapter_number(ext_name),
-        last_chapter_title=comicbook.get_last_chapter_title(ext_name),
-        source_url=comicbook.source_url)
-    logger.info(msg)
-    download_main(
+
+    download_main_kwargs = dict(
         comicbook=comicbook,
         output_dir=args.output,
         chapters=args.chapter,
@@ -245,6 +294,18 @@ def main():
         ext_name=args.ext_name,
         is_send_mail=is_send_mail,
         receivers=args.receivers)
+    if comicid:
+        logger.info("正在获取最新数据")
+        comicbook.start_crawler()
+        echo_comicbook_desc(comicbook=comicbook, ext_name=args.ext_name)
+
+        download_main(**download_main_kwargs)
+
+    if args.latest_all:
+        download_latest_all(page_str=args.latest_page, **download_main_kwargs)
+
+    if args.tag_all:
+        download_tag_all(tag=args.tag, page_str=args.tag_page, **download_main_kwargs)
 
     # 保存 session
     if session_path:

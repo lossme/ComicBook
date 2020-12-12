@@ -34,9 +34,8 @@ class ComicBook():
         if site not in self.CRAWLER_CLS_MAP:
             raise SiteNotSupport(f"SiteNotSupport site={site}")
         crawler_cls = self.CRAWLER_CLS_MAP[site]
-        self.comicid = comicid or crawler_cls.DEFAULT_COMICID
-        self.crawler = crawler_cls(self.comicid)
-
+        comicid or crawler_cls.DEFAULT_COMICID
+        self.crawler = crawler_cls(comicid)
         self.image_downloader = ImageDownloader(site=site)
 
         # {ext_name: {chapter_number: Chapter}}
@@ -92,6 +91,9 @@ class ComicBook():
         return self.tags
 
     def get_tag_result(self, tag, page=1):
+        tag_id = self.crawler.get_tag_id_by_name(tag)
+        if tag_id:
+            return self.crawler.get_tag_result(tag=tag_id, page=page)
         return self.crawler.get_tag_result(tag=tag, page=page)
 
     def to_dict(self):

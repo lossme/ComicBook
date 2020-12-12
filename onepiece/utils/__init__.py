@@ -25,7 +25,7 @@ def get_current_time_str():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 
-def parser_chapter_str(chapter_str, last_chapter_number, is_all=None):
+def parser_chapter_str(chapter_str, last_chapter_number=None, is_all=None):
     """将字符串描述的区间转化为一个一个数字
     :param str chapter: 类似 1-10,20-30,66 这样的字符串
     :return list number_list: [1, 2, 3, 4, ...]
