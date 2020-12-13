@@ -12,14 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 class ComicBookItem():
-    FIELDS = ["name", "desc", "tag", "cover_image_url", "author",
+    FIELDS = ["comicid", "name", "desc", "tag", "cover_image_url", "author",
               "source_url", "source_name", "crawl_time", "chapters", "ext_chapters",
               "status", 'tags', "site", "last_update_time"]
 
-    def __init__(self, name=None, desc=None, cover_image_url=None,
+    def __init__(self, comicid=None, name=None, desc=None, cover_image_url=None,
                  author=None, source_url=None, source_name=None,
                  crawl_time=None, status=None, site=None, last_update_time=None,
                  default_ext_name=None, **kwargs):
+        self.comicid = comicid or ""
         self.name = name or ""
         self.desc = desc or ""
         self.cover_image_url = cover_image_url or ""
@@ -92,9 +93,9 @@ class Citem():
 
 
 class ChapterItem():
-    FIELDS = ["chapter_number", "title", "image_urls", "source_url", "site", "source_name"]
+    FIELDS = ["comicid", "chapter_number", "title", "image_urls", "source_url", "site", "source_name"]
 
-    def __init__(self, chapter_number, title, image_urls,
+    def __init__(self, comicid, chapter_number, title, image_urls,
                  source_url=None, site=None, source_name=None,
                  image_pipelines=None):
         self.chapter_number = chapter_number
@@ -104,6 +105,7 @@ class ChapterItem():
         self.site = site or ""
         self.source_name = source_name or ""
         self.image_pipelines = image_pipelines
+        self.comicid = comicid or ""
 
     def to_dict(self):
         return {field: getattr(self, field) for field in self.FIELDS}
@@ -137,9 +139,12 @@ class TagsItem():
         self.tags = []
 
     def add_tag(self, category, name, tag):
-        for item in self.tags:
-            if item['category'] == category:
-                item['tags'].append(dict(name=name, tag=tag))
+        for t1 in self.tags:
+            if t1['category'] == category:
+                for t2 in t1['tags']:
+                    if tag == t2['tag']:
+                        return
+                t1['tags'].append(dict(name=name, tag=tag))
                 return
         self.tags.append(dict(category=category, tags=[]))
         self.tags[-1]['tags'].append(dict(name=name, tag=tag))
@@ -247,11 +252,13 @@ class CrawlerBase():
         raise NotImplementedError
 
     def new_comicbook_item(self, **kwargs):
-        return ComicBookItem(site=self.SITE, source_name=self.SOURCE_NAME,
+        comicid = getattr(self, 'comicid')
+        return ComicBookItem(site=self.SITE, comicid=comicid, source_name=self.SOURCE_NAME,
                              default_ext_name=self.DEFAULT_EXT_NAME, **kwargs)
 
     def new_chapter_item(self, **kwargs):
-        return ChapterItem(site=self.SITE, source_name=self.SOURCE_NAME, **kwargs)
+        comicid = getattr(self, 'comicid')
+        return ChapterItem(site=self.SITE, comicid=comicid, source_name=self.SOURCE_NAME, **kwargs)
 
     def new_search_result_item(self, **kwargs):
         return SearchResultItem(site=self.SITE, source_name=self.SOURCE_NAME, **kwargs)

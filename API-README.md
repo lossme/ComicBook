@@ -75,6 +75,7 @@ curl "http://127.0.0.1:8000/api/bilibili/comic/24742"
             "chapters": []
         }
     ],
+    "comicid": "24742",
     "tags": [
         {
             "name":"奇幻",
@@ -119,7 +120,8 @@ curl "http://127.0.0.1:8000/api/manhuagui/comic/1128/1?ext_name=单行本"
     "source_url": "https://manga.bilibili.com/m/mc24742/218087",
     "title": "ROMANCE DAWN冒险的序幕",
     "source_name": "哔哩哔哩漫画",
-    "site": "bilibili"
+    "site": "bilibili",
+    "comicid": "24742",
 }
 ```
 

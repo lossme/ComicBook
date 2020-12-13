@@ -111,3 +111,19 @@ def test_177pic():
 
 def test_18hmmcg():
     _test_crawl_comicbook(site='18hmmcg')
+
+
+def test_nvshens():
+    _test_crawl_comicbook(site='nvshens', test_search=False)
+
+
+def test_picxxxx():
+    _test_crawl_comicbook(site='picxxxx', test_search=False)
+
+
+def test_xiuren():
+    _test_crawl_comicbook(site='xiuren', test_search=False)
+
+
+def test_2animx():
+    _test_crawl_comicbook(site='2animx')

@@ -70,7 +70,7 @@ class NvshensCrawler(CrawlerBase):
             soup = self.get_soup(url)
             mpage = self.get_book_max_page(soup)
             urls = self.get_book_image_urls(soup)
-            return [(mpage, urls)]
+            return (mpage, urls)
 
         while True:
             if added_pages:

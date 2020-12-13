@@ -31,8 +31,7 @@ def concurrent_run(zip_args):
     for future in future_list:
         try:
             result = future.result()
-            for i in result:
-                ret.append(i)
+            ret.append(result)
         except Exception:
             logger.exception('task error. future=%s future._exception=%s', future, future._exception)
     return ret

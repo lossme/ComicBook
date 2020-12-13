@@ -77,8 +77,9 @@ class C177picCrawler(CrawlerBase):
         zip_args = []
         for page in range(2, citem.total_page + 1):
             zip_args.append((_get_page_images, dict(page=page)))
-        ret = concurrent_run(zip_args)
-        image_urls.extend(ret)
+        result_list = concurrent_run(zip_args)
+        for result in result_list:
+            image_urls.extend(result)
         return self.new_chapter_item(chapter_number=citem.chapter_number,
                                      title=citem.title,
                                      image_urls=image_urls,
