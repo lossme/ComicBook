@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class C18comicCrawler(CrawlerBase):
 
     SITE = "18comic"
-    SITE_INDEX = 'https://18comic.org/'
+    SITE_INDEX = 'https://18comic.vip/'
     SOURCE_NAME = "禁漫天堂"
     LOGIN_URL = SITE_INDEX
     R18 = True
@@ -134,7 +134,8 @@ class C18comicCrawler(CrawlerBase):
         return result
 
     def latest(self, page=1):
-        url = 'https://18comic.org/albums?o=mr&page=%s' % page
+        url = urljoin(self.SITE_INDEX, '/albums')
+        url += '?o=mr&page=%s' % page
         soup = self.get_soup(url)
         result = self.new_search_result_item()
         for div in soup.find_all('div', {'class': 'thumb-overlay-albums'}):
@@ -149,7 +150,7 @@ class C18comicCrawler(CrawlerBase):
         return result
 
     def get_tags(self):
-        url = "https://18comic.org/theme/"
+        url = urljoin(self.SITE_INDEX, "/theme/")
         soup = self.get_soup(url)
 
         div_list = soup.find('div', {'id': 'wrapper'}).find('div', {'class': 'container'})\
@@ -174,5 +175,5 @@ class C18comicCrawler(CrawlerBase):
 
     def check_login_status(self):
         session = self.get_session()
-        if session.cookies.get("remember", domain=".18comic.org"):
+        if session.cookies.get("remember", domain=".18comic.vip"):
             return True
