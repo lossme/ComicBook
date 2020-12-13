@@ -7,7 +7,10 @@ import weakref
 from collections import defaultdict
 
 from .utils import safe_filename
-from .utils import ensure_file_dir_exists
+from .utils import (
+    ensure_file_dir_exists,
+    find_all_image
+)
 from .exceptions import (
     SiteNotSupport,
     ChapterNotFound
@@ -34,7 +37,7 @@ class ComicBook():
         if site not in self.CRAWLER_CLS_MAP:
             raise SiteNotSupport(f"SiteNotSupport site={site}")
         crawler_cls = self.CRAWLER_CLS_MAP[site]
-        comicid or crawler_cls.DEFAULT_COMICID
+        comicid = comicid or crawler_cls.DEFAULT_COMICID
         self.crawler = crawler_cls(comicid)
         self.image_downloader = ImageDownloader(site=site)
 
@@ -163,12 +166,12 @@ class Chapter():
         pdf_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return pdf_path
 
-    def get_single_image_path(self, output_dir):
+    def get_single_image_path_template(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name + ' 长图')
         second_dir = self.get_comicbook_dir_name()
-        filename = safe_filename("{:>03} {}".format(self.chapter_number, self.title)) + ".jpg"
-        img_path = os.path.join(output_dir, first_dir, second_dir, filename)
-        return img_path
+        name_template = safe_filename("{:>03} {}-%s".format(self.chapter_number, self.title)) + ".jpg"
+        image_dir = os.path.join(output_dir, first_dir, second_dir)
+        return image_dir, name_template
 
     def get_zipfile_path(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name + ' zip')
@@ -194,26 +197,49 @@ class Chapter():
         from .utils._img2pdf import image_dir_to_pdf
         chapter_dir = self.save(output_dir)
         pdf_path = self.get_chapter_pdf_path(output_dir)
+        if os.path.exists(pdf_path) and not self.images_has_modify(chapter_dir):
+            return pdf_path
         ensure_file_dir_exists(pdf_path)
         image_dir_to_pdf(img_dir=chapter_dir,
                          target_path=pdf_path,
                          sort_by=lambda x: int(x.split('.')[0]))
         return pdf_path
 
+    def images_has_modify(self, image_dir):
+        crawler_time = self.comicbook.crawler_time.timestamp()
+        images_latest_mtime = self.get_images_latest_mtime(image_dir)
+        return images_latest_mtime > crawler_time
+
+    def get_images_latest_mtime(self, image_dir):
+        files = find_all_image(image_dir)
+        if not files:
+            return 0
+        return max([os.path.getmtime(f) for f in files])
+
     def save_as_single_image(self, output_dir, quality=95):
         from .utils import image_dir_to_single_image
         chapter_dir = self.save(output_dir)
-        img_path = self.get_single_image_path(output_dir)
-        ensure_file_dir_exists(img_path)
-        img_path = image_dir_to_single_image(img_dir=chapter_dir,
-                                             target_path=img_path,
-                                             sort_by=lambda x: int(x.split('.')[0]),
-                                             quality=quality)
-        return img_path
+        image_dir, name_template = self.get_single_image_path_template(output_dir)
+        files = []
+        prefix = name_template[0:name_template.index('-%s')]
+        for file in find_all_image(image_dir):
+            if os.path.dirname(file).startswith(prefix):
+                files.sppend(file)
+        if files and not self.images_has_modify(chapter_dir):
+            return files
+        ensure_file_dir_exists(dirpath=image_dir)
+        files = image_dir_to_single_image(img_dir=chapter_dir,
+                                          output_dir=image_dir,
+                                          name_template=name_template,
+                                          sort_by=lambda x: int(x.split('.')[0]),
+                                          quality=quality)
+        return files
 
     def save_as_zip(self, output_dir):
         from .utils import image_dir_to_zipfile
         chapter_dir = self.save(output_dir)
         zipfile_path = self.get_zipfile_path(output_dir)
+        if os.path.exists(zipfile_path) and not self.images_has_modify(chapter_dir):
+            return output_dir
         ensure_file_dir_exists(zipfile_path)
         return image_dir_to_zipfile(chapter_dir, zipfile_path)

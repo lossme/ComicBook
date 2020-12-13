@@ -294,18 +294,16 @@ def main():
         ext_name=args.ext_name,
         is_send_mail=is_send_mail,
         receivers=args.receivers)
-    if comicid:
-        logger.info("正在获取最新数据")
-        comicbook.start_crawler()
-        echo_comicbook_desc(comicbook=comicbook, ext_name=args.ext_name)
-
-        download_main(**download_main_kwargs)
 
     if args.latest_all:
         download_latest_all(page_str=args.latest_page, **download_main_kwargs)
-
-    if args.tag_all:
+    elif args.tag_all:
         download_tag_all(tag=args.tag, page_str=args.tag_page, **download_main_kwargs)
+    else:
+        logger.info("正在获取最新数据")
+        comicbook.start_crawler()
+        echo_comicbook_desc(comicbook=comicbook, ext_name=args.ext_name)
+        download_main(**download_main_kwargs)
 
     # 保存 session
     if session_path:

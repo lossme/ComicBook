@@ -67,14 +67,17 @@ def find_all_image(img_dir, sort_by=None):
     return img_path_list
 
 
-def ensure_file_dir_exists(filepath):
+def ensure_file_dir_exists(filepath=None, dirpath=None):
     if filepath and isinstance(filepath, str):
         file_dir = os.path.dirname(filepath)
         if file_dir and not os.path.exists(file_dir):
             os.makedirs(file_dir, exist_ok=True)
+    if dirpath:
+        os.makedirs(dirpath, exist_ok=True)
 
 
-def image_dir_to_single_image(img_dir, target_path, sort_by=None, quality=95):
+def image_dir_to_single_image(img_dir, output_dir, name_template, sort_by=None, quality=95):
+    files = []
     max_height = 65500
     img_path_list = find_all_image(img_dir=img_dir, sort_by=sort_by)
     img_list = [Image.open(i) for i in img_path_list]
@@ -95,13 +98,13 @@ def image_dir_to_single_image(img_dir, target_path, sort_by=None, quality=95):
         height = item['height']
         new_img = Image.new('RGB', (width, height))
         current_h = 0
-        img_path = '.'.join([target_path.rsplit('.')[0] + f'-{idx}'] + target_path.rsplit('.')[1:])
+        img_path = os.path.join(output_dir, name_template % idx)
         for img in item['imgs']:
             new_img.paste(img, box=(0, current_h))
             current_h += img.size[1]
         new_img.save(img_path, quality=quality)
-
-    return img_path
+        files.append(img_path)
+    return files
 
 
 def image_dir_to_zipfile(img_dir, target_path):
