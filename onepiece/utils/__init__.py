@@ -60,6 +60,8 @@ def parser_chapter_str(chapter_str, last_chapter_number=None, is_all=None):
 
 
 def find_all_image(img_dir, sort_by=None):
+    if not os.path.exists(img_dir):
+        return []
     allow_image_suffix = ('jpg', 'jpeg', 'png', 'gif', 'webp')
     img_path_list = sorted(os.listdir(img_dir), key=sort_by)
     img_path_list = list(filter(lambda x: x.lower() not in allow_image_suffix, img_path_list))
@@ -76,9 +78,11 @@ def ensure_file_dir_exists(filepath=None, dirpath=None):
         os.makedirs(dirpath, exist_ok=True)
 
 
-def image_dir_to_single_image(img_dir, output_dir, name_template, sort_by=None, quality=95):
-    files = []
-    max_height = 65500
+def image_dir_to_single_image(img_dir, output_dir, sort_by=None, quality=None, max_height=None):
+    quality = quality or 95
+    max_height = max_height or 65500
+    assert max_height <= 65500, '图片最大高度不能超过65500'
+
     img_path_list = find_all_image(img_dir=img_dir, sort_by=sort_by)
     img_list = [Image.open(i) for i in img_path_list]
     width = img_list[0].size[0]
@@ -98,13 +102,12 @@ def image_dir_to_single_image(img_dir, output_dir, name_template, sort_by=None, 
         height = item['height']
         new_img = Image.new('RGB', (width, height))
         current_h = 0
-        img_path = os.path.join(output_dir, name_template % idx)
+        img_path = os.path.join(output_dir, '%s.jpg' % idx)
         for img in item['imgs']:
             new_img.paste(img, box=(0, current_h))
             current_h += img.size[1]
         new_img.save(img_path, quality=quality)
-        files.append(img_path)
-    return files
+    return output_dir
 
 
 def image_dir_to_zipfile(img_dir, target_path):

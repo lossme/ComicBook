@@ -56,7 +56,7 @@ Star防止走丢，欢迎大家提建议和issue，本项目持续更新。
 - 下载第800集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=800`
 - 下载倒数第二集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=-2`
 - 下载1到5集,7集，9到10集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=1-5,7,9-10`
-- 拼接成长图: `python3 -m onepiece --site=qq --comicid=505430 --single-image --quality 95`
+- 拼接成长图: `python3 -m onepiece --site=qq --comicid=505430 --single-image --quality 95 --max-height 20000`
 - 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
 - 自定义保存目录: `python3 -m onepiece --site=qq --comicid=505430 --output MyComicBook`
 - 下载单行本: `python3 -m onepiece --site=manhuagui --comicid=1128 --ext-name=单行本 --chapter=-1`
@@ -134,4 +134,9 @@ export ONEPIECE_PROXY="socks5://127.0.0.1:1082"
 export ONEPIECE_PROXY_QQ="socks5://127.0.0.1:1082"
 # 配置其它站点下载代理地址
 export ONEPIECE_PROXY_XXXX="socks5://127.0.0.1:1082"
+
+# 配置默认的长图质量
+export DEFAULT_QUALITY=95
+# 配置默认的长图最大高度
+export DEFAULT_MAX_HEIGHT=20000
 ```

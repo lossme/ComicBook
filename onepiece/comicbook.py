@@ -166,12 +166,12 @@ class Chapter():
         pdf_path = os.path.join(output_dir, first_dir, second_dir, filename)
         return pdf_path
 
-    def get_single_image_path_template(self, output_dir):
+    def get_single_image_dir(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name + ' 长图')
         second_dir = self.get_comicbook_dir_name()
-        name_template = safe_filename("{:>03} {}-%s".format(self.chapter_number, self.title)) + ".jpg"
-        image_dir = os.path.join(output_dir, first_dir, second_dir)
-        return image_dir, name_template
+        third_dir = safe_filename("{:>03} {}".format(self.chapter_item.chapter_number, self.chapter_item.title))
+        image_dir = os.path.join(output_dir, first_dir, second_dir, third_dir)
+        return image_dir
 
     def get_zipfile_path(self, output_dir):
         first_dir = safe_filename(self.comicbook.source_name + ' zip')
@@ -216,24 +216,17 @@ class Chapter():
             return 0
         return max([os.path.getmtime(f) for f in files])
 
-    def save_as_single_image(self, output_dir, quality=95):
+    def save_as_single_image(self, output_dir, quality=None, max_height=None):
         from .utils import image_dir_to_single_image
         chapter_dir = self.save(output_dir)
-        image_dir, name_template = self.get_single_image_path_template(output_dir)
-        files = []
-        prefix = name_template[0:name_template.index('-%s')]
-        for file in find_all_image(image_dir):
-            if os.path.dirname(file).startswith(prefix):
-                files.sppend(file)
-        if files and not self.images_has_modify(chapter_dir):
-            return files
+        image_dir = self.get_single_image_dir(output_dir)
         ensure_file_dir_exists(dirpath=image_dir)
-        files = image_dir_to_single_image(img_dir=chapter_dir,
-                                          output_dir=image_dir,
-                                          name_template=name_template,
-                                          sort_by=lambda x: int(x.split('.')[0]),
-                                          quality=quality)
-        return files
+        image_dir = image_dir_to_single_image(img_dir=chapter_dir,
+                                              output_dir=image_dir,
+                                              sort_by=lambda x: int(x.split('.')[0]),
+                                              quality=quality,
+                                              max_height=max_height)
+        return image_dir
 
     def save_as_zip(self, output_dir):
         from .utils import image_dir_to_zipfile

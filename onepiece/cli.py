@@ -23,6 +23,8 @@ DEFAULT_DRIVER_PATH = os.environ.get('ONEPIECE_DRIVER_PATH') or ''
 DEFAULT_COOKIES_DIR = os.environ.get('ONEPIECE_COOKIES_DIR') or ''
 DEFAULT_SESSION_DIR = os.environ.get('ONEPIECE_SESSION_DIR') or ''
 DEFAULT_PROXY = os.environ.get('ONEPIECE_PROXY') or ''
+DEFAULT_QUALITY = int(os.environ.get('ONEPIECE_QUALITY', 95))
+DEFAULT_MAX_HEIGHT = int(os.environ.get('DEFAULT_MAX_HEIGHT', 20000))
 
 
 def parse_args():
@@ -68,7 +70,8 @@ def parse_args():
                         help="是否生成pdf文件, 如 --pdf")
     parser.add_argument('--single-image', action='store_true',
                         help="是否拼接成一张图片, 如 --single-image")
-    parser.add_argument('--quality', type=int, default=95, help="生成长图的图片质量")
+    parser.add_argument('--quality', type=int, default=DEFAULT_QUALITY, help="生成长图的图片质量，最高质量100")
+    parser.add_argument('--max-height', type=int, default=DEFAULT_MAX_HEIGHT, help="长图最大高度，最大高度65500")
 
     parser.add_argument('--login', action='store_true',
                         help="是否登录账号，如 --login")
@@ -142,8 +145,7 @@ def init_logger(level=None):
 
 def download_main(comicbook, output_dir, ext_name=None, chapters=None,
                   is_download_all=None, is_gen_pdf=None, is_gen_zip=None,
-                  is_single_image=None, quality=None, mail=None, receivers=None, is_send_mail=None):
-    quality = quality or 95
+                  is_single_image=None, quality=None, max_height=None, mail=None, receivers=None, is_send_mail=None):
     is_gen_pdf = is_gen_pdf or mail
     chapter_str = chapters or '-1'
     chapter_number_list = parser_chapter_str(chapter_str=chapter_str,
@@ -158,7 +160,7 @@ def download_main(comicbook, output_dir, ext_name=None, chapters=None,
             chapter_dir = chapter.save(output_dir=output_dir)
             logger.info("下载成功 %s", chapter_dir)
             if is_single_image:
-                img_path = chapter.save_as_single_image(output_dir=output_dir, quality=quality)
+                img_path = chapter.save_as_single_image(output_dir=output_dir, quality=quality, max_height=max_height)
                 logger.info("生成长图 %s", img_path)
             if is_gen_pdf:
                 pdf_path = chapter.save_as_pdf(output_dir=output_dir)
@@ -290,6 +292,7 @@ def main():
         is_gen_zip=args.zip,
         is_single_image=args.single_image,
         quality=args.quality,
+        max_height=args.max_height,
         mail=mail,
         ext_name=args.ext_name,
         is_send_mail=is_send_mail,
