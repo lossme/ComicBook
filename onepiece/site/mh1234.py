@@ -18,6 +18,7 @@ class Mh1234Crawler(CrawlerBase):
     DEFAULT_COMICID = '9683'
     DEFAULT_SEARCH_NAME = '斗罗大陆'
     DEFAULT_TAG = "1"
+    COMICID_PATTERN = re.compile(r'/comic/(\d+)\.html')
 
     def __init__(self, comicid=None):
         self.comicid = comicid

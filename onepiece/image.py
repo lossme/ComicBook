@@ -43,9 +43,6 @@ class ImageDownloader(object):
 
     def __init__(self, site):
         self.site = site
-
-        self.image_download_pool = None
-        self.pool_size = 4
         self.timeout = 30
 
     def set_timeout(self, timeout=30):

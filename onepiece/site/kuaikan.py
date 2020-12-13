@@ -17,9 +17,10 @@ class KuaiKanCrawler(CrawlerBase):
     SOURCE_NAME = "快看漫画"
 
     LOGIN_URL = urljoin(SITE_INDEX, "/webs/loginh?redirect={}".format(SITE_INDEX))
-    DEFAULT_COMICID = 1338
+    DEFAULT_COMICID = '1338'
     DEFAULT_SEARCH_NAME = '海贼王'
     DEFAULT_TAG = 'tag_0'
+    COMICID_PATTERN = re.compile(r'/web/topic/(\d+)/?')
 
     def __init__(self, comicid=None):
         super().__init__()

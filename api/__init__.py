@@ -36,6 +36,7 @@ def create_app(cfg=ONEPIECE_FLASK_CONFIG):
     from .api.views import (
         app as api_app,
         aggregate_app,
+        tools_app
     )
     from .manage.views import manage_app
     from .user.views import app as user_app
@@ -43,6 +44,7 @@ def create_app(cfg=ONEPIECE_FLASK_CONFIG):
     app.register_blueprint(index_app)
     app.register_blueprint(api_app)
     app.register_blueprint(aggregate_app)
+    app.register_blueprint(tools_app)
     app.register_blueprint(manage_app)
     app.register_blueprint(user_app)
 

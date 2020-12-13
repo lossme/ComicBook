@@ -51,6 +51,7 @@ Star防止走丢，欢迎大家提建议和issue，本项目持续更新。
 
 从腾讯漫画下载：
 
+- 从URL下载漫画的最新一集: `python3 -m onepiece --url "http://ac.qq.com/Comic/ComicInfo/id/505430"`
 - 下载漫画 id=505430 最新一集: `python3 -m onepiece --site=qq --comicid=505430`
 - 下载所有章节: `python3 -m onepiece --site=qq --comicid=505430 --all`
 - 下载第800集: `python3 -m onepiece --site=qq --comicid=505430 --chapter=800`
@@ -60,6 +61,8 @@ Star防止走丢，欢迎大家提建议和issue，本项目持续更新。
 - 设置代理: `python3 -m onepiece --site=qq --comicid=505430 --proxy "socks5://127.0.0.1:1080"`
 - 自定义保存目录: `python3 -m onepiece --site=qq --comicid=505430 --output MyComicBook`
 - 下载单行本: `python3 -m onepiece --site=manhuagui --comicid=1128 --ext-name=单行本 --chapter=-1`
+- 通过指定的URL文件列表批量下载[【文件示例】](https://github.com/lossme/ComicBook/blob/master/test/test-url-file.txt)：`python3 -m onepiece --url-file test/test-url-file.txt`
+- 若不清楚或不记得comicid，可以使用名字来搜索：`python3 -m onepiece --site=qq --name=海贼`
 - 推送到邮箱:
 ```sh
 # 注意: 发送到邮箱需预先配置好信息
@@ -79,7 +82,6 @@ python3 -m onepiece --site=bilibili --comicid=mc24742 --chapter=1
 # 从有妖气漫画下载:
 python3 -m onepiece --site=u17 --comicid=195 --chapter=1
 ```
-- 若不清楚或不记得comicid，可以使用名字来搜索，按照提示输入comicid `python3 -m onepiece --site=qq --name=海贼`
 
 ### 关于登录
 

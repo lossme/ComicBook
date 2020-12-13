@@ -17,7 +17,8 @@ class C18comicCrawler(CrawlerBase):
     LOGIN_URL = SITE_INDEX
     R18 = True
 
-    DEFAULT_COMICID = 201118
+    COMICID_PATTERN = re.compile(r'/album/(\d+)/?')
+    DEFAULT_COMICID = '201118'
     DEFAULT_SEARCH_NAME = '騎馬的女孩好想被她騎'
     DEFAULT_TAG = 'CG集'
 

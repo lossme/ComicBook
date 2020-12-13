@@ -17,6 +17,7 @@ class ManhuataiCrawler(CrawlerBase):
     DEFAULT_COMICID = "doupocangqiong"
     DEFAULT_SEARCH_NAME = '斗破苍穹'
     DEFAULT_TAG = ""
+    COMICID_PATTERN = re.compile(r'([_a-zA-Z0-9\-]*)/?')
 
     def __init__(self, comicid=None):
         self.comicid = comicid

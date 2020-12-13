@@ -24,6 +24,17 @@ class DmzjCrawler(CrawlerBase):
         self.comicid = comicid
         super().__init__()
 
+    @classmethod
+    def get_comicid_by_url(cls, comicid_or_url):
+        if comicid_or_url:
+            r = re.search(r'/info/(.*?).html', comicid_or_url)
+            if r:
+                return r.group(1)
+            r = re.search(r'dmzj.com/([\w\d]*)$', comicid_or_url)
+            if r:
+                return r.group(1)
+        return comicid_or_url
+
     @property
     def source_url(self):
         return self.get_source_url(self.comicid)
@@ -135,12 +146,6 @@ class DmzjCrawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
-
-    def get_comicid_by_url(self, url):
-        try:
-            return re.search(r'/info/(.*?).html', url).group(1)
-        except Exception:
-            return re.search(r'dmzj.com/([\w\d]*)$', url).group(1)
 
     def search(self, name, page, size=None):
         url = 'https://www.dmzj.com/dynamic/o_search/index/%s/%s' % (name, page)

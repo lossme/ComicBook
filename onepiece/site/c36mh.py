@@ -19,6 +19,7 @@ class C36mhCrawler(CrawlerBase):
     DEFAULT_SEARCH_NAME = '全职法师'
     DEFAULT_TAG = "rexue"
     SITE_ENCODEING = 'utf-8'
+    COMICID_PATTERN = re.compile(r'/manhua/([_a-zA-Z0-9\-]*)/?')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -135,6 +136,3 @@ class C36mhCrawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'/manhua/(.*?)/', url).group(1)

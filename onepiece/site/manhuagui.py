@@ -19,8 +19,9 @@ class ManhuaguiCrawler(CrawlerBase):
     IMAGE_URL_PREFIX = 'https://i.hamreus.com'
     LOGIN_URL = urljoin(SITE_INDEX, "/user/login")
     REQUIRE_JAVASCRIPT = True
+    COMICID_PATTERN = re.compile(r'/comic/(\d+)/?')
 
-    DEFAULT_COMICID = 19430
+    DEFAULT_COMICID = '19430'
     DEFAULT_SEARCH_NAME = '鬼灭之刃'
     TAGS = [
         dict(name='连载漫画', tag='lianzai'),

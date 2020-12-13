@@ -1,5 +1,6 @@
 import urllib.parse
 import logging
+import re
 
 from ..crawlerbase import CrawlerBase
 
@@ -17,9 +18,10 @@ class U17Crawler(CrawlerBase):
     CHAPTER_URL = "https://www.u17.com/chapter/{chapter_id}.html"
     LOGIN_URL = "https://passport.u17.com/member_v2/login.php?url=https://www.u17.com/"
 
-    DEFAULT_COMICID = 195
+    DEFAULT_COMICID = '195'
     DEFAULT_SEARCH_NAME = '雏蜂'
     DEFAULT_TAG = 'th_104'
+    COMICID_PATTERN = re.compile(r'/comic/(\d+)\.html')
 
     STATUS_MAP = {
         "0": '连载中',

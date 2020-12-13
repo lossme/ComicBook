@@ -19,6 +19,7 @@ class C18hmmcgCrawler(CrawlerBase):
     DEFAULT_COMICID = '18H_6809'
     DEFAULT_SEARCH_NAME = '中文'
     DEFAULT_TAG = "100"
+    COMICID_PATTERN = re.compile(r'/(.*?)\.html')
 
     def __init__(self, comicid=None):
         super().__init__()

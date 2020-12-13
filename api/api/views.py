@@ -12,6 +12,7 @@ from ..common import handle_404
 logger = logging.getLogger(__name__)
 app = Blueprint("api", __name__, url_prefix='/api')
 aggregate_app = Blueprint("aggregate", __name__, url_prefix='/aggregate')
+tools_app = Blueprint("tools", __name__, url_prefix='/tools')
 
 app.register_error_handler(ComicbookException, handle_404)
 aggregate_app.register_error_handler(ComicbookException, handle_404)
@@ -69,3 +70,9 @@ def aggregate_search():
         return jsonify(dict(list=[]))
     result = crawler.aggregate_search(site=site, name=name)
     return jsonify(dict(list=result))
+
+
+@tools_app.route("/urlinfo")
+def parse_url_info():
+    url = request.args.get('url')
+    return crawler.parse_url_info(url)

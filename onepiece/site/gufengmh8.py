@@ -18,6 +18,7 @@ class Gufengmh8Crawler(CrawlerBase):
     DEFAULT_COMICID = 'hanghaiwanghaizeiwang'
     DEFAULT_SEARCH_NAME = '海贼'
     DEFAULT_TAG = ""
+    COMICID_PATTERN = re.compile(r'/manhua/([_a-zA-Z0-9\-]*)/?')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -132,6 +133,3 @@ class Gufengmh8Crawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'/manhua/(.*?)/', url).group(1)

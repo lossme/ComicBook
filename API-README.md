@@ -28,6 +28,7 @@ gunicorn 'api:create_app()' -b "127.0.0.1:8000" --workers=2 --timeout=10
 - [1.5 获取所有tag](#15)
 - [1.6 根据tag搜索](#16)
 - [1.7 聚合搜索](#17)
+- [1.8 根据url获取comicid](#18)
 - [2.0 API管理相关](#20)
 - [2.1 添加到异步任务](#21)
 - [2.2 查看任务列表](#22)
@@ -320,6 +321,17 @@ curl "http://127.0.0.1:8000/aggregate/search?name=海贼&site=bilibili,u17"
             "status":""
         }
     ]
+}
+```
+### 1.8 根据url获取comicid
+
+`GET /tools/urlinfo?url=https://www.u17.com/comic/53210.html`
+
+```json
+{
+    "comicid": "53210",
+    "site": "u17",
+    "url": "https://www.u17.com/comic/53210.html"
 }
 ```
 

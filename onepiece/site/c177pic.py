@@ -16,20 +16,16 @@ class C177picCrawler(CrawlerBase):
     LOGIN_URL = SITE_INDEX
     R18 = True
 
+    COMICID_PATTERN = re.compile(r'(\d{4}[\/\-]\d{2}[\/\-]\d+)(?:\.html)?')
     DEFAULT_COMICID = '2020-12-3995736'
     DEFAULT_SEARCH_NAME = '中文'
     DEFAULT_TAG = "tt"
 
     def __init__(self, comicid=None):
         super().__init__()
-        if comicid:
-            self.comicid = self.get_comicid_by_url(comicid)
-        else:
-            self.comicid = comicid
-
-    def get_comicid_by_url(self, url):
-        comicid = re.search(r'(\d{4}[\/\-]\d{2}[\/\-]\d+)(?:\.html)?', url).group(1)
-        return comicid.replace('/', '-')
+        self.comicid = comicid
+        if self.comicid:
+            self.comicid = comicid.replace('/', '-')
 
     @property
     def source_url(self):

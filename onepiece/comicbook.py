@@ -33,11 +33,15 @@ class ComicBook():
     CRAWLER_CLS_MAP = {crawler.SITE: crawler for crawler in find_all_crawler()}
     CHAPTER_NOT_CACHE_SITE = frozenset(['bilibili'])
 
-    def __init__(self, site, comicid=None):
+    def __init__(self, site=None, comicid=None):
+        if not site:
+            site = self.get_site_by_url(comicid)
         if site not in self.CRAWLER_CLS_MAP:
             raise SiteNotSupport(f"SiteNotSupport site={site}")
         crawler_cls = self.CRAWLER_CLS_MAP[site]
-        comicid = comicid or crawler_cls.DEFAULT_COMICID
+
+        url = comicid or crawler_cls.DEFAULT_COMICID
+        comicid = self.get_comicid_by_url(site=site, url=url)
         self.crawler = crawler_cls(comicid)
         self.image_downloader = ImageDownloader(site=site)
 
@@ -47,6 +51,23 @@ class ComicBook():
 
         self.crawler_time = None
         self.comicbook_item = None
+
+    @classmethod
+    def get_site_by_url(cls, url):
+        if not url:
+            return
+        uri = re.sub('https?://', '', url)
+        for crawler_cls in cls.CRAWLER_CLS_MAP.values():
+            crawler_uri = re.sub('https?://', '', crawler_cls.SITE_INDEX)
+            if uri.startswith(crawler_uri):
+                return crawler_cls.SITE
+
+    @classmethod
+    def get_comicid_by_url(cls, site, url):
+        if site not in cls.CRAWLER_CLS_MAP:
+            return None
+        crawler_cls = cls.CRAWLER_CLS_MAP[site]
+        return crawler_cls.get_comicid_by_url(url)
 
     def start_crawler(self):
         if self.crawler_time is None:

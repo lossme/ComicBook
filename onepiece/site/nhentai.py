@@ -1,4 +1,5 @@
 import logging
+import re
 from urllib.parse import urljoin
 
 from ..crawlerbase import CrawlerBase
@@ -13,10 +14,10 @@ class NhentaiCrawler(CrawlerBase):
     SOURCE_NAME = "NHentai"
     LOGIN_URL = 'https://nhentai.net/login/?next=/'
 
-    DEFAULT_COMICID = 331735
+    DEFAULT_COMICID = '331735'
     DEFAULT_SEARCH_NAME = 'manga'
     DEFAULT_TAG = 'big-breasts'
-
+    COMICID_PATTERN = re.compile(r'/g/(\d+)/?')
     R18 = True
 
     def __init__(self, comicid=None):

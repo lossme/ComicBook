@@ -54,6 +54,10 @@ def parse_args():
 
     parser.add_argument('-id', '--comicid', type=str,
                         help="漫画id，如海贼王: 505430 (http://ac.qq.com/Comic/ComicInfo/id/505430)")
+    parser.add_argument('--url', type=str,
+                        help="漫画id，如海贼王: http://ac.qq.com/Comic/ComicInfo/id/505430")
+    parser.add_argument('--url-file', type=str, help="漫画URL列表")
+
     parser.add_argument('--ext-name', type=str, help="如：番外篇、单行本等。具体得看站点支持哪些")
 
     parser.add_argument('--name', type=str, help="漫画名")
@@ -92,7 +96,7 @@ def parse_args():
     s = ' '.join(['%s(%s)' % (crawler.SITE, crawler.SOURCE_NAME) for crawler in ComicBook.CRAWLER_CLS_MAP.values()])
     site_help_msg = "数据源网站：支持 %s" % s
 
-    parser.add_argument('-s', '--site', type=str, default='qq', choices=ComicBook.CRAWLER_CLS_MAP.keys(),
+    parser.add_argument('-s', '--site', type=str, choices=ComicBook.CRAWLER_CLS_MAP.keys(),
                         help=site_help_msg)
 
     parser.add_argument('--verify', action='store_true',
@@ -201,6 +205,25 @@ def download_tag_all(tag, page_str, **kwargs):
             download_main(comicbook=next_comicbook, **kwargs)
 
 
+def download_url_list(url_file, **kwargs):
+    comicbook = kwargs.pop('comicbook')
+    with open(url_file) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            url = line
+            site = ComicBook.get_site_by_url(url=url)
+            comicid = ComicBook.get_comicid_by_url(site=site, url=url)
+            if not site or not comicid:
+                logger.info('Unknown url. url=%s', url)
+                continue
+            comicbook = ComicBook(site=site, comicid=comicid)
+            comicbook.start_crawler()
+            echo_comicbook_desc(comicbook=comicbook, ext_name=kwargs.get('ext_name'))
+            download_main(comicbook=comicbook, **kwargs)
+
+
 def show_tags(comicbook):
     msg_list = []
     for t1 in comicbook.get_tags():
@@ -228,8 +251,16 @@ def echo_comicbook_desc(comicbook, ext_name=None):
 
 def main():
     args = parse_args()
-    site = args.site
-    comicid = args.comicid
+
+    if args.url:
+        site = ComicBook.get_site_by_url(args.url)
+        if not site:
+            raise RuntimeError('Unknown url. url=%s' % args.url)
+        comicid = ComicBook.get_comicid_by_url(site=site, url=args.url)
+    else:
+        site = args.site or 'qq'
+        comicid = args.comicid
+
     session_path = args.session_path
     if not session_path and DEFAULT_SESSION_DIR:
         session_path = os.path.join(DEFAULT_SESSION_DIR, f'{site}.pickle')
@@ -239,7 +270,7 @@ def main():
 
     loglevel = logging.DEBUG if args.debug else logging.INFO
     init_logger(level=loglevel)
-    comicbook = ComicBook(site=args.site, comicid=comicid)
+    comicbook = ComicBook(site=site, comicid=comicid)
     # 设置代理
     proxy = args.proxy or os.environ.get('ONEPIECE_PROXY_{}'.format(site.upper())) or DEFAULT_PROXY
     if proxy:
@@ -271,10 +302,13 @@ def main():
 
     if args.name:
         result = comicbook.search(name=args.name, limit=10)
+        msg_list = []
         for item in result:
-            print("comicid={}\tname={}\tsource_url={}".format(item.comicid, item.name, item.source_url))
-        comicid = input("请输入要下载的comicid: ")
-        comicbook.crawler.comicid = comicid
+            msg_list.append("\ncomicid={}\t{}\tsource_url={}".format(
+                item.comicid, item.name, item.source_url)
+            )
+        logger.info('\n%s', 'n'.join(msg_list))
+        exit(0)
 
     if args.mail:
         is_send_mail = True
@@ -298,6 +332,8 @@ def main():
         is_send_mail=is_send_mail,
         receivers=args.receivers)
 
+    if args.url_file:
+        download_url_list(url_file=args.url_file, **download_main_kwargs)
     if args.latest_all:
         download_latest_all(page_str=args.latest_page, **download_main_kwargs)
     elif args.tag_all:

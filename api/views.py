@@ -81,6 +81,12 @@ def index():
         api=prefix + '/aggregate/search?name=海贼&site=bilibili,u17'
     ))
 
+    tools_examples = []
+    tools_examples.append(dict(
+        desc="聚合搜索",
+        api=prefix + '/tools/urlinfo?url=https://www.u17.com/comic/53210.html'
+    ))
+
     manage_examples = []
     manage_examples.append(dict(
         desc='添加任务',
@@ -105,6 +111,8 @@ def index():
         {
             "api_examples": examples,
             "aggregate_examples": aggregate_examples,
-            "manage_examples": manage_examples
+            "tools_examples": tools_examples,
+            "manage_examples": manage_examples,
+
         }
     )

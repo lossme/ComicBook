@@ -21,20 +21,21 @@ class BilibiliCrawler(CrawlerBase):
 
     SOURCE_NAME = "哔哩哔哩漫画"
     DATA_HOST = "https://i0.hdslb.com/"
-
     COMICBOOK_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=h5&platform=h5"
     CHAPTER_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/Index?device=h5&platform=h5"
     IMAGE_TOKEN_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=h5&platform=h5"
     SEARCH_API = "https://manga.bilibili.com/twirp/comic.v1.Comic/Search?device=pc&platform=web"
     LOGIN_URL = SITE_INDEX
-
+    COMICID_PATTERN = re.compile(r'/detail/mc(\d+)/?')
     DEFAULT_COMICID = 'mc24742'
     DEFAULT_SEARCH_NAME = '海贼王'
     DEFAULT_TAG = 'is_finish_0'
 
     def __init__(self, comicid=None):
         super().__init__()
-        self.comicid = comicid.replace("mc", "") if comicid else ''
+        self.comicid = comicid
+        if self.comicid:
+            self.comicid = self.comicid.replace("mc", "")
 
     @property
     def source_url(self):

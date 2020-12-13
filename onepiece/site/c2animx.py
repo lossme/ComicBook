@@ -18,6 +18,7 @@ class C2animxCrawler(CrawlerBase):
     DEFAULT_COMICID = '24755'
     DEFAULT_SEARCH_NAME = '和'
     DEFAULT_TAG = ""
+    COMICID_PATTERN = re.compile(r'-id-(\d+)')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -173,9 +174,6 @@ class C2animxCrawler(CrawlerBase):
                     .format(status, typeid)
         soup = self.get_soup(url)
         return self.parse_book_list(soup)
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'-id-(\d+)', url).group(1)
 
     def search(self, name, page=1, size=None):
         if page > 1:

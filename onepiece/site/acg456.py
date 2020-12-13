@@ -14,15 +14,15 @@ class Acg456Crawler(CrawlerBase):
     SITE_INDEX = 'http://www.acg456.com/'
     SOURCE_NAME = "ACG肆伍陆"
     LOGIN_URL = SITE_INDEX
-
+    COMICID_PATTERN = re.compile(r'/HTML/([_a-zA-Z0-9\-]*)/?')
     DEFAULT_COMICID = 'OnePiece'
     DEFAULT_SEARCH_NAME = '海贼王'
     DEFAULT_TAG = "1"
     SITE_ENCODEING = 'utf-8'
 
     def __init__(self, comicid=None):
-        self.comicid = comicid
         super().__init__()
+        self.comicid = comicid
 
     @property
     def source_url(self):

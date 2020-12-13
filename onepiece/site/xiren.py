@@ -19,6 +19,7 @@ class NvshensCrawler(CrawlerBase):
     DEFAULT_SEARCH_NAME = ''
     DEFAULT_TAG = "TuiGirl"
     SITE_ENCODEING = 'utf-8'
+    COMICID_PATTERN = re.compile(r'/(.*)\.html')
 
     def __init__(self, comicid=None):
         super().__init__()

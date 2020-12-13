@@ -1,7 +1,9 @@
 import datetime
 import time
 import logging
+import re
 from collections import defaultdict
+
 import execjs
 from bs4 import BeautifulSoup
 
@@ -163,6 +165,7 @@ class CrawlerBase():
     SITE_INDEX = ""
     LOGIN_URL = ""
 
+    COMICID_PATTERN = re.compile(r'(.*)')
     DEFAULT_COMICID = None
     DEFAULT_SEARCH_NAME = ''
     DEFAULT_TAG = ''
@@ -238,6 +241,14 @@ class CrawlerBase():
     def get_json(self, url, **kwargs):
         response = self.send_request("GET", url, **kwargs)
         return response.json()
+
+    @classmethod
+    def get_comicid_by_url(cls, comicid_or_url):
+        if comicid_or_url and isinstance(comicid_or_url, str):
+            r = cls.COMICID_PATTERN.search(comicid_or_url)
+            if r:
+                return r.group(1)
+        return comicid_or_url
 
     def get_comicbook_item(self):
         """

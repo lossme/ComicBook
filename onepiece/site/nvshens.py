@@ -20,6 +20,7 @@ class NvshensCrawler(CrawlerBase):
     DEFAULT_SEARCH_NAME = ''
     DEFAULT_TAG = "toutiao"
     SITE_ENCODEING = 'utf-8'
+    COMICID_PATTERN = re.compile(r'/g/(\d+)/?')
 
     def __init__(self, comicid=None):
         super().__init__()
@@ -93,9 +94,6 @@ class NvshensCrawler(CrawlerBase):
                                      title=citem.title,
                                      image_urls=image_urls,
                                      source_url=citem.source_url)
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'/g/(\d+)/?', url).group(1)
 
     def parse_book_list(self, soup):
         result = self.new_search_result_item()

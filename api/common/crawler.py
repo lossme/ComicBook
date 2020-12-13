@@ -105,3 +105,9 @@ def set_proxy(site, proxy):
 
 def get_proxy(site):
     return SessionMgr.get_proxy(site=site)
+
+
+def parse_url_info(url):
+    site = ComicBook.get_site_by_url(url)
+    comicid = ComicBook.get_comicid_by_url(site=site, url=url)
+    return dict(site=site, comicid=comicid, url=url)

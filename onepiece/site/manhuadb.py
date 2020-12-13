@@ -20,6 +20,7 @@ class ManhuadbCrawler(CrawlerBase):
     DEFAULT_SEARCH_NAME = '海贼'
     DEFAULT_TAG = "c-46"
     DEFAULT_EXT_NAME = "连载"
+    COMICID_PATTERN = re.compile(r'/manhua/(\d+)/?')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -145,9 +146,6 @@ class ManhuadbCrawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'/manhua/(\d+)', url).group(1)
 
     def search(self, name, page, size=None):
         url = "https://www.manhuadb.com/search?q=%s&p=%s" % (name, page)

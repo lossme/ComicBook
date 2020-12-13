@@ -20,6 +20,7 @@ class DM5Crawler(CrawlerBase):
     DEFAULT_COMICID = 'douluodalu'
     DEFAULT_SEARCH_NAME = '斗罗大陆'
     DEFAULT_TAG = "31"
+    COMICID_PATTERN = re.compile(r'/manhua-(([_a-zA-Z0-9\-]*))/?')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -173,9 +174,6 @@ class DM5Crawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'/manhua-(.*?)/', url).group(1)
 
     def search(self, name, page, size=None):
         url = "https://www.dm5.com/search?title=%s&page=%s" % (name, page)

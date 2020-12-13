@@ -18,6 +18,7 @@ class Tuhao456Crawler(CrawlerBase):
     DEFAULT_COMICID = '1831'
     DEFAULT_SEARCH_NAME = '和'
     DEFAULT_TAG = "t1"
+    COMICID_PATTERN = re.compile(r'/manhua/([_a-zA-Z0-9\-]*)/?')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -133,9 +134,6 @@ class Tuhao456Crawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'/manhua/(.*?)/', url).group(1)
 
     def search(self, name, page, size=None):
         url = "https://www.tuhao456.com/sort/?key=%s&button=搜索" % name

@@ -1,4 +1,5 @@
 import logging
+import re
 from urllib.parse import urljoin
 
 from ..crawlerbase import CrawlerBase
@@ -16,6 +17,7 @@ class CocomanhuaCrawler(CrawlerBase):
     DEFAULT_COMICID = '12187'
     DEFAULT_SEARCH_NAME = '全职法师'
     DEFAULT_TAG = ""
+    COMICID_PATTERN = re.compile(r'/(\d+)/?')
 
     def __init__(self, comicid=None):
         self.comicid = comicid

@@ -18,6 +18,7 @@ class C77mhCrawler(CrawlerBase):
     DEFAULT_COMICID = '78824'
     DEFAULT_SEARCH_NAME = '海贼王'
     DEFAULT_TAG = "chunqing"
+    COMICID_PATTERN = re.compile(r'colist_(\d+)\.html')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
@@ -132,9 +133,6 @@ class C77mhCrawler(CrawlerBase):
                               cover_image_url=cover_image_url,
                               source_url=source_url)
         return result
-
-    def get_comicid_by_url(self, url):
-        return re.search(r'colist_(\d+).html', url).group(1)
 
     def search(self, name, page, size=None):
         url = "https://so.77mh.cc/k.php?k=%s&p=%s" % (name, page)

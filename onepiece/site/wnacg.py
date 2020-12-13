@@ -14,10 +14,11 @@ class WnacgCrawler(CrawlerBase):
     SOURCE_NAME = "绅士漫画"
     LOGIN_URL = SITE_INDEX
 
-    DEFAULT_COMICID = 110785
+    DEFAULT_COMICID = '110785'
     DEFAULT_SEARCH_NAME = '漢化'
     DEFAULT_TAG = "3"
     R18 = True
+    COMICID_PATTERN = re.compile(r'/photos-index-aid-(\d+)\.html')
 
     def __init__(self, comicid=None):
         self.comicid = comicid
