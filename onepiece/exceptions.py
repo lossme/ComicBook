@@ -7,7 +7,7 @@ class NotFoundError(ComicbookException):
 
 
 class ComicbookNotFound(NotFoundError):
-    TEMPLATE = ("source not dound. site={site} comicid={comicid} "
+    TEMPLATE = ("source not found. site={site} comicid={comicid} "
                 "source_url={source_url}")
 
     @classmethod
@@ -17,7 +17,7 @@ class ComicbookNotFound(NotFoundError):
 
 
 class ChapterNotFound(NotFoundError):
-    TEMPLATE = ("source not dound. site={site} comicid={comicid} "
+    TEMPLATE = ("source not found. site={site} comicid={comicid} "
                 "chapter_number={chapter_number} source_url={source_url}")
 
     @classmethod
