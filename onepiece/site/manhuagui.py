@@ -6,6 +6,8 @@ import logging
 import execjs
 
 from ..crawlerbase import CrawlerBase
+import lzstring
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +66,12 @@ class ManhuaguiCrawler(CrawlerBase):
             book.add_tag(name=name, tag=tag)
 
         chapter_soup = soup.find('div', {'class': 'chapter'})
+        adult_input = soup.find('input', {'id': '__VIEWSTATE'})
+        if adult_input is not None:
+            adult_encoded_value = adult_input.get('value')
+            if len(adult_encoded_value) > 0:
+                adult_decoded_value = lzstring.LZString().decompressFromBase64(adult_encoded_value)
+                chapter_soup = BeautifulSoup(adult_decoded_value, 'html.parser')
         h4_list = chapter_soup.find_all('h4')
         div_list = chapter_soup.find_all('div', {'class': 'chapter-list'})
         idx = 1
